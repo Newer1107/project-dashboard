@@ -1,0 +1,290 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum ProjectStatus {
+  DRAFT
+  ACTIVE
+  UNDER_REVIEW
+  COMPLETED
+  ARCHIVED
+}
+
+enum MemberRole {
+  LEAD
+  MEMBER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+  BLOCKED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ReviewStatus {
+  SCHEDULED
+  COMPLETED
+  MISSED
+  RESCHEDULED
+}
+
+enum FileCategory {
+  REPORT
+  PRESENTATION
+  CODE
+  DATASET
+  OTHER
+}
+
+enum NotificationType {
+  TASK_ASSIGNED
+  DEADLINE_APPROACHING
+  REVIEW_SCHEDULED
+  FEEDBACK_GIVEN
+  PROJECT_UPDATED
+  MILESTONE_DUE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  avatarUrl    String?
+  department   String?
+  rollNumber   String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  managedProjects Project[]       @relation("TeacherProjects")
+  memberships     ProjectMember[]
+  assignedTasks   Task[]          @relation("TaskAssignee")
+  reviews         Review[]        @relation("ReviewReviewer")
+  uploadedFiles   ProjectFile[]
+  comments        Comment[]
+  notifications   Notification[]
+
+  @@map("users")
+}
+
+model Project {
+  id                   String        @id @default(cuid())
+  title                String
+  description          String        @db.Text
+  domain               String
+  status               ProjectStatus @default(DRAFT)
+  startDate            DateTime
+  endDate              DateTime
+  maxGroupSize         Int           @default(4)
+  completionPercentage Float         @default(0)
+  teacherId            String
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  // Relations
+  teacher    User            @relation("TeacherProjects", fields: [teacherId], references: [id])
+  members    ProjectMember[]
+  tasks      Task[]
+  milestones Milestone[]
+  reviews    Review[]
+  files      ProjectFile[]
+  tags       ProjectTag[]
+
+  @@index([teacherId])
+  @@index([status])
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String     @id @default(cuid())
+  projectId String
+  studentId String
+  role      MemberRole @default(MEMBER)
+  joinedAt  DateTime   @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  student User    @relation(fields: [studentId], references: [id])
+
+  @@unique([projectId, studentId])
+  @@index([studentId])
+  @@map("project_members")
+}
+
+model Task {
+  id           String       @id @default(cuid())
+  projectId    String
+  title        String
+  description  String?      @db.Text
+  assignedToId String?
+  status       TaskStatus   @default(TODO)
+  priority     TaskPriority @default(MEDIUM)
+  dueDate      DateTime?
+  completedAt  DateTime?
+  orderIndex   Int          @default(0)
+  parentTaskId String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Relations
+  project    Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignedTo User?         @relation("TaskAssignee", fields: [assignedToId], references: [id])
+  parentTask Task?         @relation("SubTasks", fields: [parentTaskId], references: [id])
+  subtasks   Task[]        @relation("SubTasks")
+  comments   Comment[]
+  files      ProjectFile[] @relation("TaskFiles")
+
+  @@index([projectId])
+  @@index([assignedToId])
+  @@index([status])
+  @@map("tasks")
+}
+
+model Milestone {
+  id          String    @id @default(cuid())
+  projectId   String
+  title       String
+  description String?   @db.Text
+  dueDate     DateTime
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+  weight      Int       @default(10)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("milestones")
+}
+
+model Review {
+  id           String       @id @default(cuid())
+  projectId    String
+  reviewerId   String
+  reviewType   String
+  scheduledAt  DateTime
+  conductedAt  DateTime?
+  status       ReviewStatus @default(SCHEDULED)
+  overallScore Float?
+  feedback     String?      @db.Text
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  project        Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  reviewer       User             @relation("ReviewReviewer", fields: [reviewerId], references: [id])
+  criteriaScores ReviewCriteria[]
+
+  @@index([projectId])
+  @@index([reviewerId])
+  @@map("reviews")
+}
+
+model ReviewCriteria {
+  id           String  @id @default(cuid())
+  reviewId     String
+  criteriaName String
+  score        Float
+  remarks      String? @db.Text
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@map("review_criteria")
+}
+
+model ProjectFile {
+  id         String       @id @default(cuid())
+  projectId  String
+  taskId     String?
+  uploadedBy String
+  fileName   String
+  fileType   String
+  fileSize   Int
+  s3Key      String
+  s3Url      String       @db.Text
+  category   FileCategory @default(OTHER)
+  uploadedAt DateTime     @default(now())
+
+  project  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task     Task?   @relation("TaskFiles", fields: [taskId], references: [id])
+  uploader User    @relation(fields: [uploadedBy], references: [id])
+
+  @@index([projectId])
+  @@index([taskId])
+  @@map("project_files")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  taskId    String
+  authorId  String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id])
+
+  @@index([taskId])
+  @@map("comments")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String           @db.Text
+  isRead    Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+model Tag {
+  id       String       @id @default(cuid())
+  name     String       @unique
+  color    String
+  projects ProjectTag[]
+
+  @@map("tags")
+}
+
+model ProjectTag {
+  projectId String
+  tagId     String
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, tagId])
+  @@map("project_tags")
+}

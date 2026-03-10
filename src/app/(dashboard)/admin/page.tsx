@@ -1,0 +1,120 @@
+"use client";
+
+import React from "react";
+import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import { getUsers } from "@/server/actions/users";
+import { Users, GraduationCap, BookOpen, Shield } from "lucide-react";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.08 } },
+};
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0 },
+};
+
+export default function AdminOverviewPage() {
+  const { data: users, isLoading } = useQuery({
+    queryKey: ["admin", "users"],
+    queryFn: () => getUsers(),
+  });
+
+  const stats = React.useMemo(() => {
+    if (!users) return { total: 0, students: 0, teachers: 0, admins: 0 };
+    return {
+      total: users.length,
+      students: users.filter((u: any) => u.role === "STUDENT").length,
+      teachers: users.filter((u: any) => u.role === "TEACHER").length,
+      admins: users.filter((u: any) => u.role === "ADMIN").length,
+    };
+  }, [users]);
+
+  return (
+    <div className="space-y-8">
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+        <h1 className="text-2xl font-bold">Admin Overview</h1>
+        <p className="text-muted-foreground text-sm mt-1">
+          System-wide statistics and management
+        </p>
+      </motion.div>
+
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+      >
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-xl" />
+          ))
+        ) : (
+          <>
+            <motion.div variants={item}>
+              <StatCard title="Total Users" value={stats.total} icon={Users} color="indigo" />
+            </motion.div>
+            <motion.div variants={item}>
+              <StatCard title="Students" value={stats.students} icon={GraduationCap} color="violet" />
+            </motion.div>
+            <motion.div variants={item}>
+              <StatCard title="Teachers" value={stats.teachers} icon={BookOpen} color="emerald" />
+            </motion.div>
+            <motion.div variants={item}>
+              <StatCard title="Admins" value={stats.admins} icon={Shield} color="amber" />
+            </motion.div>
+          </>
+        )}
+      </motion.div>
+
+      {/* Recent users */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="rounded-xl border bg-card"
+      >
+        <div className="p-6 border-b">
+          <h3 className="font-semibold">Recent Users</h3>
+        </div>
+        <div className="divide-y">
+          {isLoading
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="p-4">
+                  <Skeleton className="h-6 w-48" />
+                </div>
+              ))
+            : (users ?? []).slice(0, 10).map((user: any) => (
+                <div key={user.id} className="flex items-center justify-between p-4 text-sm">
+                  <div>
+                    <p className="font-medium">{user.name}</p>
+                    <p className="text-muted-foreground text-xs">{user.email}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        user.role === "ADMIN"
+                          ? "bg-amber-500/20 text-amber-400"
+                          : user.role === "TEACHER"
+                          ? "bg-emerald-500/20 text-emerald-400"
+                          : "bg-indigo-500/20 text-indigo-400"
+                      }`}
+                    >
+                      {user.role}
+                    </span>
+                    <span
+                      className={`h-2 w-2 rounded-full ${
+                        user.isActive ? "bg-emerald-400" : "bg-zinc-500"
+                      }`}
+                    />
+                  </div>
+                </div>
+              ))}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
