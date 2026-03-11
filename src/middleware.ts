@@ -1,35 +1,56 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
+function roleHome(role: string | undefined): string {
+  if (role === "ADMIN") return "/admin";
+  if (role === "TEACHER") return "/teacher";
+  return "/student";
+}
+
 export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
-  const role = (req.auth?.user as any)?.role;
+  const role = (req.auth?.user as any)?.role as string | undefined;
+  const isApiRoute = pathname.startsWith("/api");
 
   // Public paths
   if (pathname.startsWith("/login") || pathname.startsWith("/api/auth")) {
     if (isLoggedIn) {
-      const redirectPath =
-        role === "ADMIN" ? "/admin" : role === "TEACHER" ? "/teacher" : "/student";
-      return NextResponse.redirect(new URL(redirectPath, req.url));
+      return NextResponse.redirect(new URL(roleHome(role), req.url));
     }
     return NextResponse.next();
   }
 
   // Auth required
   if (!isLoggedIn) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    if (isApiRoute) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+    const loginUrl = new URL("/login", req.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
-  // Role-based access
-  if (pathname.startsWith("/admin") && role !== "ADMIN") {
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
-  if (pathname.startsWith("/teacher") && role !== "TEACHER") {
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
-  if (pathname.startsWith("/student") && role !== "STUDENT") {
-    return NextResponse.redirect(new URL("/login", req.url));
+  // Role-based access — redirect to own dashboard instead of login
+  const rolePrefixMap: Record<string, string> = {
+    ADMIN: "/admin",
+    TEACHER: "/teacher",
+    STUDENT: "/student",
+  };
+
+  for (const [requiredRole, prefix] of Object.entries(rolePrefixMap)) {
+    if (pathname.startsWith(prefix) && role !== requiredRole) {
+      if (isApiRoute) {
+        return NextResponse.json(
+          { error: "Insufficient permissions" },
+          { status: 403 }
+        );
+      }
+      return NextResponse.redirect(new URL(roleHome(role), req.url));
+    }
   }
 
   return NextResponse.next();
