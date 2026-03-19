@@ -1,12 +1,14 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { getUsers } from "@/server/actions/users";
-import { Users, GraduationCap, BookOpen, Shield } from "lucide-react";
+import { Users, GraduationCap, BookOpen, Shield, ArrowRight, Sparkles } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 const container = {
   hidden: { opacity: 0 },
@@ -40,6 +42,32 @@ export default function AdminOverviewPage() {
         <p className="text-muted-foreground text-sm mt-1">
           System-wide statistics and management
         </p>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="rounded-xl border bg-card p-5"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">New Module</p>
+            <h3 className="mt-1 flex items-center gap-2 text-lg font-semibold">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Showcase System
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Review submissions, add feedback, and publish approved projects.
+            </p>
+          </div>
+          <Link href="/admin/showcase">
+            <Button>
+              Open Showcase
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
       </motion.div>
 
       <motion.div

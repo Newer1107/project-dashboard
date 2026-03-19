@@ -1,9 +1,13 @@
 import nodemailer from "nodemailer";
 
+const isGmail =
+  process.env.SMTP_PROVIDER?.toLowerCase() === "gmail" ||
+  process.env.SMTP_HOST === "smtp.gmail.com";
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: false,
+  port: parseInt(process.env.SMTP_PORT || (isGmail ? "465" : "587")),
+  secure: (process.env.SMTP_SECURE === "true") || (isGmail && process.env.SMTP_PORT !== "587"),
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -25,6 +29,21 @@ export async function sendEmail(options: {
     to: options.to,
     subject: options.subject,
     html: options.html,
+  });
+}
+
+export async function sendRegistrationEmail(userEmail: string, userName: string) {
+  return sendEmail({
+    to: userEmail,
+    subject: "Welcome to Academic Project Dashboard",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #111827;">
+        <h2 style="color: #4f46e5; margin-bottom: 12px;">Registration successful</h2>
+        <p style="margin: 0 0 12px;">Hi ${userName},</p>
+        <p style="margin: 0 0 12px;">Your account has been created successfully. You can now sign in and start using the dashboard.</p>
+        <p style="margin: 0; color: #6b7280; font-size: 13px;">If you did not register for this account, please contact your administrator.</p>
+      </div>
+    `,
   });
 }
 

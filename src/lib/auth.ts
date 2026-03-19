@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { isEmailAllowed } from "@/lib/allowed-email";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
@@ -12,9 +13,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   logger: {
     error(error: any) {
       // CredentialsSignin is expected when users enter wrong credentials — not a real error
-      const name =
-        error?.name ?? error?.error?.name ?? error?.type ?? "";
-      if (name === "CredentialsSignin") return;
+      const name = error?.name ?? error?.error?.name ?? "";
+      const type = error?.type ?? error?.error?.type ?? "";
+      const code = error?.code ?? error?.error?.code ?? "";
+      if (
+        name === "CredentialsSignin" ||
+        type === "CredentialsSignin" ||
+        code === "credentials"
+      ) {
+        return;
+      }
       console.error("[auth][error]", error);
     },
     warn(code: string) {
@@ -45,6 +53,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         });
 
         if (!user) return null;
+
+        // Admin accounts are allowed even if not on external whitelist/domain.
+        if (user.role !== "ADMIN" && !(await isEmailAllowed(email))) {
+          return null;
+        }
 
         if (!user.isActive) {
           console.warn(

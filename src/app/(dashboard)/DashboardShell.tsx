@@ -27,9 +27,9 @@ export function DashboardShell({
   const { sidebarCollapsed } = useUIStore();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="dashboard-surface min-h-screen bg-background">
       <Sidebar role={userRole} userName={userName} />
-      <Topbar userId={userId} userName={userName} userImage={userImage} />
+      <Topbar userId={userId} userName={userName} userRole={userRole} userImage={userImage} />
       <NotificationPanel userId={userId} />
 
       <motion.main
@@ -44,7 +44,7 @@ export function DashboardShell({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25 }}
-            className="p-6"
+            className="p-4 md:p-6"
           >
             {children}
           </motion.div>

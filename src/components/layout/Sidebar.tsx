@@ -11,13 +11,14 @@ import {
   FolderKanban,
   Users,
   Settings,
+  ShieldCheck,
   ChevronLeft,
   ChevronRight,
   BarChart3,
   GraduationCap,
   Bell,
   LogOut,
-  BookOpen,
+  Sparkles,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,8 @@ interface NavItem {
 const adminNav: NavItem[] = [
   { title: "Overview", href: "/admin", icon: LayoutDashboard },
   { title: "Users", href: "/admin/users", icon: Users },
+  { title: "Allowed Emails", href: "/admin/allowed-emails", icon: ShieldCheck },
+  { title: "Showcase", href: "/admin/showcase", icon: Sparkles },
   { title: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
@@ -40,12 +43,14 @@ const teacherNav: NavItem[] = [
   { title: "Dashboard", href: "/teacher", icon: LayoutDashboard },
   { title: "Projects", href: "/teacher/projects", icon: FolderKanban },
   { title: "Analytics", href: "/teacher/analytics", icon: BarChart3 },
+  { title: "Showcase", href: "/showcase/my-projects", icon: Sparkles },
 ];
 
 const studentNav: NavItem[] = [
   { title: "Dashboard", href: "/student", icon: LayoutDashboard },
   { title: "My Projects", href: "/student/projects", icon: FolderKanban },
   { title: "Notifications", href: "/student/notifications", icon: Bell },
+  { title: "Showcase", href: "/showcase/my-projects", icon: Sparkles },
 ];
 
 interface SidebarProps {

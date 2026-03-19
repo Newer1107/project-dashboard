@@ -3,6 +3,7 @@
 import React, { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -224,6 +225,12 @@ function LoginContent() {
             </form>
 
             <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground mb-2">
+                New here?{" "}
+                <Link href="/register" className="text-primary hover:underline">
+                  Create an account
+                </Link>
+              </p>
               <p className="text-xs text-muted-foreground">
                 Demo credentials: admin@university.edu / password123
               </p>
