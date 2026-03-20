@@ -98,6 +98,13 @@ enum ShowcaseAssetKind {
   OTHER
 }
 
+enum EmailQueueStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
@@ -121,6 +128,7 @@ model User {
   notifications   Notification[]
   showcaseProjects ShowcaseProject[]
   showcaseFeedback ReviewFeedback[]
+  pendingProjectInvites PendingProjectAssignment[] @relation("PendingAssignmentInviter")
 
   @@map("users")
 }
@@ -170,10 +178,47 @@ model Project {
   reviews    Review[]
   files      ProjectFile[]
   tags       ProjectTag[]
+  pendingAssignments PendingProjectAssignment[]
 
   @@index([teacherId])
   @@index([status])
   @@map("projects")
+}
+
+model PendingProjectAssignment {
+  id          String     @id @default(cuid())
+  projectId   String
+  email       String
+  name        String?
+  memberRole  MemberRole @default(MEMBER)
+  invitedById String
+  status      String     @default("PENDING")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  invitedBy User    @relation("PendingAssignmentInviter", fields: [invitedById], references: [id])
+
+  @@unique([projectId, email])
+  @@index([email])
+  @@index([status])
+  @@map("pending_project_assignments")
+}
+
+model EmailQueue {
+  id        String           @id @default(cuid())
+  to        String
+  subject   String
+  body      String           @db.LongText
+  status    EmailQueueStatus @default(PENDING)
+  attempts  Int              @default(0)
+  errorLog  String?          @db.Text
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([status, createdAt])
+  @@index([to])
+  @@map("email_queue")
 }
 
 model ProjectMember {

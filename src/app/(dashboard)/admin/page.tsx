@@ -71,6 +71,52 @@ export default function AdminOverviewPage() {
       </motion.div>
 
       <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="rounded-xl border bg-card p-5"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Bulk Assignment</p>
+            <h3 className="mt-1 text-lg font-semibold">CSV Project Assignment Upload</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Assign users to projects via CSV and queue all notification emails asynchronously.
+            </p>
+          </div>
+          <Link href="/admin/project-assignments">
+            <Button variant="outline">
+              Open Upload
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+        className="rounded-xl border bg-card p-5"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Project Control</p>
+            <h3 className="mt-1 text-lg font-semibold">Manage Projects, Mentors, and Members</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Edit any project, assign or change mentor, and manage member roles from one place.
+            </p>
+          </div>
+          <Link href="/admin/projects">
+            <Button variant="outline">
+              Open Projects
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      </motion.div>
+
+      <motion.div
         variants={container}
         initial="hidden"
         animate="show"

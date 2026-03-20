@@ -191,22 +191,58 @@ export async function completeRegistration(data: z.infer<typeof completeRegistra
 
   const passwordHash = await hash(validated.password, 12);
 
-  const user = await prisma.user.create({
-    data: {
-      name: validated.name,
-      email,
-      passwordHash,
-      role: validated.role,
-      isActive: validated.role === "TEACHER" ? false : true,
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      isActive: true,
-      createdAt: true,
-    },
+  const user = await prisma.$transaction(async (tx) => {
+    const createdUser = await tx.user.create({
+      data: {
+        name: validated.name,
+        email,
+        passwordHash,
+        role: validated.role,
+        isActive: validated.role === "TEACHER" ? false : true,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+      },
+    });
+
+    const pendingAssignments = await tx.pendingProjectAssignment.findMany({
+      where: {
+        email,
+        status: "PENDING",
+      },
+      select: {
+        projectId: true,
+        memberRole: true,
+      },
+    });
+
+    if (pendingAssignments.length > 0) {
+      await tx.projectMember.createMany({
+        data: pendingAssignments.map((assignment) => ({
+          projectId: assignment.projectId,
+          studentId: createdUser.id,
+          role: assignment.memberRole,
+        })),
+        skipDuplicates: true,
+      });
+
+      await tx.pendingProjectAssignment.updateMany({
+        where: {
+          email,
+          status: "PENDING",
+        },
+        data: {
+          status: "ASSIGNED",
+        },
+      });
+    }
+
+    return createdUser;
   });
 
   await sendRegistrationEmail(email, validated.name);

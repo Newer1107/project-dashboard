@@ -18,6 +18,8 @@ import {
   BarChart3,
   GraduationCap,
   Bell,
+  Mail,
+  Upload,
   LogOut,
   Sparkles,
 } from "lucide-react";
@@ -34,8 +36,11 @@ interface NavItem {
 
 const adminNav: NavItem[] = [
   { title: "Overview", href: "/admin", icon: LayoutDashboard },
+  { title: "Projects", href: "/admin/projects", icon: FolderKanban },
   { title: "Users", href: "/admin/users", icon: Users },
   { title: "Teacher Approvals", href: "/admin/teacher-approvals", icon: UserCheck },
+  { title: "Project Assignments", href: "/admin/project-assignments", icon: Upload },
+  { title: "Email Logs", href: "/admin/email-logs", icon: Mail },
   { title: "Allowed Emails", href: "/admin/allowed-emails", icon: ShieldCheck },
   { title: "Showcase", href: "/admin/showcase", icon: Sparkles },
   { title: "Settings", href: "/admin/settings", icon: Settings },
