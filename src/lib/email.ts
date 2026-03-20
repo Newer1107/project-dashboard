@@ -18,18 +18,27 @@ export async function sendEmail(options: {
   to: string;
   subject: string;
   html: string;
+  requireConfigured?: boolean;
 }) {
   if (!process.env.SMTP_HOST) {
+    if (options.requireConfigured) {
+      throw new Error("SMTP is not configured. Please set SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASS.");
+    }
     console.log("[Email] SMTP not configured, skipping:", options.subject);
     return;
   }
 
-  return transporter.sendMail({
-    from: process.env.SMTP_FROM || "noreply@dashboard.local",
-    to: options.to,
-    subject: options.subject,
-    html: options.html,
-  });
+  try {
+    return await transporter.sendMail({
+      from: process.env.SMTP_FROM || "noreply@dashboard.local",
+      to: options.to,
+      subject: options.subject,
+      html: options.html,
+    });
+  } catch (error: any) {
+    const message = error?.message || "Unknown SMTP error";
+    throw new Error(`Failed to send email: ${message}`);
+  }
 }
 
 export async function sendRegistrationEmail(userEmail: string, userName: string) {
@@ -42,6 +51,22 @@ export async function sendRegistrationEmail(userEmail: string, userName: string)
         <p style="margin: 0 0 12px;">Hi ${userName},</p>
         <p style="margin: 0 0 12px;">Your account has been created successfully. You can now sign in and start using the dashboard.</p>
         <p style="margin: 0; color: #6b7280; font-size: 13px;">If you did not register for this account, please contact your administrator.</p>
+      </div>
+    `,
+  });
+}
+
+export async function sendEmailVerificationOTP(userEmail: string, otp: string) {
+  return sendEmail({
+    to: userEmail,
+    subject: "Verify your email",
+    requireConfigured: true,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #111827;">
+        <h2 style="color: #4f46e5; margin-bottom: 12px;">Verify your email</h2>
+        <p style="margin: 0 0 12px;">Your OTP is: <strong style="font-size: 20px; letter-spacing: 2px;">${otp}</strong>.</p>
+        <p style="margin: 0 0 12px;">It expires in 5 minutes.</p>
+        <p style="margin: 0; color: #6b7280; font-size: 13px;">If you did not request this code, you can ignore this email.</p>
       </div>
     `,
   });

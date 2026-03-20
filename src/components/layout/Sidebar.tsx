@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   FolderKanban,
   Users,
+  UserCheck,
   Settings,
   ShieldCheck,
   ChevronLeft,
@@ -34,6 +35,7 @@ interface NavItem {
 const adminNav: NavItem[] = [
   { title: "Overview", href: "/admin", icon: LayoutDashboard },
   { title: "Users", href: "/admin/users", icon: Users },
+  { title: "Teacher Approvals", href: "/admin/teacher-approvals", icon: UserCheck },
   { title: "Allowed Emails", href: "/admin/allowed-emails", icon: ShieldCheck },
   { title: "Showcase", href: "/admin/showcase", icon: Sparkles },
   { title: "Settings", href: "/admin/settings", icon: Settings },

@@ -136,6 +136,18 @@ model AllowedEmail {
   @@map("allowed_emails")
 }
 
+model EmailVerificationOTP {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  otpHash   String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+  @@map("email_verification_otps")
+}
+
 model Project {
   id                   String        @id @default(cuid())
   title                String

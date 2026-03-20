@@ -53,10 +53,22 @@ The app supports role-based dashboards:
 
 - Added allowed-email governance with `AllowedEmail` table
 - Added reusable backend validator `isEmailAllowed(email)`
-- Added `/register` page and server action registration flow
+- Added OTP-based registration flow on `/register`
+  - request OTP
+  - verify OTP
+  - complete registration
 - Added allowlist checks in login and middleware
 - Added admin exception for allowlist checks (admin recovery/ops)
 - Added `/admin/allowed-emails` management screen
+- Added teacher registration approval workflow
+  - teacher self-registrations are created inactive
+  - admin approves/rejects in `/admin/teacher-approvals`
+
+### Reliability and Error UX
+
+- Added App Router error boundaries to replace generic production Server Components crash message
+  - route-level `error.tsx`
+  - app-level `global-error.tsx`
 
 ### Showcase Module
 
@@ -142,6 +154,21 @@ Decoupled:
 - Password verified with bcrypt hash compare
 - JWT includes `id` and `role`
 - Session maps user role for client and middleware checks
+- Inactive users cannot log in (used for pending teacher approvals)
+
+### Registration flow (OTP)
+
+- Step 1: user submits name/email/password/role
+- Step 2: backend validates allowed email + duplicate email and issues OTP
+- OTP details:
+  - 6-digit cryptographically generated code
+  - stored as hash (never plain text)
+  - expires in 5 minutes
+  - max 5 verification attempts
+  - resend cooldown 60 seconds
+- OTP email delivery is required (SMTP misconfiguration surfaces explicit error)
+- Account is created only after successful OTP verification
+- Teacher registrations are created with `isActive = false` until admin approval
 
 ### Allowed email checks
 
@@ -261,6 +288,7 @@ Protected:
 
 - `/admin`
 - `/admin/users`
+- `/admin/teacher-approvals`
 - `/admin/allowed-emails`
 - `/admin/showcase`
 - `/admin/showcase/[projectId]`
@@ -291,11 +319,19 @@ Protected:
 
 ### New auth/access actions
 
-- `registerUser()`
+- `requestOTP()`
+- `verifyOTP()`
+- `completeRegistration()`
 - `addAllowedEmail()`
 - `removeAllowedEmail()`
 - `getAllowedEmails()`
 - `checkAllowedEmail()`
+
+### New admin user moderation actions
+
+- `getPendingTeacherRegistrations()`
+- `approveTeacherRegistration()`
+- `rejectTeacherRegistration()`
 
 ### New showcase actions
 
@@ -356,12 +392,14 @@ Showcase events now emit notifications for:
 ### Auth screens
 
 - Login now links to register
-- Register supports STUDENT/TEACHER role selection
+- Register supports STUDENT/TEACHER role selection with OTP verification
 - Better inline error states
+- Teacher pending approval message on login after successful registration
 
 ### Admin additions
 
 - Allowed email management UI
+- Teacher approvals panel for teacher self-registration moderation
 - Showcase command center and structured review view
 
 ### Showcase UI highlights
@@ -432,6 +470,7 @@ Includes:
 DATABASE_URL="mysql://user:password@host:3306/project_dashboard"
 NEXTAUTH_SECRET="<strong-random-secret>"
 NEXTAUTH_URL="https://your-domain.com"
+OTP_HASH_SECRET="<strong-random-secret>"
 ```
 
 ### AWS S3
@@ -455,6 +494,8 @@ SMTP_PASS="your-app-password"
 SMTP_FROM="your-email@gmail.com"
 ```
 
+Note: SMTP is required for OTP registration email delivery.
+
 ---
 
 ## Seed Data
@@ -476,6 +517,8 @@ Default password for seeded users:
 - Keep `.env` out of git
 - Rotate AWS and SMTP credentials regularly
 - Use strong `NEXTAUTH_SECRET`
+- Use strong `OTP_HASH_SECRET` (separate from session secret recommended)
 - Prefer `prisma migrate deploy` in production
 - Restrict DB exposure to private network
 - Use TLS/HTTPS in production
+- Teacher accounts are intentionally blocked from login until admin approval

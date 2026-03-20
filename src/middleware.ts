@@ -1,6 +1,23 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
+const VALID_ROLES = new Set(["ADMIN", "TEACHER", "STUDENT"]);
+
+function buildLoginRedirect(req: any, callbackPath?: string) {
+  const loginUrl = new URL("/login", req.url);
+  if (callbackPath) {
+    loginUrl.searchParams.set("callbackUrl", callbackPath);
+  }
+
+  const response = NextResponse.redirect(loginUrl);
+
+  // Clear both possible Auth.js cookie names to recover from stale/invalid sessions.
+  response.cookies.set("authjs.session-token", "", { maxAge: 0, path: "/" });
+  response.cookies.set("__Secure-authjs.session-token", "", { maxAge: 0, path: "/" });
+
+  return response;
+}
+
 async function emailAllowedFromMiddleware(req: Request, email: string): Promise<boolean> {
   const normalizedEmail = email.toLowerCase().trim();
   if (normalizedEmail.endsWith("@tcetmumbai.in")) {
@@ -32,6 +49,7 @@ export default auth(async (req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
   const role = (req.auth?.user as any)?.role as string | undefined;
+  const hasValidRole = !!role && VALID_ROLES.has(role);
   const email = (req.auth?.user as any)?.email as string | undefined;
   const isApiRoute = pathname.startsWith("/api");
   const isAuthApi = pathname.startsWith("/api/auth");
@@ -47,6 +65,9 @@ export default auth(async (req) => {
   // Public auth pages
   if (isAuthPage) {
     if (isLoggedIn) {
+      if (!hasValidRole) {
+        return buildLoginRedirect(req);
+      }
       return NextResponse.redirect(new URL(roleHome(role), req.url));
     }
     return NextResponse.next();
@@ -65,9 +86,17 @@ export default auth(async (req) => {
         { status: 401 }
       );
     }
-    const loginUrl = new URL("/login", req.url);
-    loginUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(loginUrl);
+    return buildLoginRedirect(req, pathname);
+  }
+
+  if (!hasValidRole) {
+    if (isApiRoute) {
+      return NextResponse.json(
+        { error: "Invalid session" },
+        { status: 401 }
+      );
+    }
+    return buildLoginRedirect(req, pathname);
   }
 
   if (role !== "ADMIN" && email && !(await emailAllowedFromMiddleware(req, email))) {
@@ -95,7 +124,11 @@ export default auth(async (req) => {
           { status: 403 }
         );
       }
-      return NextResponse.redirect(new URL(roleHome(role), req.url));
+      const target = roleHome(role);
+      if (target === pathname) {
+        return buildLoginRedirect(req, pathname);
+      }
+      return NextResponse.redirect(new URL(target, req.url));
     }
   }
 
@@ -106,7 +139,11 @@ export default auth(async (req) => {
         { status: 403 }
       );
     }
-    return NextResponse.redirect(new URL(roleHome(role), req.url));
+    const target = roleHome(role);
+    if (target === pathname) {
+      return buildLoginRedirect(req, pathname);
+    }
+    return NextResponse.redirect(new URL(target, req.url));
   }
 
   return NextResponse.next();

@@ -41,6 +41,7 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
+  const loginMessage = searchParams.get("message");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -150,6 +151,12 @@ function LoginContent() {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {loginMessage === "teacher_pending_approval" && (
+                <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-500">
+                  Your teacher registration is pending admin approval. You can sign in after approval.
+                </div>
+              )}
+
               {authError && (
                 <div className="flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
                   <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />

@@ -108,3 +108,68 @@ export async function getTeachers() {
     orderBy: { name: "asc" },
   });
 }
+
+export async function getPendingTeacherRegistrations() {
+  const session = await auth();
+  if (!session?.user || (session.user as any).role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  return prisma.user.findMany({
+    where: {
+      role: "TEACHER",
+      isActive: false,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      department: true,
+      createdAt: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function approveTeacherRegistration(userId: string) {
+  const session = await auth();
+  if (!session?.user || (session.user as any).role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user || user.role !== "TEACHER") {
+    throw new Error("Teacher registration not found");
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { isActive: true },
+  });
+
+  revalidatePath("/admin/teacher-approvals");
+  revalidatePath("/admin/users");
+  return { ok: true };
+}
+
+export async function rejectTeacherRegistration(userId: string) {
+  const session = await auth();
+  if (!session?.user || (session.user as any).role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user || user.role !== "TEACHER") {
+    throw new Error("Teacher registration not found");
+  }
+
+  if (user.isActive) {
+    throw new Error("Active teachers cannot be rejected from this panel");
+  }
+
+  await prisma.user.delete({ where: { id: userId } });
+
+  revalidatePath("/admin/teacher-approvals");
+  revalidatePath("/admin/users");
+  return { ok: true };
+}

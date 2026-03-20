@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { registerUser } from "@/server/actions/auth";
+import { completeRegistration, requestOTP } from "@/server/actions/auth";
 import { signIn } from "next-auth/react";
 
 const schema = z
@@ -42,10 +42,16 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [step, setStep] = useState<1 | 2>(1);
+  const [otp, setOtp] = useState("");
+  const [otpRequestedAt, setOtpRequestedAt] = useState<number | null>(null);
+  const [cooldown, setCooldown] = useState(0);
 
   const {
     register,
     handleSubmit,
+    getValues,
     setValue,
     formState: { errors },
   } = useForm<RegisterValues>({
@@ -55,17 +61,60 @@ export default function RegisterPage() {
     },
   });
 
+  React.useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = window.setInterval(() => {
+      setCooldown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [cooldown]);
+
+  async function sendOtpFlow(email: string) {
+    const response = await requestOTP({ email });
+    setCooldown(response.resendAfterSeconds ?? 60);
+    setOtpRequestedAt(Date.now());
+    setSuccessMessage(response.message);
+    setStep(2);
+  }
+
   async function onSubmit(values: RegisterValues) {
     setIsLoading(true);
     setErrorMessage(null);
+    setSuccessMessage(null);
 
     try {
-      await registerUser({
+      await sendOtpFlow(values.email);
+    } catch (error: any) {
+      setErrorMessage(error?.message || "Could not send OTP. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function onVerifyAndRegister() {
+    const values = getValues();
+
+    setIsLoading(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    try {
+      const user = await completeRegistration({
         name: values.name,
         email: values.email,
         password: values.password,
         role: values.role,
+        otp,
       });
+
+      if (user.role === "TEACHER" && !user.isActive) {
+        setSuccessMessage("Registration submitted. Your teacher account is pending admin approval.");
+        setStep(1);
+        setOtp("");
+        setCooldown(0);
+        router.push("/login?message=teacher_pending_approval");
+        return;
+      }
 
       const authResult = await signIn("credentials", {
         email: values.email,
@@ -80,7 +129,27 @@ export default function RegisterPage() {
         router.push("/login");
       }
     } catch (error: any) {
-      setErrorMessage(error?.message || "Registration failed. Please try again.");
+      setErrorMessage(error?.message || "OTP verification failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function onResendOtp() {
+    const values = getValues();
+    if (!values.email) {
+      setErrorMessage("Enter your email first.");
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    try {
+      await sendOtpFlow(values.email);
+    } catch (error: any) {
+      setErrorMessage(error?.message || "Could not resend OTP.");
     } finally {
       setIsLoading(false);
     }
@@ -111,77 +180,132 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="name">Full name</Label>
-            <Input id="name" {...register("name")} placeholder="Your full name" />
-            {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" {...register("email")} placeholder="you@tcetmumbai.in" />
-            {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="role">Role</Label>
-            <Select defaultValue="STUDENT" onValueChange={(value) => setValue("role", value as "STUDENT" | "TEACHER") }>
-              <SelectTrigger id="role">
-                <SelectValue placeholder="Select role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="STUDENT">Student</SelectItem>
-                <SelectItem value="TEACHER">Teacher</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                {...register("password")}
-                className="pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
+          {successMessage && (
+            <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-500">
+              {successMessage}
             </div>
-            {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
-          </div>
+          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <div className="relative">
-              <Input
-                id="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                {...register("confirmPassword")}
-                className="pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              >
-                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            {errors.confirmPassword && (
-              <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>
-            )}
-          </div>
+          {step === 1 ? (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="name">Full name</Label>
+                <Input id="name" {...register("name")} placeholder="Your full name" />
+                {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+              </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Create Account
-          </Button>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" {...register("email")} placeholder="you@tcetmumbai.in" />
+                {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="role">Role</Label>
+                <Select defaultValue="STUDENT" onValueChange={(value) => setValue("role", value as "STUDENT" | "TEACHER") }>
+                  <SelectTrigger id="role">
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="STUDENT">Student</SelectItem>
+                    <SelectItem value="TEACHER">Teacher</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    {...register("password")}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    {...register("confirmPassword")}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>
+                )}
+              </div>
+
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Send OTP
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+                OTP sent to {getValues("email")}. Enter the 6-digit code to complete your registration.
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="otp">Verification Code</Label>
+                <Input
+                  id="otp"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="Enter 6-digit OTP"
+                  inputMode="numeric"
+                  maxLength={6}
+                />
+              </div>
+
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>
+                  {cooldown > 0
+                    ? `Resend available in ${cooldown}s`
+                    : otpRequestedAt
+                    ? "You can request a new OTP now"
+                    : ""}
+                </span>
+                <button
+                  type="button"
+                  onClick={onResendOtp}
+                  disabled={cooldown > 0 || isLoading}
+                  className="text-primary disabled:text-muted-foreground"
+                >
+                  Resend OTP
+                </button>
+              </div>
+
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" className="w-full" onClick={() => setStep(1)}>
+                  Back
+                </Button>
+                <Button type="button" className="w-full" disabled={isLoading || otp.length !== 6} onClick={onVerifyAndRegister}>
+                  {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  Verify & Create Account
+                </Button>
+              </div>
+            </>
+          )}
         </form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
