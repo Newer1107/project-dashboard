@@ -51,11 +51,15 @@ export default auth(async (req) => {
   const role = (req.auth?.user as any)?.role as string | undefined;
   const hasValidRole = !!role && VALID_ROLES.has(role);
   const email = (req.auth?.user as any)?.email as string | undefined;
+  
   const isApiRoute = pathname.startsWith("/api");
   const isAuthApi = pathname.startsWith("/api/auth");
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register");
   const isShowcaseAuthorRoute = pathname.startsWith("/showcase/my-projects");
   const isPublicShowcase = pathname.startsWith("/showcase") && !isShowcaseAuthorRoute;
+  
+  // Your custom public route
+  const isPublicRblTable = pathname.startsWith("/projectlist");
 
   // NextAuth API routes are always public
   if (isAuthApi) {
@@ -75,6 +79,11 @@ export default auth(async (req) => {
 
   // Public showcase listing is visible without auth
   if (isPublicShowcase) {
+    return NextResponse.next();
+  }
+
+
+  if (isPublicRblTable) {
     return NextResponse.next();
   }
 
@@ -150,5 +159,5 @@ export default auth(async (req) => {
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher:"/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|svg)).*)",
 };

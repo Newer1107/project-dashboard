@@ -5,13 +5,27 @@ import AnimatedShowcase from "@/components/showcase/AnimatedShowcase";
 import LabStats from "@/components/showcase/LabStats";
 import Footer from "@/components/ui/Footer";
 import ThemeToggle from "@/components/ui/ThemeToggle";
-import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar"; // Import the toggle
-
+import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
+import fs from "fs";
+import path from "path";
 export const dynamic = "force-dynamic";
 
 export default async function PublicShowcasePage() {
   const session = await auth();
   const projects = await getPublicShowcaseProjects();
+
+  const imgDir = path.join(process.cwd(), "public/images-rollingdisplay");
+  let slideshowImages: string[] = [];
+
+  try {
+    const files = fs.readdirSync(imgDir);
+    slideshowImages = files
+      .filter((file) => /\.(jpg|jpeg|png|webp|avif)$/i.test(file))
+      // Yahan path tere folder ke hisaab se set kiya hai
+      .map((file) => `/images-rollingdisplay/${file}`);
+  } catch (error) {
+    console.error("Folder read nahi hua:", error);
+  }
 
   return (
     <div className="relative min-h-screen bg-[#E5E5E5] dark:bg-[#050505]">
@@ -43,7 +57,7 @@ export default async function PublicShowcasePage() {
         {" "}
         {/* Floating Theme Toggle */}
         <AnimatedShowcase projects={projects || []} />
-        <LabStats />
+        <LabStats images={slideshowImages} />
       </main>
 
       {/* FOOTER */}

@@ -54,7 +54,7 @@ export default async function ShowcaseProjectDetailPage({
               TCET
             </span>
             <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider">
-              Project Lab
+              Centre of Excellence For Research Culture Development
             </span>
           </div>
         </div>

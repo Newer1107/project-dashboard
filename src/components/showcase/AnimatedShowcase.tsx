@@ -241,7 +241,6 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Fallback if no projects exist
   const displayProjects = projects?.length > 0 ? projects : [];
 
   return (
@@ -250,7 +249,7 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
         <div className="flex flex-col md:grid md:grid-cols-2 gap-12 md:gap-16 items-center w-full">
           <div className="w-full z-10 text-center md:text-left">
             <h1 className="font-monument font-extralight text-[40px] md:text-[80px] lg:text-[100px] leading-[0.9] tracking-tighter break-words">
-              PROJECTS <br /> THAT MATTER.
+              EVERY <br /> PROJECT MATTERS.
             </h1>
             <p className="font-montreal text-gray-500 dark:text-gray-400 mt-6 mx-auto md:mx-0 max-w-md text-base md:text-lg">
               A collection of digital products and systems designed with a focus
