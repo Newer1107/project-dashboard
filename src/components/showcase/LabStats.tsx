@@ -38,7 +38,10 @@ export default function LabStats() {
 
   return (
     // Changed to <section> since we typed the ref as HTMLElement (or you can use HTMLDivElement if you change this to a div)
-    <section ref={statsRef} className="px-6 md:px-20 py-32 max-w-7xl mx-auto">
+    <section
+      ref={statsRef}
+      className="px-6 md:px-20 py-16 md:py-32 max-w-7xl mx-auto"
+    >
       <div className="mb-16">
         <h2 className="font-monument text-3xl md:text-5xl text-[#111111] dark:text-white uppercase transition-colors duration-500">
           Behind the Screens

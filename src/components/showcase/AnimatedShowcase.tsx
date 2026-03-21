@@ -171,15 +171,35 @@ function LabScene3D() {
 
 function LabScene() {
   return (
-    <Canvas camera={{ position: [8, 4, 8], fov: 50 }}>
+    <Canvas
+      camera={{ position: [8, 4, 8], fov: 50 }}
+      style={{ touchAction: "pan-y" }}
+    >
       <ambientLight intensity={0.5} />
       <LabScene3D />
-      <OrbitControls
-        enableZoom={true}
+      {/* <OrbitControls
+        enableZoom={false}
         target={[0, 0, 0]}
         autoRotate={true}
         autoRotateSpeed={2}
-        enablePan={true}
+        enablePan={false}
+        minDistance={5}
+        maxDistance={20}
+        minPolarAngle={Math.PI / 6}
+        maxPolarAngle={Math.PI / 2.2}
+      /> */}
+      <OrbitControls
+        enableZoom={false} // Keep this false for the desktop scroll fix!
+        target={[0, 0, 0]}
+        autoRotate={true}
+        autoRotateSpeed={2}
+        enablePan={false}
+        // --- ADD THIS BLOCK ---
+        touches={{
+          ONE: undefined as any, // Ignores single-finger swipe (allows page scroll)
+          TWO: THREE.TOUCH.ROTATE, // Requires two fingers to rotate the scene
+        }}
+        // ----------------------
         minDistance={5}
         maxDistance={20}
         minPolarAngle={Math.PI / 6}
@@ -226,8 +246,7 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
 
   return (
     <div className="text-[#111111] dark:text-[#E5E5E5] transition-colors duration-500 w-full overflow-x-hidden">
-      {/* 1. HERO SECTION */}
-      <section className="px-6 md:px-20 py-24 md:py-32 max-w-7xl mx-auto min-h-screen flex items-center justify-center">
+      <section className="px-6 md:px-20 py-12 md:py-32 max-w-7xl mx-auto min-h-[50vh] md:min-h-screen flex items-center justify-center">
         <div className="flex flex-col md:grid md:grid-cols-2 gap-12 md:gap-16 items-center w-full">
           <div className="w-full z-10 text-center md:text-left">
             <h1 className="font-monument font-extralight text-[40px] md:text-[80px] lg:text-[100px] leading-[0.9] tracking-tighter break-words">
@@ -268,8 +287,7 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
             </div>
           </div>
 
-          {/* Cards Container */}
-          <div className="flex-1 flex flex-col gap-12 md:gap-24 py-[35vh]">
+          <div className="flex-1 flex flex-col gap-12 md:gap-24 py-12 md:py-[35vh]">
             {displayProjects.map((p, i) => {
               const isActive = activeIndex === i;
               const isAdjacent = Math.abs(activeIndex - i) === 1;
