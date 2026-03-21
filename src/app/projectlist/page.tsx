@@ -761,11 +761,12 @@ export default function ProjectTable() {
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-600 font-medium sticky top-0 z-10 shadow-sm">
             <tr>
+              {/* Updated Column Order */}
               <th className="px-6 py-4">Group No.</th>
-              <th className="px-6 py-4">Guide Name</th>
-              <th className="px-6 py-4 min-w-[350px]">Project Title</th>
               <th className="px-6 py-4">Roll No.</th>
               <th className="px-6 py-4">Student Name</th>
+              <th className="px-6 py-4 min-w-[350px]">Project Title</th>
+              <th className="px-6 py-4">Guide Name</th>
             </tr>
           </thead>
           <motion.tbody
@@ -781,35 +782,48 @@ export default function ProjectTable() {
                     key={`${group.groupId}-${student.rollNo}`}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: (groupIndex % 10) * 0.05 }} // modulo for performance on large arrays
+                    transition={{ delay: (groupIndex % 10) * 0.05 }}
                     className="hover:bg-zinc-50/50 transition-colors"
                   >
+                    {/* 1. Group No (Grouped) */}
                     {studentIndex === 0 && (
-                      <>
-                        <td
-                          className="px-6 py-4 font-semibold text-zinc-900 border-r border-zinc-100 align-top"
-                          rowSpan={group.students.length}
-                        >
-                          {group.groupId}
-                        </td>
-                        <td
-                          className="px-6 py-4 border-r border-zinc-100 align-top whitespace-normal"
-                          rowSpan={group.students.length}
-                        >
-                          {group.guide}
-                        </td>
-                        <td
-                          className="px-6 py-4 border-r border-zinc-100 align-top whitespace-normal text-zinc-700 font-medium leading-relaxed"
-                          rowSpan={group.students.length}
-                        >
-                          {group.title}
-                        </td>
-                      </>
+                      <td
+                        className="px-6 py-4 font-semibold text-zinc-900 border-r border-zinc-100 align-top"
+                        rowSpan={group.students.length}
+                      >
+                        {group.groupId}
+                      </td>
                     )}
-                    <td className="px-6 py-4 text-zinc-500 font-mono">
+
+                    {/* 2. Roll No (Individual) */}
+                    <td className="px-6 py-4 text-zinc-500 font-mono border-r border-zinc-100">
                       {student.rollNo}
                     </td>
-                    <td className="px-6 py-4">{student.name}</td>
+
+                    {/* 3. Student Name (Individual) */}
+                    <td className="px-6 py-4 border-r border-zinc-100">
+                      {student.name}
+                    </td>
+
+                    {/* 4. Project Title (Grouped) */}
+                    {studentIndex === 0 && (
+                      <td
+                        className="px-6 py-4 border-r border-zinc-100 align-top whitespace-normal text-zinc-700 font-medium leading-relaxed"
+                        rowSpan={group.students.length}
+                      >
+                        {group.title}
+                      </td>
+                    )}
+
+                    {/* 5. Guide Name (Grouped) */}
+                    {studentIndex === 0 && (
+                      <td
+                        className="px-6 py-4 border-r border-zinc-100 align-top whitespace-normal"
+                        rowSpan={group.students.length}
+                      >
+                        {group.guide}
+                      </td>
+                    )}
                   </motion.tr>
                 ))}
               </React.Fragment>
