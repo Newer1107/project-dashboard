@@ -16,13 +16,13 @@ export default async function PublicShowcasePage() {
   return (
     <div className="relative min-h-screen bg-[#E5E5E5] dark:bg-[#050505]">
       {/* SPACING FIX: Changed mb-[80vh] to mb-[50vh] for mobile, 
-        and kept md:mb-[80vh] for desktop.
+        and kept md:mb-[80vh] fo  r desktop.
       */}
       <FloatingPillNavbar />
+      <ThemeToggle />
       <main className="relative z-10 pt-32 sm:pt-40 md:pt-0 bg-[#FAFAFA] dark:bg-[#111111] mb-[50vh] md:mb-[80vh] transition-colors duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         {" "}
         {/* Floating Theme Toggle */}
-        <ThemeToggle />
         <AnimatedShowcase projects={projects || []} />
         <LabStats />
       </main>

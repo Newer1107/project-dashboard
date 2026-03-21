@@ -2,8 +2,9 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import ThemeToggle from "@/components/ui/ThemeToggle";
+import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
 
-// Pura data TE-A, TE-B, aur TE-C ka exact document se
 const rblGroups = [
   // ================= TE A =================
   {
@@ -746,9 +747,11 @@ const rblGroups = [
 
 export default function ProjectTable() {
   return (
-    <div className="w-full max-w-7xl mx-auto p-6 space-y-6 text-zinc-800 font-sans">
+    <div className="w-full max-w-7xl mx-auto p-6 space-y-6 text-zinc-800 dark:text-white font-sans">
+      <FloatingPillNavbar />
+      <ThemeToggle />
       <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
           T.E. RBL Project Allocations
         </h1>
         <p className="text-sm text-zinc-500">
@@ -759,7 +762,7 @@ export default function ProjectTable() {
 
       <div className="overflow-x-auto overflow-y-auto max-h-[80vh] rounded-xl border border-zinc-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm whitespace-nowrap">
-          <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-600 font-medium sticky top-0 z-10 shadow-sm">
+          <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-600 dark:text-black font-medium sticky top-0 z-10 shadow-sm">
             <tr>
               {/* Updated Column Order */}
               <th className="px-6 py-4">Group No.</th>
@@ -801,7 +804,7 @@ export default function ProjectTable() {
                     </td>
 
                     {/* 3. Student Name (Individual) */}
-                    <td className="px-6 py-4 border-r border-zinc-100">
+                    <td className="px-6 py-4 border-r dark:text-black border-zinc-100">
                       {student.name}
                     </td>
 
@@ -818,7 +821,7 @@ export default function ProjectTable() {
                     {/* 5. Guide Name (Grouped) */}
                     {studentIndex === 0 && (
                       <td
-                        className="px-6 py-4 border-r border-zinc-100 align-top whitespace-normal"
+                        className="px-6 py-4 border-r dark:text-black border-zinc-100 align-top whitespace-normal"
                         rowSpan={group.students.length}
                       >
                         {group.guide}
