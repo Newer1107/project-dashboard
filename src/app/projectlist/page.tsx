@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import Image from "next/image";
 import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
 
 const rblGroups = [
@@ -748,6 +749,20 @@ const rblGroups = [
 export default function ProjectTable() {
   return (
     <div className="w-full max-w-7xl mx-auto p-6 space-y-6 text-zinc-800 dark:text-white font-sans">
+      <div className="absolute top-6 left-6 z-50 flex items-center gap-3">
+        {/* Using a white/dark background pill to make the logo pop against any grid/lines */}
+        <div className="bg-white p-2 rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800">
+          <Image
+            src="/tcetlogo.png"
+            alt="TCET Logo"
+            width={64}
+            height={64}
+            unoptimized
+            className="object-contain"
+          />
+        </div>
+        {/* Optional text next to logo */}
+      </div>
       <FloatingPillNavbar />
       <ThemeToggle />
       <div className="flex flex-col space-y-2">

@@ -254,7 +254,7 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
             </h1>
             <p className="font-montreal text-gray-500 dark:text-gray-400 mt-6 mx-auto md:mx-0 max-w-md text-base md:text-lg">
               A collection of digital products and systems designed with a focus
-              on performance, structure and clarity.
+              on performance, structure and clarity by the students of TCET.
             </p>
           </div>
           <div className="relative h-[40vh] md:h-[60vh] w-full rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing">

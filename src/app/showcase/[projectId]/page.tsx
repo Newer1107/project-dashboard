@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
+import Image from "next/image";
 import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
 import { getPublicShowcaseProjectById } from "@/server/actions/showcase";
 import Footer from "@/components/ui/Footer";
@@ -35,7 +36,28 @@ export default async function ShowcaseProjectDetailPage({
       <main className="relative z-10 bg-[#FAFAFA] dark:bg-[#111111] text-[#111111] dark:text-[#E5E5E5] transition-colors duration-500 mb-[50vh] md:mb-[80vh] pb-24 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-b-3xl md:rounded-b-[4rem]">
         {/* Subtle grid background for tech vibe */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none rounded-b-3xl md:rounded-b-[4rem]"></div>
-
+        <div className="absolute top-6 left-6 z-50 flex items-center gap-3">
+          {/* Using a white/dark background pill to make the logo pop against any grid/lines */}
+          <div className="bg-white p-2 rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800">
+            <Image
+              src="/tcetlogo.png"
+              alt="TCET Logo"
+              width={64}
+              height={64}
+              unoptimized
+              className="object-contain"
+            />
+          </div>
+          {/* Optional text next to logo */}
+          <div className="hidden md:flex flex-col">
+            <span className="text-xs font-bold text-zinc-900 dark:text-white tracking-widest">
+              TCET
+            </span>
+            <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider">
+              Project Lab
+            </span>
+          </div>
+        </div>
         <div className="relative z-10">
           <FloatingPillNavbar />
 
