@@ -8,6 +8,9 @@ module.exports = {
   theme: {
     container: {
       center: true,
+      colors:{
+        'tcet-orange': '#F37021',
+      },
       padding: "2rem",
       screens: {
         "2xl": "1400px",
