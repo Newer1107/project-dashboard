@@ -21,7 +21,7 @@ export default function FloatingPillNavbar() {
 
           {/* MAJOR PROJECTS (LAB) */}
           <Link
-            href="/lab"
+            href="/majorprojects"
             className="hover:text-black dark:hover:text-white transition-colors duration-300 font-semibold flex items-center gap-2 group"
           >
             <span className="hidden sm:inline-block">Major Projects</span>
