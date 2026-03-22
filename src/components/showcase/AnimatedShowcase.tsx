@@ -177,29 +177,13 @@ function LabScene() {
     >
       <ambientLight intensity={0.5} />
       <LabScene3D />
-      {/* <OrbitControls
+
+      <OrbitControls
         enableZoom={false}
         target={[0, 0, 0]}
         autoRotate={true}
         autoRotateSpeed={2}
         enablePan={false}
-        minDistance={5}
-        maxDistance={20}
-        minPolarAngle={Math.PI / 6}
-        maxPolarAngle={Math.PI / 2.2}
-      /> */}
-      <OrbitControls
-        enableZoom={false} // Keep this false for the desktop scroll fix!
-        target={[0, 0, 0]}
-        autoRotate={true}
-        autoRotateSpeed={2}
-        enablePan={false}
-        // --- ADD THIS BLOCK ---
-        touches={{
-          ONE: undefined as any, // Ignores single-finger swipe (allows page scroll)
-          TWO: THREE.TOUCH.ROTATE, // Requires two fingers to rotate the scene
-        }}
-        // ----------------------
         minDistance={5}
         maxDistance={20}
         minPolarAngle={Math.PI / 6}
@@ -256,8 +240,12 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
               on performance, structure and clarity by the students of TCET.
             </p>
           </div>
-          <div className="relative h-[40vh] md:h-[60vh] w-full rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing">
-            <LabScene />
+          <div className="relative h-[40vh] md:h-[60vh] w-full rounded-2xl overflow-hidden">
+            <div className="absolute inset-0 z-10 touch-pan-y block md:hidden" />
+
+            <div className="relative w-full h-full z-0 md:cursor-grab md:active:cursor-grabbing">
+              <LabScene />
+            </div>
           </div>
         </div>
       </section>
