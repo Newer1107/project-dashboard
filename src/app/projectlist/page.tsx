@@ -916,58 +916,65 @@ export default function ProjectTable() {
         {/* ===== TABLE SECTION WITH SCROLL EFFECTS ===== */}
         <motion.div
           style={{
-            scale: 0.95 + scrollY / 3000,
+            scale: Math.min(1, 0.95 + scrollY / 3000),
             opacity: Math.max(0.5, 1 - scrollY / 1500),
           }}
-          className="origin-top"
+          className="origin-top w-full"
         >
-          <div className="relative group">
+          <div className="relative group w-full max-w-full">
             {/* GLOW EFFECT */}
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-cyan-500/30 rounded-2xl blur-2xl opacity-0 group-hover:opacity-100 transition duration-500 -z-10"></div>
 
             {/* TABLE WRAPPER */}
-            <div className="overflow-x-auto overflow-y-auto max-h-[60vh] sm:max-h-[70vh] md:max-h-[75vh] rounded-2xl border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 shadow-2xl">
-              <table className="w-full text-left text-xs sm:text-sm whitespace-nowrap">
+            <div className="w-full max-w-full overflow-x-auto overflow-y-auto max-h-[60vh] sm:max-h-[70vh] md:max-h-[75vh] rounded-2xl border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 shadow-2xl">
+              <table className="w-full text-left text-xs sm:text-sm" style={{ tableLayout: 'fixed' }}>
+                <colgroup>
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '6%' }} />
+                  <col style={{ width: '16%' }} />
+                  <col style={{ width: '35%' }} />
+                  <col style={{ width: '35%' }} />
+                </colgroup>
                 <thead className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-gray-800 dark:to-gray-800 border-b-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-bold sticky top-0 z-20 shadow-md">
                   <tr>
-                    <th className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 text-left">
-                      <div className="flex items-center gap-2">
+                    <th className="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left overflow-hidden">
+                      <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2 min-w-0">
                         <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M3 13h2v8H3z M17 3h2v18h-2z M10 8h2v13h-2z" />
                         </svg>
-                        <span className="hidden sm:inline">Group</span>
+                        <span className="hidden sm:inline truncate">Group</span>
                       </div>
                     </th>
-                    <th className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 text-left">
-                      <div className="flex items-center gap-2">
+                    <th className="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left overflow-hidden">
+                      <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                         <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
                         </svg>
-                        <span className="hidden sm:inline">Roll No</span>
+                        <span className="hidden sm:inline truncate">Roll</span>
                       </div>
                     </th>
-                    <th className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 text-left">
-                      <div className="flex items-center gap-2">
+                    <th className="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left overflow-hidden">
+                      <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                         <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                         </svg>
-                        <span className="hidden sm:inline">Name</span>
+                        <span className="hidden sm:inline truncate">Name</span>
                       </div>
                     </th>
-                    <th className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 text-left min-w-[200px] sm:min-w-[280px] md:min-w-[350px]">
-                      <div className="flex items-center gap-2">
+                    <th className="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left overflow-hidden">
+                      <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                         <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54h2.71v2.17h-5.04v-2.71l2.75-3.54h-2.71V9.02h5.04v2.27z" />
                         </svg>
-                        <span className="hidden sm:inline">Project</span>
+                        <span className="hidden sm:inline truncate">Project</span>
                       </div>
                     </th>
-                    <th className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 text-left">
-                      <div className="flex items-center gap-2">
+                    <th className="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left overflow-hidden">
+                      <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                         <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                         </svg>
-                        <span className="hidden sm:inline">Guide</span>
+                        <span className="hidden sm:inline truncate">Guide</span>
                       </div>
                     </th>
                   </tr>
@@ -992,42 +999,42 @@ export default function ProjectTable() {
                           {/* 1. Group No (Grouped) */}
                           {studentIndex === 0 && (
                             <td
-                              className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 font-bold text-gray-900 dark:text-white align-top rounded-tl-lg group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition-colors"
+                              className="px-1.5 sm:px-2 md:px-3 py-1.5 sm:py-2 md:py-3 font-bold text-gray-900 dark:text-white align-top rounded-tl-lg group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition-colors overflow-hidden"
                               rowSpan={group.students.length}
                             >
-                              <span className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 dark:from-blue-900/50 dark:to-cyan-900/50 text-blue-700 dark:text-blue-300 font-semibold text-xs sm:text-sm">
+                              <span className="inline-flex items-center gap-1 px-2 sm:px-2 py-1 rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 dark:from-blue-900/50 dark:to-cyan-900/50 text-blue-700 dark:text-blue-300 font-semibold text-xs truncate">
                                 {group.groupId}
                               </span>
                             </td>
                           )}
 
                           {/* 2. Roll No (Individual) */}
-                          <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 text-gray-700 dark:text-gray-400 font-mono text-xs sm:text-sm group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors">
-                            {student.rollNo}
+                          <td className="px-1.5 sm:px-2 md:px-3 py-1.5 sm:py-2 md:py-3 text-gray-700 dark:text-gray-400 font-mono text-xs sm:text-sm group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors overflow-hidden">
+                            <span className="truncate block">{student.rollNo}</span>
                           </td>
 
                           {/* 3. Student Name (Individual) */}
-                          <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 text-gray-800 dark:text-gray-300 font-semibold group-hover:text-gray-900 dark:group-hover:text-white transition-colors text-xs sm:text-sm">
-                            {student.name}
+                          <td className="px-1.5 sm:px-2 md:px-3 py-1.5 sm:py-2 md:py-3 text-gray-800 dark:text-gray-300 font-semibold group-hover:text-gray-900 dark:group-hover:text-white transition-colors text-xs sm:text-sm overflow-hidden">
+                            <span className="line-clamp-2 block">{student.name}</span>
                           </td>
 
                           {/* 4. Project Title (Grouped) */}
                           {studentIndex === 0 && (
                             <td
-                              className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 align-top whitespace-normal text-gray-700 dark:text-gray-300 font-semibold leading-relaxed group-hover:text-gray-900 dark:group-hover:text-white transition-colors text-xs sm:text-sm"
+                              className="px-1.5 sm:px-2 md:px-3 py-1.5 sm:py-2 md:py-3 align-top text-gray-700 dark:text-gray-300 font-semibold leading-snug group-hover:text-gray-900 dark:group-hover:text-white transition-colors text-xs sm:text-sm overflow-hidden"
                               rowSpan={group.students.length}
                             >
-                              {group.title}
+                              <span className="line-clamp-3 block">{group.title}</span>
                             </td>
                           )}
 
                           {/* 5. Guide Name (Grouped) */}
                           {studentIndex === 0 && (
                             <td
-                              className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 align-top whitespace-normal text-gray-700 dark:text-gray-400 text-xs sm:text-sm group-hover:text-gray-900 dark:group-hover:text-gray-300 transition-colors"
+                              className="px-1.5 sm:px-2 md:px-3 py-1.5 sm:py-2 md:py-3 align-top text-gray-700 dark:text-gray-400 text-xs sm:text-sm group-hover:text-gray-900 dark:group-hover:text-gray-300 transition-colors overflow-hidden"
                               rowSpan={group.students.length}
                             >
-                              {group.guide}
+                              <span className="line-clamp-3 block">{group.guide}</span>
                             </td>
                           )}
                         </motion.tr>
