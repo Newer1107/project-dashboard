@@ -764,17 +764,21 @@ export default function ProjectTable() {
   const totalCount = rblGroups.length;
 
   // Filter logic
-  const filteredGroups = rblGroups.filter((group) => {
+  const filteredGroups = React.useMemo(() => {
     const searchLower = searchTerm.toLowerCase();
-    const matchesSearch =
-      group.title.toLowerCase().includes(searchLower) ||
-      group.guide.toLowerCase().includes(searchLower) ||
-      group.students.some((s) => s.name.toLowerCase().includes(searchLower));
 
-    const matchesFilter = !selectedGroup || group.groupId.startsWith(selectedGroup);
-    return matchesSearch && matchesFilter;
-  });
+    return rblGroups.filter((group) => {
+      const matchesSearch =
+        group.title.toLowerCase().includes(searchLower) ||
+        group.guide.toLowerCase().includes(searchLower) ||
+        group.students.some((s) => s.name.toLowerCase().includes(searchLower));
 
+      const matchesFilter =
+        !selectedGroup || group.groupId.startsWith(selectedGroup);
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [searchTerm, selectedGroup]);
   return (
     <div className="relative w-full min-h-screen bg-white dark:bg-black overflow-hidden">
       {/* ===== ANIMATED BACKGROUND ===== */}
