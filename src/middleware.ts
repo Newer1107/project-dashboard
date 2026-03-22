@@ -59,7 +59,7 @@ export default auth(async (req) => {
   const isPublicShowcase = pathname.startsWith("/showcase") && !isShowcaseAuthorRoute;
   
   // Your custom public route
-  const isPublicRblTable = pathname.startsWith("/projectlist");
+  const isPublicRblTable = pathname.startsWith("/rblprojects-te");
 
   // NextAuth API routes are always public
   if (isAuthApi) {
