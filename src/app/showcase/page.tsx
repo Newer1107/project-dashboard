@@ -26,7 +26,7 @@ export default async function PublicShowcasePage() {
       .sort()
       .map((file) => `/images-rollingdisplay/${file}`);
   } catch (error) {
-    console.error("Failed to read image folder:", error);
+    console.error("[showcase-page] Failed to read image folder:", error);
   }
   return (
     <div className="relative min-h-screen bg-[#E5E5E5] dark:bg-[#050505]">
