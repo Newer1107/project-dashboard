@@ -280,8 +280,8 @@ export default function LabStats({ images = [] }: LabStatsProps) {
       ref={statsRef}
       className="px-6 md:px-20 py-16 md:py-32 max-w-7xl mx-auto"
     >
-      <div className="mb-16">
-        <h2 className="font-monument text-3xl md:text-5xl text-[#111111] dark:text-white uppercase transition-colors duration-500">
+      <div className="mb-8 sm:mb-12 md:mb-16">
+        <h2 className="font-monument text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-[#111111] dark:text-white uppercase transition-colors duration-500">
           Behind the Screens
         </h2>
         <p className="font-montreal text-gray-500 mt-4 max-w-md transition-colors duration-500">
@@ -295,13 +295,13 @@ export default function LabStats({ images = [] }: LabStatsProps) {
             BOX 1: DRIBBBLE STYLE MARQUEE
             Fix: h-[450px] forcefully gives it height on mobile!
         ========================================== */}
-        <div className="md:col-span-2 md:row-span-2 overflow-hidden relative group border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 h-[450px] md:h-full rounded-xl flex gap-4 p-4">
+        <div className="md:col-span-2 md:row-span-2 overflow-hidden relative group border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 h-[300px] sm:h-[350px] md:h-full rounded-xl flex gap-2 sm:gap-4 p-2 sm:p-4">
           {/* COLUMN 1: Scrolls Up */}
           <div ref={col1Ref} className="flex-1 flex flex-col gap-4 min-w-0">
             {scrollData.map((src, index) => (
               <div
                 key={`col1-${index}`}
-                className="relative w-full aspect-[4/3] rounded-lg overflow-hidden shrink-0 shadow-sm"
+                className="relative w-full aspect-[4/3] rounded-lg overflow-hidden shrink-0 shadow-sm"  
               >
                 <Image
                   src={src}
@@ -336,8 +336,8 @@ export default function LabStats({ images = [] }: LabStatsProps) {
           </div>
 
           {/* TEXT OVERLAY (Glassmorphism look) */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-8 flex items-end z-10 pointer-events-none">
-            <p className="font-montreal text-white drop-shadow-md text-lg md:text-xl">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 sm:p-8 flex items-end z-10 pointer-events-none">
+            <p className="font-montreal text-white drop-shadow-md text-base sm:text-lg md:text-xl">
               <span className="text-tcet-orange font-bold drop-shadow-lg">
                 The culture of creation.
               </span>
@@ -346,11 +346,11 @@ export default function LabStats({ images = [] }: LabStatsProps) {
         </div>
 
         {/* BOX 2: PROJECTS DEPLOYED */}
-        <div className="bg-black/5 dark:bg-white/5 p-8 flex flex-col justify-end border border-black/10 dark:border-white/10 transition-colors duration-300 rounded-xl">
-          <p className="font-montreal text-sm text-gray-500 uppercase tracking-widest mb-2">
+        <div className="bg-black/5 dark:bg-white/5 p-3 sm:p-4 md:p-8 flex flex-col justify-end border border-black/10 dark:border-white/10 transition-colors duration-300 rounded-xl">
+          <p className="font-montreal text-[10px] sm:text-xs md:text-sm text-gray-500 uppercase tracking-widest mb-2">
             Projects Deployed
           </p>
-          <h3 className="font-monument text-5xl md:text-6xl text-[#111111] dark:text-white transition-colors duration-500">
+          <h3 className="font-monument text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#111111] dark:text-white transition-colors duration-500">
             <span className="counter" data-target="142">
               0
             </span>
@@ -359,11 +359,11 @@ export default function LabStats({ images = [] }: LabStatsProps) {
         </div>
 
         {/* BOX 3: ACTIVE BUILDERS */}
-        <div className="bg-black/5 dark:bg-white/5 p-8 flex flex-col justify-end border border-black/10 dark:border-white/10 transition-colors duration-300 rounded-xl">
-          <p className="font-montreal text-sm text-gray-500 uppercase tracking-widest mb-2">
+        <div className="bg-black/5 dark:bg-white/5 p-3 sm:p-4 md:p-8 flex flex-col justify-end border border-black/10 dark:border-white/10 transition-colors duration-300 rounded-xl">
+          <p className="font-montreal text-[10px] sm:text-xs md:text-sm text-gray-500 uppercase tracking-widest mb-2">
             Active Builders
           </p>
-          <h3 className="font-monument text-5xl md:text-6xl text-[#111111] dark:text-white transition-colors duration-500">
+          <h3 className="font-monument text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#111111] dark:text-white transition-colors duration-500">
             <span className="counter" data-target="350">
               0
             </span>
@@ -372,11 +372,11 @@ export default function LabStats({ images = [] }: LabStatsProps) {
         </div>
 
         {/* BOX 4: FREELANCE PROJECTS */}
-        <div className="bg-black/5 dark:bg-white/5 p-8 flex flex-col justify-end border border-black/10 dark:border-white/10 transition-colors duration-300 rounded-xl">
-          <p className="font-montreal text-sm text-gray-500 uppercase tracking-widest mb-2">
+        <div className="bg-black/5 dark:bg-white/5 p-3 sm:p-4 md:p-8 flex flex-col justify-end border border-black/10 dark:border-white/10 transition-colors duration-300 rounded-xl">
+          <p className="font-montreal text-[10px] sm:text-xs md:text-sm text-gray-500 uppercase tracking-widest mb-2">
             Freelance Projects
           </p>
-          <h3 className="font-monument text-5xl md:text-6xl text-[#111111] dark:text-white transition-colors duration-500">
+          <h3 className="font-monument text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#111111] dark:text-white transition-colors duration-500">
             <span className="counter" data-target="20">
               0
             </span>

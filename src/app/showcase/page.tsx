@@ -29,16 +29,16 @@ export default async function PublicShowcasePage() {
 
   return (
     <div className="relative min-h-screen bg-[#E5E5E5] dark:bg-[#050505]">
-      <div className="absolute top-6 left-6 z-50 flex items-center gap-3">
+      <div className="absolute top-3 sm:top-6 left-3 sm:left-6 z-50 flex items-center gap-2 sm:gap-3">
         {/* Using a white/dark background pill to make the logo pop against any grid/lines */}
-        <div className="bg-white p-2 rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800">
+        <div className="bg-white p-1.5 sm:p-2 rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800">
           <Image
             src="/tcetlogo.png"
             alt="TCET Logo"
-            width={64}
-            height={64}
+            width={48}
+            height={48}
             unoptimized
-            className="object-contain"
+            className="object-contain sm:w-16 sm:h-16"
           />
         </div>
         {/* Optional text next to logo */}
@@ -53,7 +53,7 @@ export default async function PublicShowcasePage() {
       </div>
       <FloatingPillNavbar />
       <ThemeToggle />
-      <main className="relative z-10 pt-32 sm:pt-40 md:pt-0 bg-[#FAFAFA] dark:bg-[#111111] mb-[50vh] md:mb-[80vh] transition-colors duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+      <main className="relative z-10 pt-24 sm:pt-32 md:pt-40 lg:pt-0 bg-[#FAFAFA] dark:bg-[#111111] mb-[45vh] sm:mb-[50vh] md:mb-[80vh] transition-colors duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         {" "}
         {/* Floating Theme Toggle */}
         <AnimatedShowcase projects={projects || []} />
