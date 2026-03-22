@@ -748,23 +748,36 @@ const rblGroups = [
 
 export default function ProjectTable() {
   return (
-    <div className="w-full max-w-7xl mx-auto p-6 space-y-6 text-zinc-800 dark:text-white font-sans">
-      <div className="absolute top-6 left-6 z-50 flex items-center gap-3">
-        {/* Using a white/dark background pill to make the logo pop against any grid/lines */}
-        <div className="bg-white p-2 rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800">
+    // Adjusted padding top so the table starts below the header area safely
+    <div className="relative w-full max-w-7xl mx-auto px-6 pb-6 pt-28 space-y-6 text-zinc-800 dark:text-white font-sans">
+      {/* THE LOGO - Moved here! Now it is absolute to the page and will scroll naturally */}
+      <div className="absolute top-6 left-6 z-40">
+        <div className="bg-white p-2 rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800 w-fit">
           <Image
             src="/tcetlogo.png"
             alt="TCET Logo"
             width={64}
             height={64}
             unoptimized
-            className="object-contain"
+            // Keeps it a consistent size
+            className="object-contain w-10 h-10 md:w-12 md:h-12"
           />
         </div>
-        {/* Optional text next to logo */}
       </div>
-      <FloatingPillNavbar />
+
+      {/* THE NAVBAR - Kept fixed so your floating pill navigation remains accessible */}
+      <div className="fixed top-0 left-0 right-0 z-50 h-24 pointer-events-none">
+        <div className="relative w-full max-w-7xl mx-auto h-full px-6">
+          <div className="pointer-events-auto">
+            <FloatingPillNavbar />
+          </div>
+        </div>
+      </div>
+
+      {/* THE TOGGLE - Still floating bottom right */}
       <ThemeToggle />
+
+      {/* THE CONTENT */}
       <div className="flex flex-col space-y-2">
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
           T.E. RBL Project Allocations
@@ -775,11 +788,12 @@ export default function ProjectTable() {
         </p>
       </div>
 
+      {/* ... rest of your table container and table ... */}
+
       <div className="overflow-x-auto overflow-y-auto max-h-[80vh] rounded-xl border border-zinc-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-600 dark:text-black font-medium sticky top-0 z-10 shadow-sm">
             <tr>
-              {/* Updated Column Order */}
               <th className="px-6 py-4">Group No.</th>
               <th className="px-6 py-4">Roll No.</th>
               <th className="px-6 py-4">Student Name</th>

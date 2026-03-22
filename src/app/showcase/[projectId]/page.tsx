@@ -30,38 +30,40 @@ export default async function ShowcaseProjectDetailPage({
 
   return (
     <div className="relative min-h-screen bg-[#E5E5E5] dark:bg-[#050505]">
-      {/* MAIN CONTENT CURTAIN 
-        Kept your mb-[50vh] md:mb-[80vh] so the footer reveal works perfectly!
-      */}
+      {/* MAIN CONTENT CURTAIN */}
       <main className="relative z-10 bg-[#FAFAFA] dark:bg-[#111111] text-[#111111] dark:text-[#E5E5E5] transition-colors duration-500 mb-[50vh] md:mb-[80vh] pb-24 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-b-3xl md:rounded-b-[4rem]">
-        {/* Subtle grid background for tech vibe */}
+        {/* Subtle grid background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none rounded-b-3xl md:rounded-b-[4rem]"></div>
-        <div className="absolute top-6 left-6 z-50 flex items-center gap-3">
-          {/* Using a white/dark background pill to make the logo pop against any grid/lines */}
-          <div className="bg-white p-2 rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800">
+
+        {/* LOGO BLOCK */}
+        <div className="absolute top-6 left-4 md:left-6 z-50 flex items-center gap-3">
+          {/* FIX 2: Added responsive padding (p-1.5 md:p-2) to the wrapper */}
+          <div className="bg-white p-1.5 md:p-2 rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800">
             <Image
               src="/tcetlogo.png"
               alt="TCET Logo"
               width={64}
               height={64}
               unoptimized
-              className="object-contain"
+              // FIX 2: Added responsive sizing so it's smaller on mobile but full size on desktop
+              className="object-contain w-10 h-10 md:w-16 md:h-16"
             />
           </div>
-          {/* Optional text next to logo */}
           <div className="hidden md:flex flex-col">
             <span className="text-xs font-bold text-zinc-900 dark:text-white tracking-widest">
               TCET
             </span>
             <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider">
-              Project Lab
+              Centre of Excellence For Research Culture Development
             </span>
           </div>
         </div>
+
         <div className="relative z-10">
           <FloatingPillNavbar />
 
-          <div className="mx-auto max-w-7xl px-6 md:px-20 pt-8 md:pt-12">
+          {/* FIX 1: Increased pt-8 md:pt-12 to pt-32 lg:pt-40 to safely clear the absolute logo and navbar */}
+          <div className="mx-auto max-w-7xl px-6 md:px-20 pt-32 lg:pt-40">
             {/* BACK BUTTON */}
             <div className="mb-12">
               <Link
@@ -78,7 +80,7 @@ export default async function ShowcaseProjectDetailPage({
             {/* CRAZY HERO SECTION */}
             <section className="relative mb-24 md:mb-32">
               <div className="flex flex-col-reverse lg:grid lg:grid-cols-12 gap-8 items-center">
-                {/* Text Block - Spans 7 cols, z-index brings it above the image */}
+                {/* Text Block */}
                 <div className="lg:col-span-7 z-20 w-full">
                   <p className="font-montreal text-xs md:text-sm text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-4">
                     <span className="w-8 h-[1px] bg-gray-400"></span>
@@ -100,7 +102,7 @@ export default async function ShowcaseProjectDetailPage({
                   </div>
                 </div>
 
-                {/* Image Block - Spans 5 cols, offset to overlap */}
+                {/* Image Block */}
                 <div className="lg:col-span-5 w-full relative group">
                   <div className="absolute inset-0 bg-black/5 dark:bg-white/5 rounded-3xl transform translate-x-4 translate-y-4 transition-transform duration-500 group-hover:translate-x-6 group-hover:translate-y-6"></div>
                   <div className="w-full aspect-[4/5] lg:aspect-square rounded-3xl overflow-hidden bg-gray-200 dark:bg-[#1A1A1A] border border-black/10 dark:border-white/10 relative z-10">
@@ -124,12 +126,10 @@ export default async function ShowcaseProjectDetailPage({
             <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
               {/* MAIN DETAILS (BENTO) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-min">
-                {/* Overview spans full width */}
                 <DetailSection
                   title="Overview"
                   content={project.fullDescription}
                   className="md:col-span-2 bg-black text-white dark:bg-white dark:text-black"
-                  // Inverted colors for the main description block to make it pop
                 />
 
                 <DetailSection
@@ -214,7 +214,7 @@ export default async function ShowcaseProjectDetailPage({
               <aside className="relative">
                 <section className="sticky top-24 bg-white dark:bg-[#1A1A1A] border border-black/10 dark:border-white/10 rounded-3xl p-8 shadow-xl transition-colors duration-500">
                   <h2 className="font-monument text-xl uppercase tracking-tight mb-8 border-b border-black/10 dark:border-white/10 pb-4">
-                    Project Meta
+                    Project Details
                   </h2>
 
                   <div className="space-y-8 font-montreal">
