@@ -1,6 +1,6 @@
 // components/showcase/FloatingPillNavbar.tsx
 import Link from "next/link";
-import { ClipboardListIcon, HomeIcon, FlaskConical } from "lucide-react"; // Added FlaskConical for the Lab
+import { HomeIcon } from "lucide-react";
 
 export default function FloatingPillNavbar() {
   return (
