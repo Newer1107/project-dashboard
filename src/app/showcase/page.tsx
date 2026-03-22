@@ -6,7 +6,7 @@ import LabStats from "@/components/showcase/LabStats";
 import Footer from "@/components/ui/Footer";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 export const dynamic = "force-dynamic";
 
@@ -15,18 +15,19 @@ export default async function PublicShowcasePage() {
   const projects = await getPublicShowcaseProjects();
 
   const imgDir = path.join(process.cwd(), "public/images-rollingdisplay");
+
   let slideshowImages: string[] = [];
 
   try {
-    const files = fs.readdirSync(imgDir);
+    const files = await fs.readdir(imgDir);
+
     slideshowImages = files
       .filter((file) => /\.(jpg|jpeg|png|webp|avif)$/i.test(file))
-      // Yahan path tere folder ke hisaab se set kiya hai
+      .sort()
       .map((file) => `/images-rollingdisplay/${file}`);
   } catch (error) {
-    console.error("Folder read nahi hua:", error);
+    console.error("Failed to read image folder:", error);
   }
-
   return (
     <div className="relative min-h-screen bg-[#E5E5E5] dark:bg-[#050505]">
       <div className="absolute top-6 left-6 z-50 flex items-center gap-3">
