@@ -91,8 +91,11 @@ export default function RegisterPage() {
     }
   }
 
-  async function onVerifyAndRegister() {
-    const values = getValues();
+  async function onVerifyAndRegister(values: RegisterValues) {
+    if (otp.length !== 6) {
+      setErrorMessage("Enter a valid 6-digit OTP.");
+      return;
+    }
 
     setIsLoading(true);
     setErrorMessage(null);
@@ -135,6 +138,15 @@ export default function RegisterPage() {
     }
   }
 
+  async function onFormSubmit(values: RegisterValues) {
+    if (step === 1) {
+      await onSubmit(values);
+      return;
+    }
+
+    await onVerifyAndRegister(values);
+  }
+
   async function onResendOtp() {
     const values = getValues();
     if (!values.email) {
@@ -172,7 +184,7 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           {errorMessage && (
             <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -299,7 +311,7 @@ export default function RegisterPage() {
                 <Button type="button" variant="outline" className="w-full" onClick={() => setStep(1)}>
                   Back
                 </Button>
-                <Button type="button" className="w-full" disabled={isLoading || otp.length !== 6} onClick={onVerifyAndRegister}>
+                <Button type="submit" className="w-full" disabled={isLoading || otp.length !== 6}>
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Verify & Create Account
                 </Button>
