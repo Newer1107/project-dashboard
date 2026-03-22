@@ -752,9 +752,27 @@ export default function ProjectTable() {
   const [selectedGroup, setSelectedGroup] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    let animationFrameId: number | null = null;
+
+    const handleScroll = () => {
+      if (animationFrameId !== null) {
+        return;
+      }
+
+      animationFrameId = window.requestAnimationFrame(() => {
+        setScrollY(window.scrollY);
+        animationFrameId = null;
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      if (animationFrameId !== null) {
+        window.cancelAnimationFrame(animationFrameId);
+      }
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   // Stats calculation
