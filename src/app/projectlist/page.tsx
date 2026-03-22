@@ -747,25 +747,58 @@ const rblGroups = [
 ];
 
 export default function ProjectTable() {
+  const [scrollY, setScrollY] = React.useState(0);
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [selectedGroup, setSelectedGroup] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Stats calculation
+  const teACount = rblGroups.filter((g) => g.groupId.startsWith("A")).length;
+  const teBCount = rblGroups.filter((g) => g.groupId.startsWith("B")).length;
+  const teCCount = rblGroups.filter((g) => g.groupId.startsWith("C")).length;
+  const totalCount = rblGroups.length;
+
+  // Filter logic
+  const filteredGroups = rblGroups.filter((group) => {
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch =
+      group.title.toLowerCase().includes(searchLower) ||
+      group.guide.toLowerCase().includes(searchLower) ||
+      group.students.some((s) => s.name.toLowerCase().includes(searchLower));
+
+    const matchesFilter = !selectedGroup || group.groupId.startsWith(selectedGroup);
+    return matchesSearch && matchesFilter;
+  });
+
   return (
-    // Adjusted padding top so the table starts below the header area safely
-    <div className="relative w-full max-w-7xl mx-auto px-6 pb-6 pt-28 space-y-6 text-zinc-800 dark:text-white font-sans">
-      {/* THE LOGO - Moved here! Now it is absolute to the page and will scroll naturally */}
+    <div className="relative w-full min-h-screen bg-white dark:bg-black overflow-hidden">
+      {/* ===== ANIMATED BACKGROUND ===== */}
+      <div className="fixed inset-0 -z-20 overflow-hidden">
+        <div className="absolute top-20 left-1/4 w-96 h-96 bg-blue-200/40 dark:bg-blue-900/30 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-8 right-1/4 w-96 h-96 bg-purple-200/40 dark:bg-purple-900/30 rounded-full mix-blend-multiply filter blur-3xl animate-pulse animation-delay-2000"></div>
+        <div className="absolute top-1/2 right-0 w-96 h-96 bg-cyan-200/40 dark:bg-cyan-900/30 rounded-full mix-blend-multiply filter blur-3xl animate-pulse animation-delay-4000"></div>
+      </div>
+
+      {/* ===== LOGO ===== */}
       <div className="absolute top-6 left-6 z-40">
-        <div className="bg-white p-2 rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800 w-fit">
+        <div className="bg-white dark:bg-slate-950 p-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800 w-fit backdrop-blur-xl">
           <Image
             src="/tcetlogo.png"
             alt="TCET Logo"
             width={64}
             height={64}
             unoptimized
-            // Keeps it a consistent size
             className="object-contain w-10 h-10 md:w-12 md:h-12"
           />
         </div>
       </div>
 
-      {/* THE NAVBAR - Kept fixed so your floating pill navigation remains accessible */}
+      {/* ===== NAVIGATION & THEME ===== */}
       <div className="fixed top-0 left-0 right-0 z-50 h-24 pointer-events-none">
         <div className="relative w-full max-w-7xl mx-auto h-full px-6">
           <div className="pointer-events-auto">
@@ -773,95 +806,261 @@ export default function ProjectTable() {
           </div>
         </div>
       </div>
-
-      {/* THE TOGGLE - Still floating bottom right */}
       <ThemeToggle />
 
-      {/* THE CONTENT */}
-      <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-          T.E. RBL Project Allocations
-        </h1>
-        <p className="text-sm text-zinc-500">
-          A.Y. 2025-26 | Complete Data (TE-A, TE-B, TE-C) extracted from
-          official notice.
-        </p>
-      </div>
+      {/* ===== MAIN CONTENT ===== */}
+      <div className="relative w-full max-w-7xl mx-auto px-6 pb-12 pt-32 space-y-16 text-zinc-800 dark:text-white font-sans">
+        
+        {/* ===== HERO SECTION ===== */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="space-y-6"
+        >
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white/50 dark:bg-white/5 backdrop-blur-sm w-fit">
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">A.Y. 2025-26 | TE RBL Projects</span>
+            </div>
 
-      {/* ... rest of your table container and table ... */}
+            <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+              Project <br /> Allocations
+            </h1>
 
-      <div className="overflow-x-auto overflow-y-auto max-h-[80vh] rounded-xl border border-zinc-200 bg-white shadow-sm">
-        <table className="w-full text-left text-sm whitespace-nowrap">
-          <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-600 dark:text-black font-medium sticky top-0 z-10 shadow-sm">
-            <tr>
-              <th className="px-6 py-4">Group No.</th>
-              <th className="px-6 py-4">Roll No.</th>
-              <th className="px-6 py-4">Student Name</th>
-              <th className="px-6 py-4 min-w-[350px]">Project Title</th>
-              <th className="px-6 py-4">Guide Name</th>
-            </tr>
-          </thead>
-          <motion.tbody
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4 }}
-            className="divide-y divide-zinc-200"
-          >
-            {rblGroups.map((group, groupIndex) => (
-              <React.Fragment key={group.groupId}>
-                {group.students.map((student, studentIndex) => (
-                  <motion.tr
-                    key={`${group.groupId}-${student.rollNo}`}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: (groupIndex % 10) * 0.05 }}
-                    className="hover:bg-zinc-50/50 transition-colors"
-                  >
-                    {/* 1. Group No (Grouped) */}
-                    {studentIndex === 0 && (
-                      <td
-                        className="px-6 py-4 font-semibold text-zinc-900 border-r border-zinc-100 align-top"
-                        rowSpan={group.students.length}
-                      >
-                        {group.groupId}
-                      </td>
-                    )}
+            <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">
+              Discover all T.E. RBL project groups, student assignments, and mentors from TCET. Complete dataset with advanced filtering and search capabilities.
+            </p>
+          </div>
 
-                    {/* 2. Roll No (Individual) */}
-                    <td className="px-6 py-4 text-zinc-500 font-mono border-r border-zinc-100">
-                      {student.rollNo}
-                    </td>
-
-                    {/* 3. Student Name (Individual) */}
-                    <td className="px-6 py-4 border-r dark:text-black border-zinc-100">
-                      {student.name}
-                    </td>
-
-                    {/* 4. Project Title (Grouped) */}
-                    {studentIndex === 0 && (
-                      <td
-                        className="px-6 py-4 border-r border-zinc-100 align-top whitespace-normal text-zinc-700 font-medium leading-relaxed"
-                        rowSpan={group.students.length}
-                      >
-                        {group.title}
-                      </td>
-                    )}
-
-                    {/* 5. Guide Name (Grouped) */}
-                    {studentIndex === 0 && (
-                      <td
-                        className="px-6 py-4 border-r dark:text-black border-zinc-100 align-top whitespace-normal"
-                        rowSpan={group.students.length}
-                      >
-                        {group.guide}
-                      </td>
-                    )}
-                  </motion.tr>
-                ))}
-              </React.Fragment>
+          {/* STATS CARDS */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 pt-6">
+            {[
+              { label: "Total Projects", value: totalCount, color: "from-blue-500 to-cyan-500" },
+              { label: "TE-A Groups", value: teACount, color: "from-purple-500 to-pink-500" },
+              { label: "TE-B Groups", value: teBCount, color: "from-orange-500 to-red-500" },
+              { label: "TE-C Groups", value: teCCount, color: "from-green-500 to-emerald-500" },
+            ].map((stat, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className={`group relative bg-gradient-to-br ${stat.color} p-0.5 rounded-xl cursor-default`}
+              >
+                <div className="bg-white dark:bg-black p-3 sm:p-4 rounded-xl space-y-2 group-hover:shadow-lg transition-all duration-300">
+                  <p className="text-[10px] sm:text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-black dark:text-white">{stat.value}</p>
+                </div>
+              </motion.div>
             ))}
-          </motion.tbody>
-        </table>
+          </div>
+        </motion.div>
+
+        {/* ===== SEARCH & FILTER SECTION ===== */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.8 }}
+          className="space-y-4"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-[1fr_200px] gap-3 sm:gap-4">
+            {/* SEARCH BOX */}
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition duration-300"></div>
+              <div className="relative flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl border-2 border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
+                <svg className="w-4 sm:w-5 h-4 sm:h-5 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search projects, guides..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="flex-1 bg-transparent outline-none text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 text-sm sm:text-base"
+                />
+              </div>
+            </div>
+
+            {/* FILTER DROPDOWN */}
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition duration-300"></div>
+              <div className="relative">
+                <select
+                  value={selectedGroup || ""}
+                  onChange={(e) => setSelectedGroup(e.target.value || null)}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl text-gray-900 dark:text-white font-medium outline-none appearance-none cursor-pointer transition"
+                >
+                  <option value="">All Groups</option>
+                  <option value="A">TE-A</option>
+                  <option value="B">TE-B</option>
+                  <option value="C">TE-C</option>
+                </select>
+                <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* RESULTS COUNT */}
+          <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+            Showing <span className="text-blue-600 dark:text-cyan-400 font-bold">{filteredGroups.length}</span> of <span className="font-bold">{totalCount}</span> projects
+          </p>
+        </motion.div>
+
+        {/* ===== TABLE SECTION WITH SCROLL EFFECTS ===== */}
+        <motion.div
+          style={{
+            scale: 0.95 + scrollY / 3000,
+            opacity: Math.max(0.5, 1 - scrollY / 1500),
+          }}
+          className="origin-top"
+        >
+          <div className="relative group">
+            {/* GLOW EFFECT */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-cyan-500/30 rounded-2xl blur-2xl opacity-0 group-hover:opacity-100 transition duration-500 -z-10"></div>
+
+            {/* TABLE WRAPPER */}
+            <div className="overflow-x-auto overflow-y-auto max-h-[60vh] sm:max-h-[70vh] md:max-h-[75vh] rounded-2xl border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 shadow-2xl">
+              <table className="w-full text-left text-xs sm:text-sm whitespace-nowrap">
+                <thead className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-gray-800 dark:to-gray-800 border-b-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-bold sticky top-0 z-20 shadow-md">
+                  <tr>
+                    <th className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 text-left">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M3 13h2v8H3z M17 3h2v18h-2z M10 8h2v13h-2z" />
+                        </svg>
+                        <span className="hidden sm:inline">Group</span>
+                      </div>
+                    </th>
+                    <th className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 text-left">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                        </svg>
+                        <span className="hidden sm:inline">Roll No</span>
+                      </div>
+                    </th>
+                    <th className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 text-left">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                        </svg>
+                        <span className="hidden sm:inline">Name</span>
+                      </div>
+                    </th>
+                    <th className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 text-left min-w-[200px] sm:min-w-[280px] md:min-w-[350px]">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54h2.71v2.17h-5.04v-2.71l2.75-3.54h-2.71V9.02h5.04v2.27z" />
+                        </svg>
+                        <span className="hidden sm:inline">Project</span>
+                      </div>
+                    </th>
+                    <th className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 text-left">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                        </svg>
+                        <span className="hidden sm:inline">Guide</span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <motion.tbody
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="divide-y divide-gray-300 dark:divide-gray-700"
+                >
+                  {filteredGroups.map((group, groupIndex) => (
+                    <React.Fragment key={group.groupId}>
+                      {group.students.map((student, studentIndex) => (
+                        <motion.tr
+                          key={`${group.groupId}-${student.rollNo}`}
+                          initial={{ opacity: 0, x: -10 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          transition={{ delay: (studentIndex % 5) * 0.05 }}
+                          viewport={{ once: true, margin: "-100px" }}
+                          className="group hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-cyan-50/50 dark:hover:from-blue-900/20 dark:hover:to-cyan-900/20 transition-all duration-300 border-l-4 border-l-transparent hover:border-l-blue-500"
+                        >
+                          {/* 1. Group No (Grouped) */}
+                          {studentIndex === 0 && (
+                            <td
+                              className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 font-bold text-gray-900 dark:text-white align-top rounded-tl-lg group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition-colors"
+                              rowSpan={group.students.length}
+                            >
+                              <span className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 dark:from-blue-900/50 dark:to-cyan-900/50 text-blue-700 dark:text-blue-300 font-semibold text-xs sm:text-sm">
+                                {group.groupId}
+                              </span>
+                            </td>
+                          )}
+
+                          {/* 2. Roll No (Individual) */}
+                          <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 text-gray-700 dark:text-gray-400 font-mono text-xs sm:text-sm group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors">
+                            {student.rollNo}
+                          </td>
+
+                          {/* 3. Student Name (Individual) */}
+                          <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 text-gray-800 dark:text-gray-300 font-semibold group-hover:text-gray-900 dark:group-hover:text-white transition-colors text-xs sm:text-sm">
+                            {student.name}
+                          </td>
+
+                          {/* 4. Project Title (Grouped) */}
+                          {studentIndex === 0 && (
+                            <td
+                              className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 align-top whitespace-normal text-gray-700 dark:text-gray-300 font-semibold leading-relaxed group-hover:text-gray-900 dark:group-hover:text-white transition-colors text-xs sm:text-sm"
+                              rowSpan={group.students.length}
+                            >
+                              {group.title}
+                            </td>
+                          )}
+
+                          {/* 5. Guide Name (Grouped) */}
+                          {studentIndex === 0 && (
+                            <td
+                              className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 align-top whitespace-normal text-gray-700 dark:text-gray-400 text-xs sm:text-sm group-hover:text-gray-900 dark:group-hover:text-gray-300 transition-colors"
+                              rowSpan={group.students.length}
+                            >
+                              {group.guide}
+                            </td>
+                          )}
+                        </motion.tr>
+                      ))}
+                    </React.Fragment>
+                  ))}
+                </motion.tbody>
+              </table>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ===== EMPTY STATE ===== */}
+        {filteredGroups.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-12 sm:py-16 space-y-4 px-4"
+          >
+            <svg className="w-16 sm:w-20 h-16 sm:h-20 mx-auto text-gray-400 dark:text-gray-600 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">No projects found</h3>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+              Try adjusting your search or filter to find what you're looking for.
+            </p>
+            <button
+              onClick={() => {
+                setSearchTerm("");
+                setSelectedGroup(null);
+              }}
+              className="inline-flex items-center gap-2 mt-4 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-sm sm:text-base rounded-lg font-semibold hover:shadow-lg hover:shadow-blue-500/50 transition-all duration-300"
+            >
+              Reset Filters
+            </button>
+          </motion.div>
+        )}
       </div>
     </div>
   );

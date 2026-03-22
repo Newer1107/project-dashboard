@@ -74,14 +74,14 @@ export function ShowcaseGalleryClient({ projects }: { projects: ShowcaseProject[
 
   return (
     <section id="explore" className="space-y-8">
-      <div className="premium-panel rounded-3xl p-4 sm:p-5">
-        <div className="grid gap-3 md:grid-cols-[1fr_1fr_1.6fr]">
+      <div className="premium-panel rounded-3xl p-3 sm:p-4 md:p-5">
+        <div className="grid gap-3 sm:gap-4 md:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-[1fr_1fr_1.6fr]">
           <label className="space-y-2">
-            <span className="text-xs uppercase tracking-[0.16em] text-slate-400">Department</span>
+            <span className="text-[10px] sm:text-xs uppercase tracking-[0.16em] text-slate-400">Department</span>
             <select
               value={domain}
               onChange={(event) => setDomain(event.target.value)}
-              className="h-11 w-full rounded-xl border border-white/10 bg-slate-900/60 px-3 text-sm text-slate-100 outline-none transition focus:border-cyan-300/60"
+              className="h-10 sm:h-11 w-full rounded-xl border border-white/10 bg-slate-900/60 px-3 text-xs sm:text-sm text-slate-100 outline-none transition focus:border-cyan-300/60"
             >
               {domains.map((domainValue) => (
                 <option key={domainValue} value={domainValue}>
@@ -92,8 +92,8 @@ export function ShowcaseGalleryClient({ projects }: { projects: ShowcaseProject[
           </label>
 
           <div className="space-y-2">
-            <span className="text-xs uppercase tracking-[0.16em] text-slate-400">Status</span>
-            <div className="grid h-11 grid-cols-3 rounded-xl border border-white/10 bg-slate-900/60 p-1">
+            <span className="text-[10px] sm:text-xs uppercase tracking-[0.16em] text-slate-400">Status</span>
+            <div className="grid h-10 sm:h-11 grid-cols-3 rounded-xl border border-white/10 bg-slate-900/60 p-1">
               {statusOptions.map((value) => {
                 const active = status === value;
                 return (
@@ -101,7 +101,7 @@ export function ShowcaseGalleryClient({ projects }: { projects: ShowcaseProject[
                     key={value}
                     type="button"
                     onClick={() => setStatus(value)}
-                    className={`rounded-lg text-xs font-medium tracking-wide transition ${
+                    className={`rounded-lg text-[10px] sm:text-xs font-medium tracking-wide transition ${
                       active
                         ? "bg-gradient-to-r from-cyan-400 to-indigo-500 text-slate-950"
                         : "text-slate-300 hover:bg-white/10"
@@ -115,20 +115,20 @@ export function ShowcaseGalleryClient({ projects }: { projects: ShowcaseProject[
           </div>
 
           <label className="space-y-2">
-            <span className="text-xs uppercase tracking-[0.16em] text-slate-400">Search</span>
-            <div className="h-11 rounded-xl border border-white/10 bg-slate-900/60 px-3">
+            <span className="text-[10px] sm:text-xs uppercase tracking-[0.16em] text-slate-400">Search</span>
+            <div className="h-10 sm:h-11 rounded-xl border border-white/10 bg-slate-900/60 px-3">
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search projects, author, or stack"
-                className="h-full w-full bg-transparent text-sm text-slate-100 outline-none placeholder:text-slate-500"
+                placeholder="Search projects, author..."
+                className="h-full w-full bg-transparent text-xs sm:text-sm text-slate-100 outline-none placeholder:text-slate-500"
               />
             </div>
           </label>
         </div>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
         {filteredProjects.map((project, index) => {
           const preview = (project.assets ?? [])[0];
           const imageSrc = preview?.accessUrl || preview?.fileUrl || "";
@@ -141,7 +141,7 @@ export function ShowcaseGalleryClient({ projects }: { projects: ShowcaseProject[
               className="group premium-card animate-fade-up overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70 shadow-[0_25px_60px_-40px_rgba(14,116,144,0.7)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_80px_-35px_rgba(99,102,241,0.75)]"
               style={{ animationDelay: `${index * 70}ms` }}
             >
-              <div className="relative h-52 overflow-hidden">
+              <div className="relative h-40 sm:h-48 md:h-52 overflow-hidden">
                 {imageSrc ? (
                   <img
                     src={imageSrc}
@@ -151,32 +151,32 @@ export function ShowcaseGalleryClient({ projects }: { projects: ShowcaseProject[
                 ) : (
                   <div className="h-full w-full bg-[radial-gradient(circle_at_25%_20%,rgba(56,189,248,0.35),transparent_42%),radial-gradient(circle_at_85%_0%,rgba(99,102,241,0.4),transparent_36%),linear-gradient(160deg,#0f172a,#020617)]" />
                 )}
-                <span className="absolute left-4 top-4 rounded-full border border-white/30 bg-black/45 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-200 backdrop-blur">
+                <span className="absolute left-3 sm:left-4 top-3 sm:top-4 rounded-full border border-white/30 bg-black/45 px-2 sm:px-3 py-1 text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-200 backdrop-blur">
                   {project.projectDomain.replaceAll("_", " ")}
                 </span>
               </div>
 
-              <div className="space-y-4 p-5">
+              <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 md:p-5">
                 <div>
-                  <h3 className="line-clamp-2 text-xl font-semibold text-slate-50">{project.title}</h3>
-                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-300/90">{project.shortDescription}</p>
+                  <h3 className="line-clamp-2 text-base sm:text-lg md:text-xl font-semibold text-slate-50">{project.title}</h3>
+                  <p className="mt-1 sm:mt-2 line-clamp-2 text-xs sm:text-sm leading-relaxed text-slate-300/90">{project.shortDescription}</p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
                   {tags.length === 0 ? (
-                    <span className="rounded-full border border-white/15 px-2.5 py-1 text-[11px] text-slate-400">No tech tags</span>
+                    <span className="rounded-full border border-white/15 px-2 sm:px-2.5 py-0.5 sm:py-1 text-[9px] sm:text-[11px] text-slate-400">No tech tags</span>
                   ) : (
                     tags.map((tag) => (
-                      <span key={tag} className="rounded-full border border-cyan-300/25 bg-cyan-400/10 px-2.5 py-1 text-[11px] text-cyan-100">
+                      <span key={tag} className="rounded-full border border-cyan-300/25 bg-cyan-400/10 px-2 sm:px-2.5 py-0.5 sm:py-1 text-[9px] sm:text-[11px] text-cyan-100">
                         {tag}
                       </span>
                     ))
                   )}
                 </div>
 
-                <div className="flex items-center justify-between border-t border-white/10 pt-4 text-xs text-slate-400">
-                  <span>{project.owner.name || "Unknown author"}</span>
-                  <span>{new Date(project.updatedAt).toLocaleDateString()}</span>
+                <div className="flex items-center justify-between border-t border-white/10 pt-3 sm:pt-4 text-[10px] sm:text-xs text-slate-400">
+                  <span className="truncate">{project.owner.name || "Unknown author"}</span>
+                  <span className="flex-shrink-0">{new Date(project.updatedAt).toLocaleDateString()}</span>
                 </div>
               </div>
             </Link>
