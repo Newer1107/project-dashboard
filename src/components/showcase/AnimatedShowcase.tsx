@@ -245,8 +245,8 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
 
   return (
     <div className="text-[#111111] dark:text-[#E5E5E5] transition-colors duration-500 w-full overflow-x-hidden">
-      <section className="px-6 md:px-20 py-12 md:py-32 max-w-7xl mx-auto min-h-[50vh] md:min-h-screen flex items-center justify-center">
-        <div className="flex flex-col md:grid md:grid-cols-2 gap-12 md:gap-16 items-center w-full">
+      <section className="px-4 sm:px-6 md:px-20 py-12 sm:py-16 md:py-32 max-w-7xl mx-auto min-h-[50vh] md:min-h-screen flex items-center justify-center">
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-12 lg:gap-16 items-center w-full">
           <div className="w-full z-10 text-center md:text-left">
             <h1 className="font-monument font-extralight text-[40px] md:text-[80px] lg:text-[100px] leading-[0.9] tracking-tighter break-words">
               EVERY <br /> PROJECT MATTERS.
@@ -263,7 +263,7 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
       </section>
 
       {/* 2. VERTICAL TIMELINE REEL */}
-      <section className="relative w-full max-w-7xl mx-auto px-6 md:px-20">
+      <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-20 py-8 sm:py-12 md:py-16">
         <div className="flex w-full relative">
           {/* Timeline Track */}
           <div className="hidden md:flex flex-col items-center w-16 shrink-0 relative">
@@ -286,7 +286,7 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col gap-12 md:gap-24 py-12 md:py-[35vh]">
+          <div className="flex-1 flex flex-col gap-6 sm:gap-8 md:gap-12 lg:gap-24 py-8 sm:py-12 md:py-[35vh]">
             {displayProjects.map((p, i) => {
               const isActive = activeIndex === i;
               const isAdjacent = Math.abs(activeIndex - i) === 1;
@@ -303,8 +303,8 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
                     transform: `scale(${isActive ? 1 : isAdjacent ? 0.9 : 0.8})`,
                   }}
                 >
-                  <div className="w-full max-w-4xl mx-auto bg-white dark:bg-[#0A0A0A] border border-black/5 dark:border-white/10 rounded-2xl p-4 md:p-8 shadow-2xl overflow-hidden group">
-                    <div className="relative w-full aspect-[4/3] md:aspect-[16/9] overflow-hidden rounded-xl mb-6 bg-gray-100 dark:bg-zinc-900">
+                  <div className="w-full max-w-4xl mx-auto bg-white dark:bg-[#0A0A0A] border border-black/5 dark:border-white/10 rounded-2xl p-3 sm:p-4 md:p-8 shadow-2xl overflow-hidden group">
+                    <div className="relative w-full aspect-[4/3] md:aspect-[16/9] overflow-hidden rounded-xl mb-4 sm:mb-6 bg-gray-100 dark:bg-zinc-900">
                       {/* Using standard img to prevent Next Image domain config issues out of the box */}
                       <img
                         src={
@@ -323,7 +323,7 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
                       />
                     </div>
 
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-2">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-4 md:gap-6 px-2 sm:px-0">
                       <div className="flex-1">
                         <p className="font-montreal text-xs md:text-sm text-gray-500 mb-1 uppercase tracking-widest">
                           {p.category || "Project"}
