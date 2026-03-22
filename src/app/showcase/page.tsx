@@ -21,10 +21,10 @@ export default async function PublicShowcasePage() {
     const files = fs.readdirSync(imgDir);
     slideshowImages = files
       .filter((file) => /\.(jpg|jpeg|png|webp|avif)$/i.test(file))
-      // Yahan path tere folder ke hisaab se set kiya hai
+      // Path is configured relative to the public slideshow images folder
       .map((file) => `/images-rollingdisplay/${file}`);
   } catch (error) {
-    console.error("Folder read nahi hua:", error);
+    console.error("[showcase-page] Failed to read slideshow images directory:", error);
   }
 
   return (
