@@ -199,13 +199,34 @@ export default function AnalyticsDashboard() {
   }, [activeTab]);
 
   const kpiCards = [
-    { label:"Total Projects", value:metrics.totalProjects, sub:`${metrics.totalBE} Major + ${metrics.totalRBL} RBL`, icon:FolderKanban, color:"from-indigo-500 to-purple-600", change:"+100%", up:true },
-    { label:"Total Students", value:metrics.totalStudents, sub:`${metrics.beStudents} BE + ${metrics.rblStudents} TE`, icon:Users, color:"from-cyan-500 to-blue-600", change:`Avg ${(metrics.totalStudents/metrics.totalProjects).toFixed(1)}/proj`, up:true },
-    { label:"Faculty Guides", value:metrics.totalGuides, sub:"Across all projects", icon:GraduationCap, color:"from-emerald-500 to-teal-600", change:"Active", up:true },
-    { label:"Unique Domains", value:metrics.domainData.length, sub:"BE Major Projects", icon:Lightbulb, color:"from-amber-500 to-orange-600", change:`${metrics.sdgData.length} SDGs`, up:true },
+    { 
+      label: "Total Projects", 
+      value: metrics.totalProjects, 
+      sub: activeTab === "overview" ? `${metrics.totalBE} Major + ${metrics.totalRBL} RBL` : activeTab === "be" ? "BE Major Projects" : "TE RBL Projects", 
+      icon: FolderKanban, color: "from-indigo-500 to-purple-600", change: "Active", up: true 
+    },
+    { 
+      label: "Total Students", 
+      value: metrics.totalStudents, 
+      sub: activeTab === "overview" ? `${metrics.beStudents} BE + ${metrics.rblStudents} TE` : "Enrolled students", 
+      icon: Users, color: "from-cyan-500 to-blue-600", change: `Avg ${(metrics.totalStudents/Math.max(1, metrics.totalProjects)).toFixed(1)}/proj`, up: true 
+    },
+    { 
+      label: "Faculty Guides", 
+      value: metrics.totalGuides, 
+      sub: "Assisting active projects", 
+      icon: GraduationCap, color: "from-emerald-500 to-teal-600", change: "Mentorship", up: true 
+    },
+    { 
+      label: activeTab === "rbl" ? "Tech Focus Areas" : "Unique Domains", 
+      value: activeTab === "rbl" ? metrics.techFocusData.length : metrics.domainData.length, 
+      sub: activeTab === "rbl" ? "Identified from titles" : "BE Major Projects", 
+      icon: Lightbulb, color: "from-amber-500 to-orange-600", 
+      change: activeTab === "rbl" ? "Innovation focus" : `${metrics.sdgData.length} SDGs`, up: true 
+    },
   ];
 
-  const CustomTooltipStyle = "bg-neutral-900/95 dark:bg-neutral-800/95 backdrop-blur-xl border border-neutral-700 rounded-xl px-4 py-3 shadow-2xl text-white text-xs";
+  const CustomTooltipStyle = "bg-neutral-900/95 dark:bg-neutral-800/95 backdrop-blur-xl border border-neutral-700 rounded-xl px-4 py-3 shadow-2xl text-white text-xs max-w-[220px] whitespace-normal";
 
   return (
     <div className="relative w-full min-h-screen bg-neutral-50 dark:bg-neutral-950 overflow-hidden font-sans">
@@ -287,65 +308,71 @@ export default function AnalyticsDashboard() {
         </motion.div>
 
         {/* Charts Row 1: Domain Donut + SDG Distribution */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Domain Distribution Donut */}
-          <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.35,duration:0.6}}
-            className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-base font-bold text-neutral-900 dark:text-white">Domain Distribution</h3>
-                <p className="text-xs text-neutral-500 mt-1">BE Major Projects by Domain</p>
+        {activeTab !== "rbl" && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Domain Distribution Donut */}
+            <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.35,duration:0.6}}
+              className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-base font-bold text-neutral-900 dark:text-white">Domain Distribution</h3>
+                  <p className="text-xs text-neutral-500 mt-1">BE Major Projects by Domain</p>
+                </div>
+                <Target className="w-5 h-5 text-indigo-500" />
               </div>
-              <Target className="w-5 h-5 text-indigo-500" />
-            </div>
-            <div className="flex items-center gap-4">
-              <ResponsiveContainer width="50%" height={220}>
-                <PieChart>
-                  <Pie data={metrics.domainData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="value" stroke="none">
-                    {metrics.domainData.map((_, i) => <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip contentStyle={{background:"rgba(15,15,20,0.95)",border:"1px solid rgba(100,100,130,0.3)",borderRadius:"12px",color:"#fff",fontSize:"12px"}} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="flex-1 space-y-2.5">
-                {metrics.domainData.map((d,i) => (
-                  <div key={d.fullName} className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{backgroundColor:DONUT_COLORS[i%DONUT_COLORS.length]}} />
-                    <span className="text-xs text-neutral-600 dark:text-neutral-400 truncate flex-1" title={d.fullName}>{d.name}</span>
-                    <span className="text-xs font-bold text-neutral-900 dark:text-white">{d.value}</span>
-                  </div>
-                ))}
+              <div className="flex flex-col sm:flex-row items-center gap-6">
+                <ResponsiveContainer width="100%" height={220} className="sm:w-1/2">
+                  <PieChart>
+                    <Pie data={metrics.domainData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="value" stroke="none">
+                      {metrics.domainData.map((_, i) => <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip content={({active, payload}) => {
+                      if (!active || !payload?.length) return null;
+                      const d = payload[0].payload;
+                      return <div className={CustomTooltipStyle}><p className="font-bold text-white mb-1">{d.name}</p><p className="text-indigo-400 font-bold">{d.value} Projects</p></div>;
+                    }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="w-full sm:w-1/2 space-y-2.5">
+                  {metrics.domainData.map((d,i) => (
+                    <div key={d.fullName} className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{backgroundColor:DONUT_COLORS[i%DONUT_COLORS.length]}} />
+                      <span className="text-xs text-neutral-600 dark:text-neutral-400 truncate flex-1" title={d.fullName}>{d.name}</span>
+                      <span className="text-xs font-bold text-neutral-900 dark:text-white">{d.value}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          {/* SDG Impact */}
-          <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.4,duration:0.6}}
-            className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-base font-bold text-neutral-900 dark:text-white">SDG Alignment</h3>
-                <p className="text-xs text-neutral-500 mt-1">UN Sustainable Development Goals Coverage</p>
+            {/* SDG Impact */}
+            <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.4,duration:0.6}}
+              className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-base font-bold text-neutral-900 dark:text-white">SDG Alignment</h3>
+                  <p className="text-xs text-neutral-500 mt-1">UN Sustainable Development Goals Coverage</p>
+                </div>
+                <Award className="w-5 h-5 text-emerald-500" />
               </div>
-              <Award className="w-5 h-5 text-emerald-500" />
-            </div>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={metrics.sdgData} barSize={20}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.15)" />
-                <XAxis dataKey="sdg" tick={{fontSize:11,fill:"#888"}} axisLine={false} tickLine={false} label={{value:"SDG #",position:"insideBottom",offset:-2,fontSize:10,fill:"#999"}} />
-                <YAxis tick={{fontSize:11,fill:"#888"}} axisLine={false} tickLine={false} allowDecimals={false} />
-                <Tooltip content={({active,payload}) => {
-                  if (!active || !payload?.length) return null;
-                  const d = payload[0].payload;
-                  return <div className={CustomTooltipStyle}><p className="font-bold">SDG {d.sdg}</p><p className="text-neutral-400">{d.title}</p><p className="mt-1 text-emerald-400 font-bold">{d.count} project{d.count>1?"s":""}</p></div>;
-                }} />
-                <Bar dataKey="count" radius={[6,6,0,0]}>
-                  {metrics.sdgData.map((_,i) => <Cell key={i} fill={DONUT_COLORS[i%DONUT_COLORS.length]} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </motion.div>
-        </div>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={metrics.sdgData} barSize={20}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.15)" />
+                  <XAxis dataKey="sdg" tick={{fontSize:11,fill:"#888"}} axisLine={false} tickLine={false} label={{value:"SDG #",position:"insideBottom",offset:-2,fontSize:10,fill:"#999"}} />
+                  <YAxis tick={{fontSize:11,fill:"#888"}} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <Tooltip content={({active,payload}) => {
+                    if (!active || !payload?.length) return null;
+                    const d = payload[0].payload;
+                    return <div className={CustomTooltipStyle}><p className="font-bold text-white">SDG {d.sdg}</p><p className="text-neutral-400">{d.title}</p><p className="mt-1 text-emerald-400 font-bold">{d.count} project{d.count>1?"s":""}</p></div>;
+                  }} />
+                  <Bar dataKey="count" radius={[6,6,0,0]}>
+                    {metrics.sdgData.map((_,i) => <Cell key={i} fill={DONUT_COLORS[i%DONUT_COLORS.length]} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </motion.div>
+          </div>
+        )}
 
         {/* Charts Row 2: Team Size + Class Distribution */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
