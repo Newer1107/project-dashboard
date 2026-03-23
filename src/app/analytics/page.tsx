@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import React, { useMemo, useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import Image from "next/image";
 import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
@@ -11,7 +11,7 @@ import {
 } from "recharts";
 import {
   Users, FolderKanban, GraduationCap, Lightbulb, TrendingUp, Calendar,
-  BarChart3, Target, Award, Layers, Briefcase
+  BarChart3, Target, Award, Layers, Briefcase, Search, X, Filter, ChevronDown, ChevronRight
 } from "lucide-react";
 
 import beProjectsRaw from "../majorprojects/BE_NBA_groups.json";
@@ -93,16 +93,342 @@ const rblGroups = [
 // ========== COLORS ==========
 const DONUT_COLORS = ["#6366f1","#22d3ee","#f59e0b","#10b981","#f43f5e","#a855f7","#ec4899","#14b8a6"];
 const AREA_GRADIENT = ["#6366f1","#22d3ee","#10b981"];
+const TECH_FOCUS_CATEGORIES: Record<string, string[]> = {
+  "AI & Machine Learning": ["ai", "ml", "machine learning", "deep learning", "nlp", "computer vision", "predictive", "intelligent", "genai"],
+  "IoT & Smart Systems": ["iot", "smart", "drone", "embedded", "microcontroller", "stm32", "esp8266", "hardware", "sensor"],
+  "Security & Crypto": ["blockchain", "cyber", "security", "fuzzer", "crypto", "secure", "fraud", "forgery", "threat"],
+  "Data & Analytics": ["data", "analytics", "tracker", "tracking", "analyzer", "monitoring", "detection"],
+  "Platforms & Web Apps": ["app", "platform", "web", "portal", "dashboard", "system", "management"],
+};
+
+type FilterType = "domain" | "sdg" | "class" | "category" | "application" | "techFocus";
+type SelectedFilters = Record<FilterType, string[]>;
+type FilterOption = { value: string; count: number };
+type FilterOptionMap = Record<FilterType, FilterOption[]>;
+
+const FILTER_LABELS: Record<FilterType, string> = {
+  domain: "Domain",
+  sdg: "SDG",
+  class: "Class",
+  category: "Category",
+  application: "Application",
+  techFocus: "Tech Focus",
+};
+const ALL_FILTER_TYPES: FilterType[] = [
+  "domain",
+  "sdg",
+  "class",
+  "category",
+  "application",
+  "techFocus",
+];
+
+const createEmptyFilters = (): SelectedFilters => ({
+  domain: [],
+  sdg: [],
+  class: [],
+  category: [],
+  application: [],
+  techFocus: [],
+});
+
+const cloneFilters = (filters: SelectedFilters): SelectedFilters => ({
+  domain: [...filters.domain],
+  sdg: [...filters.sdg],
+  class: [...filters.class],
+  category: [...filters.category],
+  application: [...filters.application],
+  techFocus: [...filters.techFocus],
+});
+
+const getTechFocusCategory = (project: any) => {
+  const titleLower = project.title?.toLowerCase() || "";
+  let matchedCategory = "Platforms & Web Apps";
+  for (const [cat, keywords] of Object.entries(TECH_FOCUS_CATEGORIES)) {
+    if (keywords.some((kw) => titleLower.includes(kw))) {
+      matchedCategory = cat;
+      break;
+    }
+  }
+  return matchedCategory;
+};
 
 // ========== COMPONENT ==========
 export default function AnalyticsDashboard() {
+  const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"overview"|"be"|"rbl">("overview");
+  const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(createEmptyFilters());
+  const [draftFilters, setDraftFilters] = useState<SelectedFilters>(createEmptyFilters());
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [isFilterCardExpanded, setIsFilterCardExpanded] = useState(false);
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null);
+  const filterPopoverRef = useRef<HTMLDivElement | null>(null);
+  const [expandedSections, setExpandedSections] = useState<Record<FilterType, boolean>>({
+    domain: false,
+    sdg: false,
+    class: false,
+    category: false,
+    application: false,
+    techFocus: false,
+  });
+
+  useEffect(() => {
+    setSelectedFilters(createEmptyFilters());
+    setDraftFilters(createEmptyFilters());
+    setSearchQuery("");
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (!showFilterPanel) return;
+
+    const handleDocumentMouseDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (filterPopoverRef.current?.contains(target)) return;
+      if (filterButtonRef.current?.contains(target)) return;
+      setShowFilterPanel(false);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setShowFilterPanel(false);
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+      const container = filterPopoverRef.current;
+      if (!container) return;
+
+      const focusable = Array.from(
+        container.querySelectorAll<HTMLElement>(
+          'button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((el) => !el.hasAttribute("disabled"));
+
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("mousedown", handleDocumentMouseDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    requestAnimationFrame(() => {
+      const firstFocusable = filterPopoverRef.current?.querySelector<HTMLElement>(
+        'button, input, [tabindex]:not([tabindex="-1"])',
+      );
+      firstFocusable?.focus();
+    });
+
+    return () => {
+      document.removeEventListener("mousedown", handleDocumentMouseDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showFilterPanel]);
+
+  const toggleFilter = (type: FilterType, value: string) => {
+    setSelectedFilters((prev) => {
+      const hasValue = prev[type].includes(value);
+      return {
+        ...prev,
+        [type]: hasValue
+          ? prev[type].filter((v) => v !== value)
+          : [...prev[type], value],
+      };
+    });
+  };
+
+  const toggleDraftFilter = (type: FilterType, value: string) => {
+    setDraftFilters((prev) => {
+      const hasValue = prev[type].includes(value);
+      return {
+        ...prev,
+        [type]: hasValue
+          ? prev[type].filter((v) => v !== value)
+          : [...prev[type], value],
+      };
+    });
+  };
+
+  const clearAllFilters = () => {
+    const empty = createEmptyFilters();
+    setSelectedFilters(empty);
+    setDraftFilters(empty);
+  };
+
+  const clearAllFromPopover = () => {
+    const empty = createEmptyFilters();
+    setDraftFilters(empty);
+    setSelectedFilters(empty);
+  };
+
+  const applyDraftFilters = () => {
+    setSelectedFilters(cloneFilters(draftFilters));
+    setShowFilterPanel(false);
+  };
+
+  const toggleSection = (type: FilterType) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [type]: !prev[type],
+    }));
+  };
+
+  const setAllForType = (type: FilterType, values: string[], checked: boolean) => {
+    setDraftFilters((prev) => ({
+      ...prev,
+      [type]: checked ? values : [],
+    }));
+  };
+
+  const hasActiveFilters = useMemo(
+    () => Object.values(selectedFilters).some((values) => values.length > 0),
+    [selectedFilters],
+  );
+
+  const selectedFilterCount = useMemo(
+    () => Object.values(selectedFilters).reduce((sum, values) => sum + values.length, 0),
+    [selectedFilters],
+  );
+
+  const draftSelectedEntries = useMemo(
+    () =>
+      ALL_FILTER_TYPES.flatMap((type) =>
+        draftFilters[type].map((value) => ({ type, value })),
+      ),
+    [draftFilters],
+  );
+
+  const draftFilterCount = draftSelectedEntries.length;
+
+  const isDimmed = (type: FilterType, value: string) =>
+    selectedFilters[type].length > 0 && !selectedFilters[type].includes(value);
+
+  const filterOptions = useMemo<FilterOptionMap>(() => {
+    const beBase = activeTab === "rbl" ? [] : beProjects;
+    const rblBase = activeTab === "be" ? [] : rblGroups;
+    const combined = [...beBase, ...rblBase];
+
+    const buildCountOptions = (values: string[]) => {
+      const counts: Record<string, number> = {};
+      values.forEach((v) => {
+        if (!v) return;
+        counts[v] = (counts[v] || 0) + 1;
+      });
+      return Object.entries(counts)
+        .map(([value, count]) => ({ value, count }))
+        .sort((a, b) => a.value.localeCompare(b.value));
+    };
+
+    const domains = buildCountOptions(beBase.map((p) => p.domain));
+    const sdgs = buildCountOptions(
+      beBase.map((p) => String(p.sdg)).filter((v) => v && v !== "undefined"),
+    ).sort((a, b) => Number(a.value) - Number(b.value));
+
+    const classOptions =
+      activeTab === "be"
+        ? ["BE-A", "BE-B", "BE-C"]
+        : activeTab === "rbl"
+          ? ["TE-A", "TE-B", "TE-C"]
+          : ["BE-A", "BE-B", "BE-C", "TE-A", "TE-B", "TE-C"];
+    const classCounts: Record<string, number> = Object.fromEntries(
+      classOptions.map((className) => {
+        const [stream, section] = className.split("-");
+        const base = stream === "BE" ? beBase : rblBase;
+        const count = base.filter((p) => p.groupId?.startsWith(section)).length;
+        return [className, count];
+      }),
+    );
+    const classes = classOptions.map((value) => ({
+      value,
+      count: classCounts[value] || 0,
+    }));
+
+    const categories = buildCountOptions(beBase.map((p) => p.category));
+    const applications = buildCountOptions(beBase.map((p) => p.projectApplication));
+    const techFocus = buildCountOptions(combined.map((p) => getTechFocusCategory(p)));
+
+    return {
+      domain: domains,
+      sdg: sdgs,
+      class: classes,
+      category: categories,
+      application: applications,
+      techFocus,
+    };
+  }, [activeTab]);
+
+  const { filteredBE, filteredRBL, displayProjects } = useMemo(() => {
+    const isMatch = (p: any, stream: "BE" | "TE") => {
+      const matchesDomain =
+        selectedFilters.domain.length === 0 ||
+        selectedFilters.domain.includes(p.domain);
+
+      const matchesSdg =
+        selectedFilters.sdg.length === 0 ||
+        selectedFilters.sdg.includes(String(p.sdg));
+
+      const matchesClass =
+        selectedFilters.class.length === 0 ||
+        selectedFilters.class.some((classValue) => {
+          const [targetStream, section] = classValue.split("-");
+          return targetStream === stream && p.groupId?.startsWith(section);
+        });
+
+      const matchesCategory =
+        selectedFilters.category.length === 0 ||
+        selectedFilters.category.includes(p.category);
+
+      const matchesApplication =
+        selectedFilters.application.length === 0 ||
+        selectedFilters.application.includes(p.projectApplication);
+
+      const matchesTechFocus =
+        selectedFilters.techFocus.length === 0 ||
+        selectedFilters.techFocus.includes(getTechFocusCategory(p));
+
+      const passesFilter =
+        matchesDomain &&
+        matchesSdg &&
+        matchesClass &&
+        matchesCategory &&
+        matchesApplication &&
+        matchesTechFocus;
+
+      let passesSearch = true;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        passesSearch =
+          p.title?.toLowerCase().includes(q) ||
+          p.guide?.toLowerCase().includes(q) ||
+          p.groupId?.toLowerCase().includes(q) ||
+          p.students?.some((s: any) => s.name.toLowerCase().includes(q));
+      }
+
+      return passesFilter && passesSearch;
+    };
+
+    const be = activeTab === "rbl" ? [] : beProjects.filter((p) => isMatch(p, "BE"));
+    const rbl = activeTab === "be" ? [] : rblGroups.filter((p) => isMatch(p, "TE"));
+
+    return {
+      filteredBE: be,
+      filteredRBL: rbl,
+      displayProjects: [...be, ...rbl],
+    };
+  }, [selectedFilters, searchQuery, activeTab]);
 
   // Computed metrics
   const metrics = useMemo(() => {
-    const filteredBE = activeTab === "rbl" ? [] : beProjects;
-    const filteredRBL = activeTab === "be" ? [] : rblGroups;
-
     const totalBE = filteredBE.length;
     const totalRBL = filteredRBL.length;
     const totalProjects = totalBE + totalRBL;
@@ -131,29 +457,11 @@ export default function AnalyticsDashboard() {
     const sdgData = Object.values(sdgCounts).sort((a,b) => b.count - a.count);
 
     // Tech Focus Areas
-    const keywordCategories: Record<string, string[]> = {
-      "AI & Machine Learning": ["ai", "ml", "machine learning", "deep learning", "nlp", "computer vision", "predictive", "intelligent", "genai"],
-      "IoT & Smart Systems": ["iot", "smart", "drone", "embedded", "microcontroller", "stm32", "esp8266", "hardware", "sensor"],
-      "Security & Crypto": ["blockchain", "cyber", "security", "fuzzer", "crypto", "secure", "fraud", "forgery", "threat"],
-      "Data & Analytics": ["data", "analytics", "tracker", "tracking", "analyzer", "monitoring", "detection"],
-      "Platforms & Web Apps": ["app", "platform", "web", "portal", "dashboard", "system", "management"],
-    };
-
-    const techFocusCounts: Record<string, number> = Object.keys(keywordCategories).reduce((acc, key) => ({...acc, [key]: 0}), {});
+    const techFocusCounts: Record<string, number> = Object.keys(TECH_FOCUS_CATEGORIES).reduce((acc, key) => ({...acc, [key]: 0}), {});
     const allProjects = [...filteredBE, ...filteredRBL];
     
     allProjects.forEach(p => {
-      const titleLower = p.title.toLowerCase();
-      let matched = false;
-      Object.entries(keywordCategories).forEach(([category, keywords]) => {
-        if (keywords.some(kw => titleLower.includes(kw))) {
-          techFocusCounts[category]++;
-          matched = true;
-        }
-      });
-      if (!matched) {
-        techFocusCounts["Platforms & Web Apps"]++; // Default fallback
-      }
+      techFocusCounts[getTechFocusCategory(p)]++;
     });
 
     const techFocusData = Object.entries(techFocusCounts)
@@ -183,7 +491,7 @@ export default function AnalyticsDashboard() {
     const applicationData = Object.entries(applicationCounts).map(([name,count])=>({name,count})).sort((a,b)=>b.count-a.count);
 
     return { totalProjects, totalBE, totalRBL, totalStudents, beStudents, rblStudents, totalGuides, domainData, sdgData, techFocusData, classData, categoryData, applicationData };
-  }, [activeTab]);
+  }, [filteredBE, filteredRBL]);
 
   const kpiCards = [
     { 
@@ -257,14 +565,202 @@ export default function AnalyticsDashboard() {
             Comprehensive dashboard visualizing data across Major Projects (BE) and RBL Projects (TE) — students, domains, SDG alignment, and faculty distribution.
           </p>
 
-          {/* Tabs */}
-          <div className="flex gap-2 pt-2">
-            {(["overview","be","rbl"] as const).map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${activeTab===tab ? "bg-neutral-900 dark:bg-white text-white dark:text-black shadow-lg" : "bg-white/60 dark:bg-neutral-800/60 text-neutral-600 dark:text-neutral-400 hover:bg-white dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700"}`}>
-                {tab==="overview"?"Overview":tab==="be"?"Major Projects":"RBL Projects"}
-              </button>
-            ))}
+          {/* Tabs + Search */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2">
+            <div className="flex flex-wrap gap-2">
+              {(["overview","be","rbl"] as const).map(tab => (
+                <button key={tab} onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${activeTab===tab ? "bg-neutral-900 dark:bg-white text-white dark:text-black shadow-lg" : "bg-white/60 dark:bg-neutral-800/60 text-neutral-600 dark:text-neutral-400 hover:bg-white dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700"}`}>
+                  {tab==="overview"?"Overview":tab==="be"?"Major Projects":"RBL Projects"}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              <div className="relative">
+                <button
+                  ref={filterButtonRef}
+                  onClick={() =>
+                    setShowFilterPanel((prev) => {
+                      const next = !prev;
+                      if (next) {
+                        setDraftFilters(cloneFilters(selectedFilters));
+                        setIsFilterCardExpanded(false);
+                      }
+                      return next;
+                    })
+                  }
+                  aria-haspopup="dialog"
+                  aria-expanded={showFilterPanel}
+                  aria-controls="filters-popover"
+                  className="flex items-center gap-1 px-3 py-2 text-xs font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors whitespace-nowrap"
+                >
+                  <Filter className="w-3.5 h-3.5" />
+                  Filters ({selectedFilterCount})
+                </button>
+
+                <AnimatePresence>
+                  {showFilterPanel && (
+                    <motion.div
+                      id="filters-popover"
+                      ref={filterPopoverRef}
+                      role="dialog"
+                      aria-modal="false"
+                      aria-label="Filters popover"
+                      initial={{ opacity: 0, scale: 0.96, y: -6 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.96, y: -6 }}
+                      transition={{ duration: 0.16 }}
+                      className="absolute top-full mt-2 left-0 w-[320px] sm:w-[360px] z-[120] rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl shadow-xl p-3"
+                    >
+                      <button
+                        onClick={() => setIsFilterCardExpanded((prev) => !prev)}
+                        className="w-full flex items-center justify-between"
+                      >
+                        <div>
+                          <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 text-left">Active Filters</p>
+                          <p className="text-[11px] text-neutral-500 text-left">{draftFilterCount} selected</p>
+                        </div>
+                        <div className="text-neutral-500">
+                          {isFilterCardExpanded ? (
+                            <ChevronDown className="w-4 h-4" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4" />
+                          )}
+                        </div>
+                      </button>
+
+                      {isFilterCardExpanded && (
+                        <>
+                          <div className="flex items-center justify-between mt-3 mb-2">
+                            {draftFilterCount > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {draftSelectedEntries.slice(0, 2).map(({ type, value }) => (
+                                  <button
+                                    key={`${type}-${value}`}
+                                    onClick={() => toggleDraftFilter(type, value)}
+                                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
+                                  >
+                                    {FILTER_LABELS[type]}: {value} <X className="w-3 h-3" />
+                                  </button>
+                                ))}
+                                {draftFilterCount > 2 && (
+                                  <span className="inline-flex items-center px-2 py-1 rounded-md text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
+                                    +{draftFilterCount - 2} filters
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-neutral-500">No filters selected</p>
+                            )}
+                          </div>
+
+                          <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-950/50 max-h-80 overflow-y-auto">
+                            {ALL_FILTER_TYPES.map((type) => {
+                              const options = filterOptions[type];
+                              const optionValues = options.map((o) => o.value);
+                              const selectedCount = draftFilters[type].length;
+                              const allSelected = options.length > 0 && selectedCount === options.length;
+
+                              return (
+                                <div key={type} className="border-b border-neutral-200 dark:border-neutral-800 last:border-b-0">
+                                  <button
+                                    onClick={() => toggleSection(type)}
+                                    className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-neutral-100 dark:hover:bg-neutral-900"
+                                  >
+                                    <div className="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-200">
+                                      {expandedSections[type] ? (
+                                        <ChevronDown className="w-4 h-4" />
+                                      ) : (
+                                        <ChevronRight className="w-4 h-4" />
+                                      )}
+                                      {FILTER_LABELS[type]}
+                                    </div>
+                                    <span className="text-xs text-neutral-500">
+                                      {selectedCount}/{options.length}
+                                    </span>
+                                  </button>
+
+                                  {expandedSections[type] && (
+                                    <div className="px-3 pb-3 space-y-1.5">
+                                      {options.length > 0 && (
+                                        <label className="flex items-center gap-2 text-xs text-neutral-700 dark:text-neutral-300 py-1">
+                                          <input
+                                            type="checkbox"
+                                            checked={allSelected}
+                                            onChange={(e) => setAllForType(type, optionValues, e.target.checked)}
+                                            className="h-3.5 w-3.5 rounded border-neutral-300"
+                                          />
+                                          All ({options.reduce((sum, option) => sum + option.count, 0)})
+                                        </label>
+                                      )}
+
+                                      {options.length === 0 ? (
+                                        <p className="text-xs text-neutral-400 py-1">No options</p>
+                                      ) : (
+                                        options.map((option) => (
+                                          <label
+                                            key={`${type}-option-${option.value}`}
+                                            className="flex items-center gap-2 text-xs text-neutral-700 dark:text-neutral-300 py-1"
+                                          >
+                                            <input
+                                              type="checkbox"
+                                              checked={draftFilters[type].includes(option.value)}
+                                              onChange={() => toggleDraftFilter(type, option.value)}
+                                              className="h-3.5 w-3.5 rounded border-neutral-300"
+                                            />
+                                            <span className="truncate">{option.value}</span>
+                                            <span className="text-neutral-400">({option.count})</span>
+                                          </label>
+                                        ))
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          <div className="mt-3 flex items-center justify-end gap-2">
+                            <button
+                              onClick={clearAllFromPopover}
+                              className="px-3 py-1.5 text-xs font-medium rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                            >
+                              Clear
+                            </button>
+                            <button
+                              onClick={applyDraftFilters}
+                              className="px-3 py-1.5 text-xs font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-500"
+                            >
+                              Apply
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {hasActiveFilters && (
+                <button
+                  onClick={clearAllFilters}
+                  className="flex items-center gap-1 px-3 py-2 text-xs font-bold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors whitespace-nowrap"
+                >
+                  Clear Filters <X className="w-3 h-3" />
+                </button>
+              )}
+              <div className="relative w-full md:w-64 lg:w-72">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                <input
+                  type="text"
+                  placeholder="Search projects, guides..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="block w-full pl-9 pr-3 py-2 border border-neutral-200 dark:border-neutral-800 rounded-xl bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl text-sm text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300"
+                />
+              </div>
+            </div>
           </div>
         </motion.div>
 
@@ -310,8 +806,14 @@ export default function AnalyticsDashboard() {
               <div className="flex flex-col sm:flex-row items-center gap-6">
                 <ResponsiveContainer width="100%" height={220} className="sm:w-1/2">
                   <PieChart>
-                    <Pie data={metrics.domainData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="value" stroke="none">
-                      {metrics.domainData.map((_, i) => <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />)}
+                    <Pie data={metrics.domainData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="value" stroke="none" onClick={(d) => toggleFilter("domain", d.fullName)} className="cursor-pointer">
+                      {metrics.domainData.map((d, i) => (
+                        <Cell
+                          key={i}
+                          fill={DONUT_COLORS[i % DONUT_COLORS.length]}
+                          opacity={isDimmed("domain", d.fullName) ? 0.3 : 1}
+                        />
+                      ))}
                     </Pie>
                     <Tooltip content={({active, payload}) => {
                       if (!active || !payload?.length) return null;
@@ -352,8 +854,14 @@ export default function AnalyticsDashboard() {
                     const d = payload[0].payload;
                     return <div className={CustomTooltipStyle}><p className="font-bold text-white">SDG {d.sdg}</p><p className="text-neutral-400">{d.title}</p><p className="mt-1 text-emerald-400 font-bold">{d.count} project{d.count>1?"s":""}</p></div>;
                   }} />
-                  <Bar dataKey="count" radius={[6,6,0,0]}>
-                    {metrics.sdgData.map((_,i) => <Cell key={i} fill={DONUT_COLORS[i%DONUT_COLORS.length]} />)}
+                  <Bar dataKey="count" radius={[6,6,0,0]} onClick={(d) => toggleFilter("sdg", String(d.sdg))} className="cursor-pointer">
+                    {metrics.sdgData.map((d,i) => (
+                      <Cell
+                        key={i}
+                        fill={DONUT_COLORS[i%DONUT_COLORS.length]}
+                        opacity={isDimmed("sdg", String(d.sdg)) ? 0.3 : 1}
+                      />
+                    ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -383,8 +891,14 @@ export default function AnalyticsDashboard() {
                   const d = payload[0].payload;
                   return <div className={CustomTooltipStyle}><p className="font-bold">{d.name}</p><p className="mt-1 text-amber-400 font-bold">{d.count} project{d.count>1?"s":""}</p></div>;
                 }} />
-                <Bar dataKey="count" radius={[0,6,6,0]}>
-                  {metrics.techFocusData.map((_,i) => <Cell key={i} fill={DONUT_COLORS[i%DONUT_COLORS.length]} />)}
+                <Bar dataKey="count" radius={[0,6,6,0]} onClick={(d) => toggleFilter("techFocus", d.name)} className="cursor-pointer">
+                  {metrics.techFocusData.map((d,i) => (
+                    <Cell
+                      key={i}
+                      fill={DONUT_COLORS[i%DONUT_COLORS.length]}
+                      opacity={isDimmed("techFocus", d.name) ? 0.3 : 1}
+                    />
+                  ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -400,8 +914,13 @@ export default function AnalyticsDashboard() {
                 const maxVal = Math.max(...metrics.classData.map(c=>c.value));
                 const pct = (item.value/maxVal)*100;
                 const color = i < 3 ? DONUT_COLORS[i] : AREA_GRADIENT[i-3];
+                const isFaded = isDimmed("class", item.name);
                 return (
-                  <div key={item.name} className="space-y-1.5">
+                  <div
+                    key={item.name}
+                    className={`space-y-1.5 cursor-pointer transition-opacity ${isFaded ? "opacity-30" : "hover:opacity-80"}`}
+                    onClick={() => toggleFilter("class", item.name)}
+                  >
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">{item.name}</span>
                       <span className="text-sm font-black text-neutral-900 dark:text-white">{item.value}</span>
@@ -432,8 +951,14 @@ export default function AnalyticsDashboard() {
               <div className="flex flex-col sm:flex-row items-center gap-6">
                 <ResponsiveContainer width="100%" height={220} className="sm:w-1/2">
                   <PieChart>
-                    <Pie data={metrics.categoryData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="count" stroke="none">
-                      {metrics.categoryData.map((_, i) => <Cell key={i} fill={AREA_GRADIENT[i % AREA_GRADIENT.length]} />)}
+                    <Pie data={metrics.categoryData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="count" stroke="none" onClick={(d) => toggleFilter("category", d.name)} className="cursor-pointer">
+                      {metrics.categoryData.map((d, i) => (
+                        <Cell
+                          key={i}
+                          fill={AREA_GRADIENT[i % AREA_GRADIENT.length]}
+                          opacity={isDimmed("category", d.name) ? 0.3 : 1}
+                        />
+                      ))}
                     </Pie>
                     <Tooltip content={({active, payload}) => {
                       if (!active || !payload?.length) return null;
@@ -474,13 +999,71 @@ export default function AnalyticsDashboard() {
                     const d = payload[0].payload;
                     return <div className={CustomTooltipStyle}><p className="font-bold">{d.name}</p><p className="mt-1 text-amber-400 font-bold">{d.count} project{d.count>1?"s":""}</p></div>;
                   }} />
-                  <Bar dataKey="count" radius={[6,6,0,0]}>
-                    {metrics.applicationData.map((_,i) => <Cell key={i} fill={DONUT_COLORS[i%DONUT_COLORS.length]} />)}
+                  <Bar dataKey="count" radius={[6,6,0,0]} onClick={(d) => toggleFilter("application", d.name)} className="cursor-pointer">
+                    {metrics.applicationData.map((d,i) => (
+                      <Cell
+                        key={i}
+                        fill={DONUT_COLORS[i%DONUT_COLORS.length]}
+                        opacity={isDimmed("application", d.name) ? 0.3 : 1}
+                      />
+                    ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </motion.div>
           </div>
+        )}
+
+        {(hasActiveFilters || searchQuery) && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, y: 20 }}
+            animate={{ opacity: 1, height: "auto", y: 0 }}
+            className="mt-8 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 p-6"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h3 className="text-xl font-bold text-neutral-900 dark:text-white">
+                  {hasActiveFilters
+                    ? `Projects for ${selectedFilterCount} selected filter${selectedFilterCount > 1 ? "s" : ""}`
+                    : `Search Results for: ${searchQuery}`}
+                </h3>
+                <p className="text-sm text-neutral-500 mt-1">
+                  Found {displayProjects.length} matching project{displayProjects.length !== 1 ? "s" : ""}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  clearAllFilters();
+                  setSearchQuery("");
+                }}
+                className="px-4 py-2 text-sm font-medium bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+              >
+                Clear Results
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {displayProjects.map((proj, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-neutral-950/50 flex flex-col"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold px-2 py-1 rounded-md bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400">
+                      Group {proj.groupId}
+                    </span>
+                  </div>
+                  <h4 className="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-2 mb-3">
+                    {proj.title}
+                  </h4>
+                  <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mt-auto pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                    <GraduationCap className="w-3.5 h-3.5" />
+                    <span className="truncate">{proj.guide}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
         )}
       </div>
     </div>

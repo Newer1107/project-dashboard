@@ -71,7 +71,7 @@
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.0",
     "react-hook-form": "^7.54.0",
-    "recharts": "^2.15.0",
+    "recharts": "^2.15.4",
     "shadcn": "^4.1.0",
     "sonner": "^1.7.0",
     "tailwind-merge": "^2.6.0",
