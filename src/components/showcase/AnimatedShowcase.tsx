@@ -1,10 +1,9 @@
 // components/showcase/AnimatedShowcase.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Box, Line } from "@react-three/drei";
+import { OrbitControls, Box, Line, Grid } from "@react-three/drei";
 import * as THREE from "three";
 import { useTheme } from "next-themes";
 import Magnetic from "@/components/ui/Magnetic"; // Adjust path if needed
@@ -146,15 +145,20 @@ function LabScene3D() {
   return (
     <>
       <WallOutline />
-      <gridHelper
-        args={[
-          10,
-          20,
-          isDark ? "#222222" : "#dddddd",
-          isDark ? "#111111" : "#eeeeee",
-        ]}
+      <Grid
         position={[0, -3, 0]}
+        args={[20, 20]}
+        cellSize={0.5}
+        cellThickness={0.7}
+        cellColor={isDark ? "#222222" : "#e5e5e5"}
+        sectionSize={2.5}
+        sectionThickness={1.2}
+        sectionColor={isDark ? "#444444" : "#bbbbbb"}
+        fadeDistance={12}
+        fadeStrength={1.5}
+        infiniteGrid={true}
       />
+
       <LabTable position={[-2, -2.5, 0]} />
       <LabTable position={[2, -2.5, 0]} />
       <LabTable position={[0, -2.5, -2]} />
@@ -195,40 +199,11 @@ function LabScene() {
 
 // --- MAIN SHOWCASE COMPONENT ---
 export default function AnimatedShowcase({ projects }: { projects: any[] }) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  // Smooth Scroll Trigger Logic
-  useEffect(() => {
-    const handleScroll = () => {
-      const windowCenter = window.innerHeight / 2;
-      let closestIndex = 0;
-      let minDistance = Infinity;
-
-      cardRefs.current.forEach((card, index) => {
-        if (!card) return;
-        const rect = card.getBoundingClientRect();
-        const cardCenter = rect.top + rect.height / 2;
-        const distance = Math.abs(windowCenter - cardCenter);
-
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestIndex = index;
-        }
-      });
-
-      setActiveIndex(closestIndex);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   const displayProjects = projects?.length > 0 ? projects : [];
 
   return (
     <div className="text-[#111111] dark:text-[#E5E5E5] transition-colors duration-500 w-full overflow-x-hidden">
+      {/* 1. HERO SECTION */}
       <section className="px-4 sm:px-6 md:px-20 py-12 sm:py-16 md:py-32 max-w-7xl mx-auto min-h-[50vh] md:min-h-screen flex items-center justify-center">
         <div className="flex flex-col md:grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-12 lg:gap-16 items-center w-full">
           <div className="w-full z-10 text-center md:text-left">
@@ -242,7 +217,6 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
           </div>
           <div className="relative h-[40vh] md:h-[60vh] w-full rounded-2xl overflow-hidden">
             <div className="absolute inset-0 z-10 touch-pan-y block md:hidden" />
-
             <div className="relative w-full h-full z-0 md:cursor-grab md:active:cursor-grabbing">
               <LabScene />
             </div>
@@ -250,97 +224,58 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
         </div>
       </section>
 
-      {/* 2. VERTICAL TIMELINE REEL */}
-      <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-20 py-8 sm:py-12 md:py-16">
-        <div className="flex w-full relative">
-          {/* Timeline Track */}
-          <div className="hidden md:flex flex-col items-center w-16 shrink-0 relative">
-            <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[1px] bg-black/10 dark:bg-white/10 z-0" />
-            <div className="sticky top-1/2 -translate-y-1/2 h-[400px] flex flex-col items-center justify-between z-10 py-10 bg-transparent">
-              {displayProjects.map((_, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-center h-8 w-8 bg-transparent"
-                >
-                  <div
-                    className={`rounded-full transition-all duration-500 ${
-                      activeIndex === i
-                        ? "w-3 h-3 bg-black dark:bg-white"
-                        : "w-1.5 h-1.5 bg-gray-400 dark:bg-gray-600"
-                    }`}
-                  />
+      {/* 2. PROJECT GRID REEL */}
+      <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-20 py-8 sm:py-16 mb-24">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 xl:gap-10">
+          {displayProjects.map((p, i) => {
+            // DYNAMIC IMAGE LOGIC
+            const preview = (p.assets ?? [])[0];
+            const projectImage = preview?.accessUrl || preview?.fileUrl || "";
+
+            return (
+              <div
+                key={p.id || i}
+                className="group flex flex-col bg-white dark:bg-[#0A0A0A] border border-black/5 dark:border-white/10 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 ease-out"
+              >
+                {/* CARD IMAGE CONTAINER */}
+                <div className="relative w-full aspect-video overflow-hidden bg-gray-100 dark:bg-zinc-900">
+                  {projectImage ? (
+                    <img
+                      src={projectImage}
+                      alt={p.title}
+                      className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105"
+                    />
+                  ) : (
+                    // Fallback gradient if no image is available
+                    <div className="w-full h-full bg-[radial-gradient(circle_at_25%_20%,rgba(56,189,248,0.35),transparent_42%),radial-gradient(circle_at_85%_0%,rgba(99,102,241,0.4),transparent_36%),linear-gradient(160deg,#0f172a,#020617)]" />
+                  )}
+                  {/* Subtle dark overlay that lifts on hover */}
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500" />
                 </div>
-              ))}
-            </div>
-          </div>
 
-          <div className="flex-1 flex flex-col gap-6 sm:gap-8 md:gap-12 lg:gap-24 py-8 sm:py-12 md:py-[35vh]">
-            {displayProjects.map((p, i) => {
-              const isActive = activeIndex === i;
-              const isAdjacent = Math.abs(activeIndex - i) === 1;
+                {/* CARD CONTENT */}
+                <div className="flex flex-col flex-1 p-5 sm:p-6">
+                  <div className="flex-1">
+                    <h2 className="font-monument text-lg sm:text-xl uppercase tracking-tight line-clamp-2 mb-4">
+                      {p.title}
+                    </h2>
+                  </div>
 
-              return (
-                <div
-                  key={p.id || i}
-                  ref={(el) => {
-                    cardRefs.current[i] = el;
-                  }}
-                  className="w-full transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] origin-center"
-                  style={{
-                    opacity: isActive ? 1 : isAdjacent ? 0.3 : 0.05,
-                    transform: `scale(${isActive ? 1 : isAdjacent ? 0.9 : 0.8})`,
-                  }}
-                >
-                  <div className="w-full max-w-4xl mx-auto bg-white dark:bg-[#0A0A0A] border border-black/5 dark:border-white/10 rounded-2xl p-3 sm:p-4 md:p-8 shadow-2xl overflow-hidden group">
-                    <div className="relative w-full aspect-[4/3] md:aspect-[16/9] overflow-hidden rounded-xl mb-4 sm:mb-6 bg-gray-100 dark:bg-zinc-900">
-                      {/* Using standard img to prevent Next Image domain config issues out of the box */}
-                      <img
-                        src={
-                          p.image ||
-                          "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2670&auto=format&fit=crop"
-                        }
-                        alt={p.title}
-                        className={`w-full h-full object-cover transition-all duration-1000 ease-out ${
-                          isActive
-                            ? "grayscale-0 scale-100"
-                            : "grayscale scale-110"
-                        }`}
-                      />
-                      <div
-                        className={`absolute inset-0 bg-black transition-opacity duration-700 ${isActive ? "opacity-0" : "opacity-30"}`}
-                      />
-                    </div>
-
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-4 md:gap-6 px-2 sm:px-0">
-                      <div className="flex-1">
-                        <p className="font-montreal text-xs md:text-sm text-gray-500 mb-1 uppercase tracking-widest">
-                          {p.category || "Project"}
-                        </p>
-                        <h2 className="font-monument text-xl md:text-4xl uppercase tracking-tight">
-                          {p.title}
-                        </h2>
-                      </div>
-                      <div className="shrink-0">
-                        <Magnetic>
-                          {/* Change /project/ to /showcase/ */}
-                          <Link
-                            href={`/showcase/${p.slug || p.id}`}
-                            className={`inline-block border border-black/10 dark:border-white/20 px-8 py-4 font-montreal text-xs md:text-sm hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 whitespace-nowrap ${
-                              isActive
-                                ? "pointer-events-auto"
-                                : "pointer-events-none"
-                            }`}
-                          >
-                            VIEW WORK
-                          </Link>
-                        </Magnetic>
-                      </div>
-                    </div>
+                  {/* VIEW WORK BUTTON (Pushed to bottom using mt-auto from flex-1 above) */}
+                  <div className="mt-4 w-full">
+                    <Magnetic>
+                      <Link
+                        href={`/showcase/${p.slug || p.id}`}
+                        className="flex justify-center items-center w-full border border-black/10 dark:border-white/20 px-6 py-3 font-montreal text-xs font-semibold tracking-wider hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300"
+                      >
+                        VIEW WORK
+                      </Link>
+                    </Magnetic>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
       </section>
     </div>
