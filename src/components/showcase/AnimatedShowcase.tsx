@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Box, Line } from "@react-three/drei";
+import { OrbitControls, Box, Line, Grid } from "@react-three/drei";
 import * as THREE from "three";
 import { useTheme } from "next-themes";
 import Magnetic from "@/components/ui/Magnetic"; // Adjust path if needed
@@ -146,15 +146,20 @@ function LabScene3D() {
   return (
     <>
       <WallOutline />
-      <gridHelper
-        args={[
-          10,
-          20,
-          isDark ? "#222222" : "#dddddd",
-          isDark ? "#111111" : "#eeeeee",
-        ]}
+      <Grid
         position={[0, -3, 0]}
+        args={[20, 20]}
+        cellSize={0.5}
+        cellThickness={0.7}
+        cellColor={isDark ? "#222222" : "#e5e5e5"}
+        sectionSize={2.5}
+        sectionThickness={1.2}
+        sectionColor={isDark ? "#444444" : "#bbbbbb"}
+        fadeDistance={12}
+        fadeStrength={1.5}
+        infiniteGrid={true}
       />
+
       <LabTable position={[-2, -2.5, 0]} />
       <LabTable position={[2, -2.5, 0]} />
       <LabTable position={[0, -2.5, -2]} />
