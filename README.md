@@ -76,6 +76,16 @@ The app supports role-based dashboards:
 - Added App Router error boundaries to replace generic production Server Components crash message
   - route-level `error.tsx`
   - app-level `global-error.tsx`
+- Updated OTP registration server actions to return structured `{ ok, message }` results for expected user errors
+  - prevents production redaction from hiding actionable messages
+  - examples now visible in frontend: invalid OTP, unauthorized email, already registered, resend cooldown
+
+### Public Project Explorer Pages
+
+- Added public Major Projects explorer at `/majorprojects`
+- Added public TE RBL Projects explorer at `/rblprojects-te`
+- Updated navigation and middleware so both pages are publicly accessible
+- Matched `/rblprojects-te` visual system to `/majorprojects` for consistent presentation
 
 ### Bulk Email Outbox (CSV Assignments)
 
@@ -496,6 +506,8 @@ Route: /admin/projects
 - `/register`
 - `/showcase`
 - `/showcase/[projectId]`
+- `/majorprojects`
+- `/rblprojects-te`
 
 ### Admin
 
@@ -661,6 +673,12 @@ Showcase events now emit notifications for:
 - Structured section cards for review readability
 - Basic version comparison in admin review
 - Public project detail pages with sectioned narrative + screenshot gallery
+
+### Public explorer highlights
+
+- Unified neutral visual language across `/majorprojects` and `/rblprojects-te`
+- Scroll-aware but width-safe table containers to prevent overflow beyond control-bar width
+- Responsive search + class/group filters with consistent interaction states
 
 ---
 
@@ -874,6 +892,12 @@ Default password for seeded users:
 
 - Confirm selected mentor is active TEACHER.
 - Confirm action is performed by ADMIN session.
+
+### Generic production error shown instead of real auth error
+
+- If users see: "An error occurred in the Server Components render..." during registration, ensure auth server actions return structured results for expected failures instead of throwing.
+- Confirm register page handles action responses and renders `message` from `{ ok: false, message }`.
+- Validate with known cases: unauthorized email, invalid OTP, OTP resend cooldown.
 
 ### Standalone runtime warning
 

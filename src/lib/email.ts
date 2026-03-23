@@ -14,6 +14,22 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+function getFromHeader(): string {
+  const configuredFrom = process.env.SMTP_FROM?.trim();
+  if (configuredFrom) {
+    return configuredFrom;
+  }
+
+  const smtpUser = process.env.SMTP_USER?.trim();
+  const fromName = process.env.SMTP_FROM_NAME?.trim();
+
+  if (smtpUser && fromName) {
+    return `${fromName} <${smtpUser}>`;
+  }
+
+  return smtpUser || "noreply@dashboard.local";
+}
+
 export async function sendEmail(options: {
   to: string;
   subject: string;
@@ -30,7 +46,7 @@ export async function sendEmail(options: {
 
   try {
     return await transporter.sendMail({
-      from: process.env.SMTP_FROM || "noreply@dashboard.local",
+      from: getFromHeader(),
       to: options.to,
       subject: options.subject,
       html: options.html,
