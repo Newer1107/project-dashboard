@@ -36,6 +36,29 @@ type Domain = (typeof domains)[number];
 type TeamMember = { name: string; role: string };
 type AssetRef = { fileUrl: string; fileName: string; fileType: string };
 
+type AiImportShape = {
+  title?: unknown;
+  shortDescription?: unknown;
+  fullDescription?: unknown;
+  problemStatement?: unknown;
+  objectives?: unknown;
+  methodology?: unknown;
+  keyFeatures?: unknown;
+  techStack?: unknown;
+  architectureDescription?: unknown;
+  databaseUsed?: unknown;
+  apiIntegrations?: unknown;
+  githubUrl?: unknown;
+  liveDemoUrl?: unknown;
+  mentorName?: unknown;
+  mentorEmail?: unknown;
+  mentor?: { name?: unknown; email?: unknown };
+  categories?: unknown;
+  projectDomain?: unknown;
+  isPublic?: unknown;
+  teamMembers?: unknown;
+};
+
 type FormState = {
   title: string;
   shortDescription: string;
@@ -100,6 +123,36 @@ function parseCommaList(value: string) {
     .filter(Boolean);
 }
 
+function toStringValue(value: unknown): string {
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return "";
+}
+
+function toCommaSeparated(value: unknown): string {
+  if (Array.isArray(value)) {
+    return value.map((item) => toStringValue(item)).filter(Boolean).join(", ");
+  }
+  return toStringValue(value);
+}
+
+function toLineSeparated(value: unknown): string {
+  if (Array.isArray(value)) {
+    return value.map((item) => toStringValue(item)).filter(Boolean).join("\n");
+  }
+  return toStringValue(value);
+}
+
+function toBooleanValue(value: unknown): boolean | null {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (["true", "yes", "1"].includes(normalized)) return true;
+    if (["false", "no", "0"].includes(normalized)) return false;
+  }
+  return null;
+}
+
 export default function MyShowcaseProjectsPage() {
   const { data: session } = useSession();
   const role = (session?.user as any)?.role as string | undefined;
@@ -113,6 +166,40 @@ export default function MyShowcaseProjectsPage() {
   const [uploadingScreenshots, setUploadingScreenshots] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(initialForm);
+  const [aiJsonInput, setAiJsonInput] = useState("");
+
+  const aiTemplateJson = useMemo(
+    () =>
+      JSON.stringify(
+        {
+          title: "Your project title",
+          shortDescription: "2-3 line summary",
+          fullDescription: "Detailed description",
+          problemStatement: "Problem solved by the project",
+          objectives: "Main goals and outcomes",
+          methodology: "Approach and implementation process",
+          keyFeatures: ["Feature 1", "Feature 2"],
+          techStack: ["Next.js", "Prisma", "MySQL"],
+          architectureDescription: "System architecture overview",
+          databaseUsed: "MySQL",
+          apiIntegrations: ["OpenAI API", "Google Maps API"],
+          githubUrl: "https://github.com/username/repo",
+          liveDemoUrl: "https://demo.example.com",
+          teamMembers: [
+            { name: "Member One", role: "Frontend" },
+            { name: "Member Two", role: "Backend" },
+          ],
+          mentorName: "Guide name",
+          mentorEmail: "guide@college.edu",
+          categories: ["AI", "Healthcare"],
+          projectDomain: "AI",
+          isPublic: true,
+        },
+        null,
+        2
+      ),
+    []
+  );
 
   const { data, isLoading } = useQuery({
     queryKey: ["showcase", "mine"],
@@ -142,6 +229,7 @@ export default function MyShowcaseProjectsPage() {
   function openCreate() {
     setEditingId(null);
     setForm(initialForm);
+    setAiJsonInput("");
     setStep(0);
     setDialogOpen(true);
   }
@@ -171,8 +259,87 @@ export default function MyShowcaseProjectsPage() {
       isPublic: !!project.isPublic,
       teamMembers: hydrateTeam(project),
     });
+    setAiJsonInput("");
     setStep(0);
     setDialogOpen(true);
+  }
+
+  async function copyAiTemplate() {
+    try {
+      await navigator.clipboard.writeText(aiTemplateJson);
+      toast.success("AI JSON template copied");
+    } catch {
+      toast.error("Could not copy template. Please copy it manually from the box.");
+    }
+  }
+
+  function importFromAiJson() {
+    if (!aiJsonInput.trim()) {
+      toast.error("Paste AI-generated JSON first");
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(aiJsonInput) as AiImportShape;
+
+      const importedTeamMembers = Array.isArray(parsed.teamMembers)
+        ? parsed.teamMembers
+            .map((member) => {
+              if (!member || typeof member !== "object") {
+                return { name: "", role: "" };
+              }
+              const record = member as { name?: unknown; role?: unknown };
+              return {
+                name: toStringValue(record.name),
+                role: toStringValue(record.role),
+              };
+            })
+            .filter((member) => member.name || member.role)
+        : [];
+
+      const domainCandidate = toStringValue(parsed.projectDomain).toUpperCase();
+      const normalizedDomain = domains.includes(domainCandidate as Domain)
+        ? (domainCandidate as Domain)
+        : undefined;
+
+      const boolValue = toBooleanValue(parsed.isPublic);
+
+      setForm((prev) => ({
+        ...prev,
+        title: toStringValue(parsed.title) || prev.title,
+        shortDescription: toStringValue(parsed.shortDescription) || prev.shortDescription,
+        fullDescription: toStringValue(parsed.fullDescription) || prev.fullDescription,
+        problemStatement: toStringValue(parsed.problemStatement) || prev.problemStatement,
+        objectives: toStringValue(parsed.objectives) || prev.objectives,
+        methodology: toStringValue(parsed.methodology) || prev.methodology,
+        keyFeaturesText: toLineSeparated(parsed.keyFeatures) || prev.keyFeaturesText,
+        techStackText: toCommaSeparated(parsed.techStack) || prev.techStackText,
+        architectureDescription:
+          toStringValue(parsed.architectureDescription) || prev.architectureDescription,
+        databaseUsed: toStringValue(parsed.databaseUsed) || prev.databaseUsed,
+        apiIntegrationsText:
+          toCommaSeparated(parsed.apiIntegrations) || prev.apiIntegrationsText,
+        githubUrl: toStringValue(parsed.githubUrl) || prev.githubUrl,
+        liveDemoUrl: toStringValue(parsed.liveDemoUrl) || prev.liveDemoUrl,
+        mentorName:
+          toStringValue(parsed.mentorName) ||
+          toStringValue(parsed.mentor?.name) ||
+          prev.mentorName,
+        mentorEmail:
+          toStringValue(parsed.mentorEmail) ||
+          toStringValue(parsed.mentor?.email) ||
+          prev.mentorEmail,
+        categoriesText: toCommaSeparated(parsed.categories) || prev.categoriesText,
+        projectDomain: normalizedDomain || prev.projectDomain,
+        isPublic: boolValue === null ? prev.isPublic : boolValue,
+        teamMembers:
+          importedTeamMembers.length > 0 ? importedTeamMembers : prev.teamMembers,
+      }));
+
+      toast.success("AI JSON imported. Review and edit before saving.");
+    } catch {
+      toast.error("Invalid JSON. Please paste a valid JSON object.");
+    }
   }
 
   function updateTeamMember(index: number, key: keyof TeamMember, value: string) {
@@ -355,6 +522,35 @@ export default function MyShowcaseProjectsPage() {
             <DialogHeader>
               <DialogTitle>{editingId ? "Edit Showcase Submission" : "Create Showcase Submission"}</DialogTitle>
             </DialogHeader>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>AI Assist Import</CardTitle>
+                <CardDescription>
+                  Copy the template, share it with AI along with your document, then paste AI JSON below to auto-fill this form.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" onClick={copyAiTemplate}>
+                    Copy JSON Template
+                  </Button>
+                  <Button type="button" onClick={importFromAiJson}>
+                    Import AI JSON
+                  </Button>
+                </div>
+                <Textarea
+                  value={aiJsonInput}
+                  onChange={(e) => setAiJsonInput(e.target.value)}
+                  placeholder="Paste AI-generated JSON here"
+                  className="min-h-[160px] font-mono text-xs"
+                />
+                <details className="rounded-md border p-2 text-xs text-muted-foreground">
+                  <summary className="cursor-pointer font-medium">View JSON template</summary>
+                  <pre className="mt-2 whitespace-pre-wrap break-words">{aiTemplateJson}</pre>
+                </details>
+              </CardContent>
+            </Card>
 
             <div className="flex flex-wrap gap-2 pb-2">
               {steps.map((stepName, index) => (
