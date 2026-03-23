@@ -87,7 +87,7 @@ export default async function ShowcaseProjectDetailPage({
                 <img
                   src={heroVisual}
                   alt={`${project.title} preview`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               </div>
             )}
@@ -167,7 +167,7 @@ export default async function ShowcaseProjectDetailPage({
                         <img
                           src={shot.accessUrl || shot.fileUrl}
                           alt="Project screenshot"
-                          className="w-full aspect-video object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="w-full aspect-video object-contain transition-transform duration-500 group-hover:scale-105"
                         />
                       </a>
                     ))}

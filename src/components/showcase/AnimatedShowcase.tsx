@@ -243,7 +243,7 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
                     <img
                       src={projectImage}
                       alt={p.title}
-                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105"
                     />
                   ) : (
                     // Fallback gradient if no image is available
