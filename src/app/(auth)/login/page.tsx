@@ -168,7 +168,7 @@ function LoginContent() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@university.edu"
+                  placeholder="you@tcetmumbai.in"
                   {...register("email")}
                   className={errors.email ? "border-destructive" : ""}
                 />
