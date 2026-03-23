@@ -238,9 +238,6 @@ function LoginContent() {
                   Create an account
                 </Link>
               </p>
-              <p className="text-xs text-muted-foreground">
-                Demo credentials: admin@university.edu / password123
-              </p>
             </div>
           </div>
         </motion.div>
