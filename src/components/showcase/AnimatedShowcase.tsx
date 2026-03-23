@@ -256,11 +256,6 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
                 {/* CARD CONTENT */}
                 <div className="flex flex-col flex-1 p-5 sm:p-6">
                   <div className="flex-1">
-                    <p className="font-montreal text-[10px] sm:text-xs text-gray-500 mb-2 uppercase tracking-widest">
-                      {p.projectDomain
-                        ? p.projectDomain.replaceAll("_", " ")
-                        : "Project"}
-                    </p>
                     <h2 className="font-monument text-lg sm:text-xl uppercase tracking-tight line-clamp-2 mb-4">
                       {p.title}
                     </h2>
