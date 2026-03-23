@@ -148,7 +148,7 @@ export async function requestOTP(data: z.infer<typeof requestOTPSchema>): Promis
   ]);
 
   if (!allowed) {
-    return { ok: false, message: "This email is not authorized for registration., please use an allowed institutional email." };
+    return { ok: false, message: "This email is not authorized for registration, please use an allowed institutional email." };
   }
 
   if (alreadyRegistered) {
