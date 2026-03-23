@@ -61,6 +61,7 @@ export default auth(async (req) => {
   // Custom public routes
   const isPublicRblTable = pathname.startsWith("/rblprojects-te");
   const isPublicMajorProjects = pathname.startsWith("/majorprojects"); // Added this line
+  const isPublicAnalytics = pathname.startsWith("/analytics");
 
   // NextAuth API routes are always public
   if (isAuthApi) {
@@ -90,6 +91,11 @@ export default auth(async (req) => {
 
   // Allow /majorprojects
   if (isPublicMajorProjects) { // Added this block
+    return NextResponse.next();
+  }
+
+  // Allow /analytics
+  if (isPublicAnalytics) {
     return NextResponse.next();
   }
 

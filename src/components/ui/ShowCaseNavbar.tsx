@@ -25,8 +25,7 @@ export default function FloatingPillNavbar() {
             className="hover:text-black dark:hover:text-white transition-colors duration-300 font-semibold flex items-center gap-2 group"
           >
             <span className="hidden sm:inline-block">Major Projects</span>
-            <span className="sm:hidden">Major Projects</span>{" "}
-            {/* Fallback for small screens if you want to abbreviate later */}
+            <span className="sm:hidden">Major</span>
           </Link>
 
           {/* Vertical Divider */}
@@ -37,7 +36,19 @@ export default function FloatingPillNavbar() {
             href="/rblprojects-te"
             className="hover:text-black dark:hover:text-white transition-colors duration-300 font-semibold flex items-center gap-2 group"
           >
-            <span>RBL Projects</span>
+            <span className="hidden sm:inline-block">RBL Projects</span>
+            <span className="sm:hidden">RBL</span>
+          </Link>
+
+          {/* Vertical Divider */}
+          <div className="w-[1px] h-4 bg-black/20 dark:bg-white/20 hidden sm:block" />
+
+          {/* ANALYTICS */}
+          <Link
+            href="/analytics"
+            className="hover:text-black dark:hover:text-white transition-colors duration-300 font-semibold flex items-center gap-2 group"
+          >
+            <span>Analytics</span>
           </Link>
         </nav>
       </div>
