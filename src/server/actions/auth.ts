@@ -2,6 +2,7 @@
 
 import { hash } from "bcryptjs";
 import { createHash, randomInt, timingSafeEqual } from "crypto";
+import { Role } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { isEmailAllowed } from "@/lib/allowed-email";
@@ -61,6 +62,28 @@ type VerifyResult = {
   message: string;
 };
 
+type RequestOtpResult =
+  | { ok: true; message: string; resendAfterSeconds: number }
+  | { ok: false; message: string; resendAfterSeconds?: number };
+
+type VerifyOtpActionResult =
+  | { ok: true; message: string }
+  | { ok: false; message: string };
+
+type CompleteRegistrationResult =
+  | {
+      ok: true;
+      user: {
+        id: string;
+        name: string | null;
+        email: string;
+        role: Role;
+        isActive: boolean;
+        createdAt: Date;
+      };
+    }
+  | { ok: false; message: string };
+
 async function verifyOtpInternal(
   email: string,
   otp: string,
@@ -98,8 +121,12 @@ async function verifyOtpInternal(
   return { ok: true, message: "OTP verified" };
 }
 
-export async function requestOTP(data: z.infer<typeof requestOTPSchema>) {
-  const validated = requestOTPSchema.parse(data);
+export async function requestOTP(data: z.infer<typeof requestOTPSchema>): Promise<RequestOtpResult> {
+  const parsed = requestOTPSchema.safeParse(data);
+  if (!parsed.success) {
+    return { ok: false, message: "Please enter a valid email address." };
+  }
+  const validated = parsed.data;
   const email = normalizeEmail(validated.email);
 
   const existingOtp = await prisma.emailVerificationOTP.findUnique({ where: { email } });
@@ -107,7 +134,11 @@ export async function requestOTP(data: z.infer<typeof requestOTPSchema>) {
     const elapsed = Date.now() - existingOtp.createdAt.getTime();
     if (elapsed < OTP_COOLDOWN_MS) {
       const retryAfterSec = Math.ceil((OTP_COOLDOWN_MS - elapsed) / 1000);
-      throw new Error(`Please wait ${retryAfterSec}s before requesting another OTP.`);
+      return {
+        ok: false,
+        message: `Please wait ${retryAfterSec}s before requesting another OTP.`,
+        resendAfterSeconds: retryAfterSec,
+      };
     }
   }
 
@@ -117,11 +148,11 @@ export async function requestOTP(data: z.infer<typeof requestOTPSchema>) {
   ]);
 
   if (!allowed) {
-    throw new Error("This email is not authorized for registration.");
+    return { ok: false, message: "This email is not authorized for registration." };
   }
 
   if (alreadyRegistered) {
-    throw new Error("Email already registered. Please sign in.");
+    return { ok: false, message: "Email already registered. Please sign in." };
   }
 
   const otp = generateOtp();
@@ -149,7 +180,10 @@ export async function requestOTP(data: z.infer<typeof requestOTPSchema>) {
     await sendEmailVerificationOTP(email, otp);
   } catch (error: any) {
     await prisma.emailVerificationOTP.delete({ where: { email } }).catch(() => {});
-    throw new Error(error?.message || "Could not send OTP email. Please try again.");
+    return {
+      ok: false,
+      message: error?.message || "Could not send OTP email. Please try again.",
+    };
   }
 
   return {
@@ -160,33 +194,44 @@ export async function requestOTP(data: z.infer<typeof requestOTPSchema>) {
 }
 
 export async function verifyOTP(data: z.infer<typeof verifyOTPSchema>) {
-  const validated = verifyOTPSchema.parse(data);
+  const parsed = verifyOTPSchema.safeParse(data);
+  if (!parsed.success) {
+    return { ok: false, message: "Invalid OTP format." } as VerifyOtpActionResult;
+  }
+  const validated = parsed.data;
   const email = normalizeEmail(validated.email);
 
   const result = await verifyOtpInternal(email, validated.otp);
   if (!result.ok) {
-    throw new Error(result.message);
+    return { ok: false, message: result.message } as VerifyOtpActionResult;
   }
 
-  return { ok: true, message: result.message };
+  return { ok: true, message: result.message } as VerifyOtpActionResult;
 }
 
-export async function completeRegistration(data: z.infer<typeof completeRegistrationSchema>) {
-  const validated = completeRegistrationSchema.parse(data);
+export async function completeRegistration(
+  data: z.infer<typeof completeRegistrationSchema>
+): Promise<CompleteRegistrationResult> {
+  const parsed = completeRegistrationSchema.safeParse(data);
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message || "Invalid registration details.";
+    return { ok: false, message };
+  }
+  const validated = parsed.data;
   const email = normalizeEmail(validated.email);
 
   if (!(await isEmailAllowed(email))) {
-    throw new Error("This email is not authorized for registration.");
+    return { ok: false, message: "This email is not authorized for registration, please use an allowed institutional email." };
   }
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    throw new Error("Email already registered. Please sign in.");
+    return { ok: false, message: "Email already registered. Please sign in." };
   }
 
   const otpResult = await verifyOtpInternal(email, validated.otp, { consumeOnSuccess: true });
   if (!otpResult.ok) {
-    throw new Error(otpResult.message);
+    return { ok: false, message: otpResult.message };
   }
 
   const passwordHash = await hash(validated.password, 12);
@@ -245,8 +290,13 @@ export async function completeRegistration(data: z.infer<typeof completeRegistra
     return createdUser;
   });
 
-  await sendRegistrationEmail(email, validated.name);
-  return user;
+  try {
+    await sendRegistrationEmail(email, validated.name);
+  } catch {
+    // Registration has already succeeded; email failure should not block login.
+  }
+
+  return { ok: true, user };
 }
 
 export async function registerUser(data: z.infer<typeof registrationSchema>) {

@@ -71,6 +71,9 @@ export default function RegisterPage() {
 
   async function sendOtpFlow(email: string) {
     const response = await requestOTP({ email });
+    if (!response.ok) {
+      throw new Error(response.message);
+    }
     setCooldown(response.resendAfterSeconds ?? 60);
     setOtpRequestedAt(Date.now());
     setSuccessMessage(response.message);
@@ -102,13 +105,20 @@ export default function RegisterPage() {
     setSuccessMessage(null);
 
     try {
-      const user = await completeRegistration({
+      const result = await completeRegistration({
         name: values.name,
         email: values.email,
         password: values.password,
         role: values.role,
         otp,
       });
+
+      if (!result.ok) {
+        setErrorMessage(result.message);
+        return;
+      }
+
+      const user = result.user;
 
       if (user.role === "TEACHER" && !user.isActive) {
         setSuccessMessage("Registration submitted. Your teacher account is pending admin approval.");
