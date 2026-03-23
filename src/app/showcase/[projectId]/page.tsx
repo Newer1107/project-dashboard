@@ -5,6 +5,7 @@ import Image from "next/image";
 import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
 import { getPublicShowcaseProjectById } from "@/server/actions/showcase";
 import Footer from "@/components/ui/Footer";
+import { ExternalLink, Github } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -23,362 +24,294 @@ export default async function ShowcaseProjectDetailPage({
 
   const screenshots =
     project.assets?.filter((asset: any) => asset.kind === "SCREENSHOT") || [];
-  const docs =
-    project.assets?.filter((asset: any) => asset.kind === "DOCUMENTATION") ||
-    [];
   const heroVisual = screenshots[0]?.accessUrl || screenshots[0]?.fileUrl;
 
   return (
-    <div className="relative min-h-screen bg-[#E5E5E5] dark:bg-[#050505]">
-      {/* MAIN CONTENT CURTAIN */}
-      <main className="relative z-10 bg-[#FAFAFA] dark:bg-[#111111] text-[#111111] dark:text-[#E5E5E5] transition-colors duration-500 mb-[50vh] md:mb-[80vh] pb-24 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-b-3xl md:rounded-b-[4rem]">
-        {/* Subtle grid background */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none rounded-b-3xl md:rounded-b-[4rem]"></div>
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0A0A0A] text-gray-900 dark:text-gray-100 font-sans">
+      <FloatingPillNavbar />
 
-        {/* LOGO BLOCK */}
-        <div className="absolute top-6 left-4 md:left-6 z-50 flex items-center gap-3">
-          {/* FIX 2: Added responsive padding (p-1.5 md:p-2) to the wrapper */}
-          <div className="bg-white p-1.5 md:p-2 rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800">
-            <Image
-              src="/tcetlogo.png"
-              alt="TCET Logo"
-              width={64}
-              height={64}
-              unoptimized
-              // FIX 2: Added responsive sizing so it's smaller on mobile but full size on desktop
-              className="object-contain w-10 h-10 md:w-16 md:h-16"
-            />
-          </div>
-          <div className="hidden md:flex flex-col">
-            <span className="text-xs font-bold text-zinc-900 dark:text-white tracking-widest">
-              TCET
-            </span>
-            <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider">
-              Centre of Excellence For Research Culture Development
-            </span>
-          </div>
-        </div>
-
-        <div className="relative z-10">
-          <FloatingPillNavbar />
-
-          {/* FIX 1: Increased pt-8 md:pt-12 to pt-32 lg:pt-40 to safely clear the absolute logo and navbar */}
-          <div className="mx-auto max-w-7xl px-6 md:px-20 pt-32 lg:pt-40">
-            {/* BACK BUTTON */}
-            <div className="mb-12">
-              <Link
-                href="/showcase"
-                className="group inline-flex items-center font-montreal text-xs uppercase tracking-widest text-gray-500 hover:text-black dark:hover:text-white transition-colors duration-300"
-              >
-                <span className="mr-2 group-hover:-translate-x-1 transition-transform duration-300">
-                  ←
-                </span>
-                Back to Showcase
-              </Link>
+      {/* HEADER / BRANDING */}
+      <header className="bg-white dark:bg-[#111111] border-b border-gray-200 dark:border-zinc-800 pt-24 pb-8 md:pt-32 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Top Row: Logo & Breadcrumbs */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div className="flex items-center gap-4">
+              <Image
+                src="/tcetlogo.png"
+                alt="TCET Logo"
+                width={48}
+                height={48}
+                unoptimized
+                className="object-contain"
+              />
+              <div>
+                <h2 className="text-sm font-bold tracking-tight">TCET</h2>
+                <p className="text-xs text-gray-500 uppercase tracking-wider">
+                  Centre of Excellence For Research Culture Development
+                </p>
+              </div>
             </div>
 
-            {/* CRAZY HERO SECTION */}
-            <section className="relative mb-24 md:mb-32">
-              <div className="flex flex-col-reverse lg:grid lg:grid-cols-12 gap-8 items-center">
-                {/* Text Block */}
-                <div className="lg:col-span-7 z-20 w-full">
-                  <p className="font-montreal text-xs md:text-sm text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-4">
-                    <span className="w-8 h-[1px] bg-gray-400"></span>
-                    {project.projectDomain?.replace("_", " ") || "Project"}
-                  </p>
-                  <h1 className="font-monument text-[50px] sm:text-[70px] lg:text-[100px] leading-[0.85] tracking-tighter uppercase break-words mb-8 mix-blend-difference dark:mix-blend-normal">
-                    {project.title}
-                  </h1>
+            {/* Breadcrumb Navigation - Domain Removed */}
+            <nav className="text-sm font-medium text-gray-500 flex items-center gap-2">
+              <Link
+                href="/showcase"
+                className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-2"
+              >
+                ← Back to Showcase
+              </Link>
+            </nav>
+          </div>
 
-                  <div className="flex flex-wrap gap-2 pt-4 mb-8">
-                    {((project.techStack as string[]) ?? []).map((tech) => (
+          {/* Project Title Area */}
+          <div className="max-w-4xl">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight mb-4">
+              {project.title}
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl leading-relaxed">
+              {project.shortDescription ||
+                "An academic project developed by the students of TCET."}
+            </p>
+          </div>
+        </div>
+      </header>
+
+      {/* MAIN LAYOUT */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-12">
+          {/* LEFT COLUMN: PROJECT REPORT (8 cols) */}
+          <div className="lg:col-span-8 space-y-12">
+            {/* Featured Image - ONLY renders if heroVisual exists */}
+            {heroVisual && (
+              <div className="w-full aspect-[16/9] rounded-xl overflow-hidden bg-gray-200 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 shadow-sm">
+                <img
+                  src={heroVisual}
+                  alt={`${project.title} preview`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            {/* Academic Sections */}
+            <article className="prose prose-blue dark:prose-invert max-w-none space-y-10">
+              {project.fullDescription && (
+                <section>
+                  <h2 className="text-2xl font-semibold border-b border-gray-200 dark:border-zinc-800 pb-2 mb-4">
+                    Abstract / Overview
+                  </h2>
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                    {project.fullDescription}
+                  </p>
+                </section>
+              )}
+
+              {project.problemStatement && (
+                <section>
+                  <h2 className="text-2xl font-semibold border-b border-gray-200 dark:border-zinc-800 pb-2 mb-4">
+                    Problem Statement
+                  </h2>
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                    {project.problemStatement}
+                  </p>
+                </section>
+              )}
+
+              {project.objectives && (
+                <section>
+                  <h2 className="text-2xl font-semibold border-b border-gray-200 dark:border-zinc-800 pb-2 mb-4">
+                    Objectives
+                  </h2>
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                    {project.objectives}
+                  </p>
+                </section>
+              )}
+
+              {project.methodology && (
+                <section>
+                  <h2 className="text-2xl font-semibold border-b border-gray-200 dark:border-zinc-800 pb-2 mb-4">
+                    Proposed Methodology
+                  </h2>
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                    {project.methodology}
+                  </p>
+                </section>
+              )}
+
+              {project.architectureDescription && (
+                <section>
+                  <h2 className="text-2xl font-semibold border-b border-gray-200 dark:border-zinc-800 pb-2 mb-4">
+                    System Architecture
+                  </h2>
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                    {project.architectureDescription}
+                  </p>
+                </section>
+              )}
+
+              {/* Gallery Grid - ONLY renders if there are multiple screenshots */}
+              {screenshots.length > 1 && (
+                <section>
+                  <h2 className="text-2xl font-semibold border-b border-gray-200 dark:border-zinc-800 pb-2 mb-6">
+                    Project Gallery
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {screenshots.slice(1).map((shot: any) => (
+                      <a
+                        key={shot.id}
+                        href={shot.accessUrl || shot.fileUrl}
+                        target="_blank"
+                        className="block group overflow-hidden rounded-lg border border-gray-200 dark:border-zinc-700 shadow-sm"
+                      >
+                        {/* Removed hover:opacity-90 and added group-hover:scale-105 for a clean zoom effect at full opacity */}
+                        <img
+                          src={shot.accessUrl || shot.fileUrl}
+                          alt="Project screenshot"
+                          className="w-full aspect-video object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </article>
+          </div>
+
+          {/* RIGHT COLUMN: SIDEBAR (4 cols) */}
+          <aside className="lg:col-span-4 space-y-6">
+            {/* Action Card: Links */}
+            {(project.liveDemoUrl || project.githubUrl) && (
+              <div className="bg-white dark:bg-[#111111] p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
+                  Project Links
+                </h3>
+                <div className="flex flex-col gap-3">
+                  {project.liveDemoUrl && (
+                    <a
+                      href={project.liveDemoUrl}
+                      target="_blank"
+                      className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      Live Demo
+                    </a>
+                  )}
+                  {project.githubUrl && (
+                    <a
+                      href={project.githubUrl}
+                      target="_blank"
+                      className="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-gray-900 dark:text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors border border-gray-200 dark:border-zinc-700"
+                    >
+                      <Github className="w-4 h-4" />
+                      Source Code
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Team Card */}
+            <div className="bg-white dark:bg-[#111111] p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
+                Project Team
+              </h3>
+              <ul className="space-y-4">
+                {project.teamMembers?.length ? (
+                  project.teamMembers.map((member: any) => (
+                    <li key={member.id} className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-semibold border border-blue-200 dark:border-blue-800">
+                        {member.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {member.name}
+                        </p>
+                        <p className="text-xs text-gray-500">{member.role}</p>
+                      </div>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-sm text-gray-500">
+                    No team members listed.
+                  </li>
+                )}
+              </ul>
+
+              {project.mentorName && (
+                <div className="mt-6 pt-6 border-t border-gray-100 dark:border-zinc-800">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    Faculty Mentor
+                  </h4>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {project.mentorName}
+                  </p>
+                  {project.mentorEmail && (
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                      {project.mentorEmail}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Tech Stack Card */}
+            {project.techStack &&
+              (project.techStack as string[]).length > 0 && (
+                <div className="bg-white dark:bg-[#111111] p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
+                    Technologies Used
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {(project.techStack as string[]).map((tech) => (
                       <span
                         key={tech}
-                        className="backdrop-blur-md rounded-full border border-black/20 dark:border-white/20 px-5 py-2 font-montreal text-xs tracking-wider text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors duration-300 cursor-default"
+                        className="px-3 py-1 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 rounded-md text-xs font-medium border border-gray-200 dark:border-zinc-700"
                       >
                         {tech}
                       </span>
                     ))}
                   </div>
                 </div>
+              )}
 
-                {/* Image Block */}
-                <div className="lg:col-span-5 w-full relative group">
-                  <div className="absolute inset-0 bg-black/5 dark:bg-white/5 rounded-3xl transform translate-x-4 translate-y-4 transition-transform duration-500 group-hover:translate-x-6 group-hover:translate-y-6"></div>
-                  <div className="w-full aspect-[4/5] lg:aspect-square rounded-3xl overflow-hidden bg-gray-200 dark:bg-[#1A1A1A] border border-black/10 dark:border-white/10 relative z-10">
-                    {heroVisual ? (
-                      <img
-                        src={heroVisual}
-                        alt={project.title}
-                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center font-montreal text-sm text-gray-400 uppercase tracking-widest">
-                        No Preview Available
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* BENTO BOX CONTENT GRID */}
-            <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
-              {/* MAIN DETAILS (BENTO) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-min">
-                <DetailSection
-                  title="Overview"
-                  content={project.fullDescription}
-                  className="md:col-span-2 bg-black text-white dark:bg-white dark:text-black"
-                />
-
-                <DetailSection
-                  title="Problem"
-                  content={project.problemStatement}
-                  className="bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10"
-                />
-
-                <DetailSection
-                  title="Approach"
-                  content={project.methodology}
-                  className="bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10"
-                />
-
-                <DetailSection
-                  title="Objectives"
-                  content={project.objectives}
-                  className="md:col-span-2 border-black/10 dark:border-white/10"
-                />
-
-                <DetailTags
-                  title="Key Features"
-                  items={(project.keyFeatures as string[]) ?? []}
-                  className="md:col-span-2 border-black/10 dark:border-white/10"
-                />
-
-                <DetailSection
-                  title="Architecture"
-                  content={project.architectureDescription}
-                  className="border-black/10 dark:border-white/10"
-                />
-
-                <DetailSection
-                  title="Database"
-                  content={project.databaseUsed}
-                  className="border-black/10 dark:border-white/10"
-                />
-
-                <DetailTags
-                  title="Integrations"
-                  items={(project.apiIntegrations as string[]) ?? []}
-                  className="md:col-span-2 bg-black/5 dark:bg-white/5"
-                />
-
-                {/* SCREENSHOTS GALLERY */}
-                <section className="md:col-span-2 border border-black/10 dark:border-white/10 rounded-3xl p-8 transition-colors duration-500">
-                  <h2 className="font-monument text-2xl uppercase tracking-tight mb-8 flex items-center gap-4">
-                    Gallery{" "}
-                    <span className="flex-1 h-[1px] bg-black/10 dark:bg-white/10"></span>
-                  </h2>
-                  {screenshots.length === 0 ? (
-                    <p className="font-montreal text-sm text-gray-500">
-                      No screenshots uploaded.
-                    </p>
-                  ) : (
-                    <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                      {screenshots.map((shot: any) => (
-                        <a
-                          key={shot.id}
-                          href={shot.accessUrl || shot.fileUrl}
-                          target="_blank"
-                          className="block group overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 relative aspect-video"
-                        >
-                          <img
-                            src={shot.accessUrl || shot.fileUrl}
-                            alt={shot.fileName || "Project screenshot"}
-                            className="w-full h-full object-cover transition duration-700 grayscale group-hover:grayscale-0 group-hover:scale-110"
-                          />
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                            <span className="opacity-0 group-hover:opacity-100 font-montreal text-white text-xs uppercase tracking-widest transition-opacity duration-300">
-                              View Full
-                            </span>
-                          </div>
-                        </a>
-                      ))}
+            {/* Quick Specs Card */}
+            {(project.databaseUsed ||
+              (project.apiIntegrations &&
+                (project.apiIntegrations as string[]).length > 0)) && (
+              <div className="bg-white dark:bg-[#111111] p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
+                  Technical Specs
+                </h3>
+                <dl className="space-y-4">
+                  {project.databaseUsed && (
+                    <div>
+                      <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Database
+                      </dt>
+                      <dd className="text-sm text-gray-900 dark:text-gray-300 mt-1">
+                        {project.databaseUsed}
+                      </dd>
                     </div>
                   )}
-                </section>
+                  {project.apiIntegrations &&
+                    (project.apiIntegrations as string[]).length > 0 && (
+                      <div>
+                        <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4">
+                          Integrations
+                        </dt>
+                        <dd className="text-sm text-gray-900 dark:text-gray-300 mt-1">
+                          {(project.apiIntegrations as string[]).join(", ")}
+                        </dd>
+                      </div>
+                    )}
+                </dl>
               </div>
-
-              {/* SIDEBAR */}
-              <aside className="relative">
-                <section className="sticky top-24 bg-white dark:bg-[#1A1A1A] border border-black/10 dark:border-white/10 rounded-3xl p-8 shadow-xl transition-colors duration-500">
-                  <h2 className="font-monument text-xl uppercase tracking-tight mb-8 border-b border-black/10 dark:border-white/10 pb-4">
-                    Project Details
-                  </h2>
-
-                  <div className="space-y-8 font-montreal">
-                    {/* LINKS WITH ARROWS */}
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4">
-                        Resources
-                      </p>
-                      <div className="flex flex-col gap-2">
-                        {project.githubUrl && (
-                          <SidebarLink
-                            href={project.githubUrl}
-                            label="GitHub Repository"
-                          />
-                        )}
-                        {project.liveDemoUrl && (
-                          <SidebarLink
-                            href={project.liveDemoUrl}
-                            label="Live Demo"
-                          />
-                        )}
-                        {project.documentationUrl && (
-                          <SidebarLink
-                            href={project.documentationUrl}
-                            label="Documentation"
-                          />
-                        )}
-                      </div>
-                    </div>
-
-                    {/* TEAM */}
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4">
-                        Core Team
-                      </p>
-                      <div className="space-y-4">
-                        {project.teamMembers?.length === 0 ? (
-                          <p className="text-sm text-gray-400">
-                            No team members listed.
-                          </p>
-                        ) : (
-                          project.teamMembers?.map((member: any) => (
-                            <div
-                              key={member.id}
-                              className="group flex items-center gap-3"
-                            >
-                              <div className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-xs font-monument">
-                                {member.name.charAt(0)}
-                              </div>
-                              <div>
-                                <p className="text-sm text-black dark:text-white font-medium group-hover:text-gray-500 transition-colors">
-                                  {member.name}
-                                </p>
-                                <p className="text-[10px] uppercase tracking-widest text-gray-500">
-                                  {member.role}
-                                </p>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-
-                    {/* MENTOR */}
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4">
-                        Mentor
-                      </p>
-                      {project.mentorName ? (
-                        <div>
-                          <p className="text-sm text-black dark:text-white font-medium">
-                            {project.mentorName}
-                          </p>
-                          {project.mentorEmail && (
-                            <p className="text-[10px] uppercase tracking-widest text-gray-500 mt-1">
-                              {project.mentorEmail}
-                            </p>
-                          )}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-gray-400">Not provided</p>
-                      )}
-                    </div>
-                  </div>
-                </section>
-              </aside>
-            </div>
-          </div>
+            )}
+          </aside>
         </div>
       </main>
 
-      <Footer />
+      {/* <Footer /> */}
     </div>
-  );
-}
-
-// --- UPGRADED HELPER COMPONENTS ---
-
-function DetailSection({
-  title,
-  content,
-  className = "border border-black/10 dark:border-white/10 bg-white dark:bg-[#0A0A0A]",
-}: {
-  title: string;
-  content?: string | null;
-  className?: string;
-}) {
-  if (!content) return null;
-  return (
-    <section
-      className={`rounded-3xl p-8 md:p-10 transition-all duration-500 ${className}`}
-    >
-      <h2 className="font-monument text-lg md:text-xl uppercase tracking-tight mb-6 opacity-80">
-        {title}
-      </h2>
-      <p className="font-montreal text-sm md:text-base leading-relaxed opacity-90 whitespace-pre-wrap">
-        {content.trim()}
-      </p>
-    </section>
-  );
-}
-
-function DetailTags({
-  title,
-  items,
-  className = "border border-black/10 dark:border-white/10 bg-white dark:bg-[#0A0A0A]",
-}: {
-  title: string;
-  items: string[];
-  className?: string;
-}) {
-  if (!items || items.length === 0) return null;
-  return (
-    <section
-      className={`rounded-3xl p-8 md:p-10 transition-all duration-500 ${className}`}
-    >
-      <h2 className="font-monument text-lg md:text-xl uppercase tracking-tight mb-6 opacity-80">
-        {title}
-      </h2>
-      <div className="flex flex-wrap gap-2">
-        {items.map((item) => (
-          <span
-            key={item}
-            className="rounded-full border border-black/20 dark:border-white/20 px-4 py-2 font-montreal text-xs backdrop-blur-sm transition-colors duration-300"
-          >
-            {item}
-          </span>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function SidebarLink({ href, label }: { href: string; label: string }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      className="group flex items-center justify-between p-4 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300"
-    >
-      <span className="font-montreal text-sm font-medium">{label}</span>
-      <span className="transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300">
-        ↗
-      </span>
-    </a>
   );
 }
