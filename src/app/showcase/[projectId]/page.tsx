@@ -161,6 +161,7 @@ export default async function ShowcaseProjectDetailPage({
                         key={shot.id}
                         href={shot.accessUrl || shot.fileUrl}
                         target="_blank"
+                        rel="noopener noreferrer"
                         className="block group overflow-hidden rounded-lg border border-gray-200 dark:border-zinc-700 shadow-sm"
                       >
                         {/* Removed hover:opacity-90 and added group-hover:scale-105 for a clean zoom effect at full opacity */}
