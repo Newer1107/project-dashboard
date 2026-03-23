@@ -10,37 +10,12 @@ import {
   Tooltip, CartesianGrid, Legend, AreaChart, Area,
 } from "recharts";
 import {
-  Users, FolderKanban, GraduationCap, Lightbulb, TrendingUp,
-  BarChart3, Target, Award,
+  Users, FolderKanban, GraduationCap, Lightbulb, TrendingUp, Calendar,
+  BarChart3, Target, Award, Layers, Briefcase
 } from "lucide-react";
 
-// ========== DATA ==========
-const beProjects = [
-  { groupId:"A1", guide:"Ms. Loukik S", domain:"Intelligent System Design and Development", sdg:3, sdgTitle:"Good Health and Well-being", title:"Early Detection of Pancreatic Cancer using AI", students:[{rollNo:22,name:"Ragini Gaggar"},{rollNo:34,name:"Vishal Gupta"},{rollNo:35,name:"Aishwarya Jadhav"}] },
-  { groupId:"A3", guide:"Mrs. Veena Kulkarni", domain:"Intelligent System Design and Development", sdg:17, sdgTitle:"Partnerships for the Goals", title:"AI-Based Skill Gap Analyzer", students:[{rollNo:18,name:"Sachinandan Dash"},{rollNo:14,name:"Prajot Dabre"},{rollNo:2,name:"Anush Anchan"}] },
-  { groupId:"A7", guide:"Ms. Pratiksha D", domain:"Intelligent System Design and Development", sdg:12, sdgTitle:"Responsible Consumption and Production", title:"Smart Farming Assistant: Fertilizer Prediction Based on Soil and Crop Data", students:[{rollNo:43,name:"Sanjog Karan"},{rollNo:37,name:"Vinay Jayswal"},{rollNo:60,name:"Aman Maurya"}] },
-  { groupId:"A13", guide:"Mrs. Vinitta Sunish", domain:"Computing and System Design", sdg:11, sdgTitle:"Sustainable Cities and Communities", title:"Intelligent embedded system for passbox control using stm32 microcontroller", students:[{rollNo:29,name:"Mukesh Gupta"},{rollNo:30,name:"Nikhil Gupta"},{rollNo:21,name:"Dibya Jyoti Dutta"}] },
-  { groupId:"A15", guide:"Mrs. Veena Kulkarni", domain:"Computing and System Design", sdg:8, sdgTitle:"Decent Work and Economic Growth", title:"Identifying Halo CME Events Based on Particle Data from Aditya-L1", students:[{rollNo:17,name:"Devanshu Dandekar"},{rollNo:19,name:"Rohan Dhiman"},{rollNo:42,name:"Rahul Kaikani"}] },
-  { groupId:"A17", guide:"Mrs. Siddhi Ambre", domain:"Software Development & Information System", sdg:10, sdgTitle:"Reduced Inequalities", title:"Inclusive Connect: Bridging Accessibility for person with a disability", students:[{rollNo:65,name:"Ashley Pow"},{rollNo:66,name:"Kush Intwala"},{rollNo:68,name:"Komal Joshi"}] },
-  { groupId:"A20", guide:"Ms. Hetal Rana", domain:"Computing and System Design", sdg:8, sdgTitle:"Decent Work and Economic Growth", title:"Smart IoT Assistive Cane For Public Mobility", students:[{rollNo:70,name:"Aditya Chaubey"},{rollNo:69,name:"Shivam Thakur"},{rollNo:67,name:"Yash Shah"}] },
-  { groupId:"A21", guide:"Dr. Vaishali Nirgude", domain:"Intelligent System Design and Development", sdg:2, sdgTitle:"Zero Hunger", title:"AgroLens: A Novel Vision-Based System for Crop Monitoring and Weed Detection", students:[{rollNo:46,name:"Hricha Mehra"},{rollNo:51,name:"Isha Kotecha"},{rollNo:45,name:"Nisarg Kasturiwale"}] },
-  { groupId:"A22", guide:"Dr. Sheetal Rathi", domain:"Intelligent System Design and Development", sdg:2, sdgTitle:"Zero Hunger", title:"KissanSanjivani : An explainable AI powered mobile app for disease Management", students:[{rollNo:50,name:"Aditya Kotian"},{rollNo:63,name:"Katkade Rugved Sanjay"},{rollNo:52,name:"Kulkarni Archis Avinash"}] },
-  { groupId:"B2", guide:"Ms. Drashti S", domain:"Software Development & Information System", sdg:4, sdgTitle:"Quality Education", title:"AI-Driven Adaptive Training Platform with Digital Twin-Based Skill Gap Analysis", students:[{rollNo:13,name:"Manasvi Nayak"},{rollNo:14,name:"Pratik Neupane"},{rollNo:15,name:"Pranali Pahurkar"}] },
-  { groupId:"B3", guide:"Ms. Tanmayi N", domain:"Computing and System Design", sdg:12, sdgTitle:"Responsible Consumption and Production", title:"Design Smart Alert-Based Inventory System for Reducing Supermarket Food Surplus using ML", students:[{rollNo:1,name:"Snehi Mehta"},{rollNo:11,name:"Nimesh Nakhwa"},{rollNo:30,name:"Aman Prajapati"}] },
-  { groupId:"B5", guide:"Dr. R. R. Sedamkar", domain:"Software Development & Information System", sdg:4, sdgTitle:"Quality Education", title:"Design and development of AI driven Assessment Platform for Soft Skill Enhancement", students:[{rollNo:4,name:"Aditya Mishra"},{rollNo:16,name:"Harsh Pal"},{rollNo:10,name:"Pawankumar Mudaliar"}] },
-  { groupId:"B6", guide:"Mr. Swapnil Bhagat", domain:"Intelligent System Design and Development", sdg:9, sdgTitle:"Industry, Innovation and Infrastructure", title:"AuthenticityNet: Deep Learning Model for Face Image Forgery Detection", students:[{rollNo:44,name:"Shivam Sati"},{rollNo:46,name:"Meet Shah"},{rollNo:38,name:"Yash Rawal"}] },
-  { groupId:"B8", guide:"Mr. Swapnil Bhagat", domain:"Communication Networking and Web Engineering", sdg:9, sdgTitle:"Industry, Innovation and Infrastructure", title:"AI-Powered Cyber Threat Response System using Firewall", students:[{rollNo:25,name:"Anoop Patel"},{rollNo:29,name:"Karthik Prabhu"},{rollNo:32,name:"Harshit Prasad"}] },
-  { groupId:"B13", guide:"Ms. Drashti S", domain:"Multimedia Design and Development", sdg:4, sdgTitle:"Quality Education", title:"Magic Learn - DrawInAir: Redefining Creativity, Problem Solving", students:[{rollNo:42,name:"Sudeep Sarkar"},{rollNo:41,name:"Deval Saliya"},{rollNo:26,name:"Hiya Patel"}] },
-  { groupId:"B18", guide:"Dr. Rashmi Thakur", domain:"Computing and System Design", sdg:6, sdgTitle:"Clean Water and Sanitation", title:"AquaSentinel -AI powered water quality monitoring system", students:[{rollNo:2,name:"Amanteja Metla"},{rollNo:35,name:"Sahili Rane"},{rollNo:19,name:"Aditi Pandey"}] },
-  { groupId:"C1", guide:"Dr. Megharani Patil", domain:"Intelligent System Design and Development", sdg:16, sdgTitle:"Peace, Justice and Strong Institutions", title:"Nayay: A Multilingual AI Framework for Scalable Legal Assistance", students:[{rollNo:9,name:"Shashank Singh"},{rollNo:10,name:"Shivanshu Singh"},{rollNo:28,name:"Pranay Tiwari"}] },
-  { groupId:"C6", guide:"Ms. Loukik S", domain:"Software Development & Information System", sdg:9, sdgTitle:"Industry, Innovation and Infrastructure", title:"An Integrated Framework for Smart Waste Detection, Segregation, and Capacity Monitoring", students:[{rollNo:23,name:"Purva Tijare"},{rollNo:20,name:"Khushi Thakkar"}] },
-  { groupId:"C8", guide:"Mrs. Lydia Suganya", domain:"Communication Networking and Web Engineering", sdg:16, sdgTitle:"Peace, Justice and Strong Institutions", title:"Development of a web application for simulating real time mock interviews using AI", students:[{rollNo:3,name:"Dipti Singh"},{rollNo:4,name:"Kashish Singh"},{rollNo:70,name:"Samruddhi Kamble"}] },
-  { groupId:"C9", guide:"Dr. Preksha Pareek", domain:"Computing and System Design", sdg:4, sdgTitle:"Quality Education", title:"AI-enabled drone detection system", students:[{rollNo:44,name:"Abhay wadkar"},{rollNo:60,name:"Shivam Yadav"},{rollNo:46,name:"Samayak waghmare"}] },
-  { groupId:"C10", guide:"Dr. Sheetal Rathi", domain:"Communication Networking and Web Engineering", sdg:15, sdgTitle:"Life on Land", title:"Animal Rescue and Adoption platform", students:[{rollNo:61,name:"Sonam Yadav"},{rollNo:17,name:"Swathi Harish"},{rollNo:54,name:"Madhu Yadav"}] },
-  { groupId:"C22", guide:"Dr. Vaishali Nirgude", domain:"Computing and System Design", sdg:9, sdgTitle:"Industry, Innovation and Infrastructure", title:"UETP: Smart Equity Trading with AI and Predictive Analytics", students:[{rollNo:50,name:"Damodar Yadav"},{rollNo:49,name:"Akash Yadav"},{rollNo:52,name:"Kaushal Yadav"}] },
-  { groupId:"C23", guide:"Dr. R. R. Sedamkar", domain:"Software Development & Information System", sdg:9, sdgTitle:"Industry, Innovation and Infrastructure", title:"Building a custom fuzzer to improve security of open source projects", students:[{rollNo:38,name:"Atharva Vartak"},{rollNo:22,name:"Hiral Tibrewal"},{rollNo:63,name:"Vishal Yadav"}] },
-];
-
+import beProjectsRaw from "../majorprojects/BE_NBA_groups.json";
+const beProjects = beProjectsRaw as any[];
 const rblGroups = [
   { groupId:"A1", guide:"Mr. Loukik Salvi", title:"On-device semantic segmentation of WMS services with geospatial data export", students:[{rollNo:1,name:"Deepanshu Aggarwal"},{rollNo:9,name:"Gatik Arora"},{rollNo:23,name:"Choudhary Shamim Ayub Sakko"}] },
   { groupId:"A2", guide:"Dr. R.R. Sedamkar/ Co Guide: Mrs. Siddhi Ambre", title:"IOT based Smart bottle for Healthcare", students:[{rollNo:40,name:"Khushi Dwivedi"},{rollNo:61,name:"Sakshi Gupta"}] },
@@ -195,7 +170,19 @@ export default function AnalyticsDashboard() {
       { name:"TE-C", value: filteredRBL.filter(p=>p.groupId.startsWith("C")).length },
     ];
 
-    return { totalProjects, totalBE, totalRBL, totalStudents, beStudents, rblStudents, totalGuides, domainData, sdgData, techFocusData, classData };
+    // New Fields
+    const categoryCounts: Record<string, number> = {};
+    const applicationCounts: Record<string, number> = {};
+    
+    filteredBE.forEach(p => {
+      if (p.category) categoryCounts[p.category] = (categoryCounts[p.category]||0) + 1;
+      if (p.projectApplication) applicationCounts[p.projectApplication] = (applicationCounts[p.projectApplication]||0) + 1;
+    });
+
+    const categoryData = Object.entries(categoryCounts).map(([name,count])=>({name,count})).sort((a,b)=>b.count-a.count);
+    const applicationData = Object.entries(applicationCounts).map(([name,count])=>({name,count})).sort((a,b)=>b.count-a.count);
+
+    return { totalProjects, totalBE, totalRBL, totalStudents, beStudents, rblStudents, totalGuides, domainData, sdgData, techFocusData, classData, categoryData, applicationData };
   }, [activeTab]);
 
   const kpiCards = [
@@ -428,6 +415,73 @@ export default function AnalyticsDashboard() {
             </div>
           </motion.div>
         </div>
+
+        {/* Charts Row 3: Categories + Applications */}
+        {activeTab !== "rbl" && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            {/* Category Donut */}
+            <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.6,duration:0.6}}
+              className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-base font-bold text-neutral-900 dark:text-white">Project Categories</h3>
+                  <p className="text-xs text-neutral-500 mt-1">Classification of BE Projects</p>
+                </div>
+                <Layers className="w-5 h-5 text-indigo-500" />
+              </div>
+              <div className="flex flex-col sm:flex-row items-center gap-6">
+                <ResponsiveContainer width="100%" height={220} className="sm:w-1/2">
+                  <PieChart>
+                    <Pie data={metrics.categoryData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="count" stroke="none">
+                      {metrics.categoryData.map((_, i) => <Cell key={i} fill={AREA_GRADIENT[i % AREA_GRADIENT.length]} />)}
+                    </Pie>
+                    <Tooltip content={({active, payload}) => {
+                      if (!active || !payload?.length) return null;
+                      const d = payload[0].payload;
+                      return <div className={CustomTooltipStyle}><p className="font-bold text-white mb-1">{d.name}</p><p className="text-indigo-400 font-bold">{d.count} Projects</p></div>;
+                    }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="w-full sm:w-1/2 space-y-2.5">
+                  {metrics.categoryData.map((d,i) => (
+                    <div key={d.name} className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{backgroundColor:AREA_GRADIENT[i%AREA_GRADIENT.length]}} />
+                      <span className="text-xs text-neutral-600 dark:text-neutral-400 truncate flex-1" title={d.name}>{d.name}</span>
+                      <span className="text-xs font-bold text-neutral-900 dark:text-white">{d.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Application Focus BarChart */}
+            <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.65,duration:0.6}}
+              className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-base font-bold text-neutral-900 dark:text-white">Application Focus</h3>
+                  <p className="text-xs text-neutral-500 mt-1">Target End-Users / Audience</p>
+                </div>
+                <Briefcase className="w-5 h-5 text-amber-500" />
+              </div>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={metrics.applicationData} barSize={25}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.15)" vertical={false} />
+                  <XAxis dataKey="name" tick={{fontSize:11,fill:"#888"}} axisLine={false} tickLine={false} />
+                  <YAxis tick={{fontSize:11,fill:"#888"}} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <Tooltip cursor={{fill:"rgba(128,128,128,0.05)"}} content={({active,payload}) => {
+                    if (!active || !payload?.length) return null;
+                    const d = payload[0].payload;
+                    return <div className={CustomTooltipStyle}><p className="font-bold">{d.name}</p><p className="mt-1 text-amber-400 font-bold">{d.count} project{d.count>1?"s":""}</p></div>;
+                  }} />
+                  <Bar dataKey="count" radius={[6,6,0,0]}>
+                    {metrics.applicationData.map((_,i) => <Cell key={i} fill={DONUT_COLORS[i%DONUT_COLORS.length]} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </motion.div>
+          </div>
+        )}
       </div>
     </div>
   );

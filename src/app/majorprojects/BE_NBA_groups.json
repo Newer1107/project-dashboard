@@ -1,0 +1,642 @@
+[
+  {
+    "groupId": "A1",
+    "title": "Early Detection of Pancreatic Cancer using AI",
+    "guide": "Ms. Loukik S",
+    "domain": "Intelligent System Design and Development",
+    "sdg": 3,
+    "sdgTitle": "Good Health and Well-being",
+    "category": "Multidisciplinary",
+    "projectApplication": "Society Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO2, PO3, PO4, PO6",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 22,
+        "name": "Ragini Gaggar"
+      },
+      {
+        "rollNo": 34,
+        "name": "Vishal Gupta"
+      },
+      {
+        "rollNo": 35,
+        "name": "Aishwarya Jadhav"
+      }
+    ]
+  },
+  {
+    "groupId": "A3",
+    "title": "AI-Based Skill Gap Analyzer",
+    "guide": "Mrs.Veena Kulkarni",
+    "domain": "Intelligent System Design and Development",
+    "sdg": 17,
+    "sdgTitle": "Partnerships for the Goals",
+    "category": "Application",
+    "projectApplication": "Institute Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO2, PO5, PO6, PO11",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 18,
+        "name": "Sachinandan Dash"
+      },
+      {
+        "rollNo": 14,
+        "name": "Prajot Dabre"
+      },
+      {
+        "rollNo": 2,
+        "name": "Anush Anchan"
+      }
+    ]
+  },
+  {
+    "groupId": "A7",
+    "title": "Smart Farming Assistant: Fertilizer Prediction Based on Soil and Crop Data",
+    "guide": "Ms. Pratiksha D",
+    "domain": "Intelligent System Design and Development",
+    "sdg": 12,
+    "sdgTitle": "Responsible Consumption and Production",
+    "category": "Multidisciplinary",
+    "projectApplication": "Government Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO2, PO3, PO6",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 43,
+        "name": "Sanjog Karan"
+      },
+      {
+        "rollNo": 37,
+        "name": "Vinay Jayswal"
+      },
+      {
+        "rollNo": 60,
+        "name": "Aman Maurya"
+      }
+    ]
+  },
+  {
+    "groupId": "A13",
+    "title": "Intelligent embedded system for passbox control using stm32 microcontroller",
+    "guide": "Mrs. Vinitta Sunish",
+    "domain": "Computing and System Design",
+    "sdg": 11,
+    "sdgTitle": "Sustainable Cities and Communities",
+    "category": "Core",
+    "projectApplication": "Industry Use",
+    "type": "Outhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO3, PO5, PO8",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 29,
+        "name": "Mukesh Gupta"
+      },
+      {
+        "rollNo": 30,
+        "name": "Nikhil Gupta"
+      },
+      {
+        "rollNo": 21,
+        "name": "Dibya Jyoti Dutta"
+      }
+    ]
+  },
+  {
+    "groupId": "A15",
+    "title": "Identifying Halo CME Events Based on Particle Data from Aditya-L1",
+    "guide": "Mrs.Veena Kulkarni",
+    "domain": "Computing and System Design",
+    "sdg": 8,
+    "sdgTitle": "Decent Work and Economic Growth",
+    "category": "Research",
+    "projectApplication": "Government Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO4, PO5, PO11",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 17,
+        "name": "Devanshu Dandekar"
+      },
+      {
+        "rollNo": 19,
+        "name": "Rohan Dhiman"
+      },
+      {
+        "rollNo": 42,
+        "name": "Rahul Kaikani"
+      }
+    ]
+  },
+  {
+    "groupId": "A17",
+    "title": "Inclusive Connect: Bridging Accessibility for person with a disability",
+    "guide": "Mrs. Siddhi Ambre",
+    "domain": "Software Development & Information System Management",
+    "sdg": 10,
+    "sdgTitle": "Reduced Inequalities",
+    "category": "Research",
+    "projectApplication": "Society Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO3, PO6, PO7",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 65,
+        "name": "Ashley Pow"
+      },
+      {
+        "rollNo": 66,
+        "name": "Kush Intwala"
+      },
+      {
+        "rollNo": 68,
+        "name": "Komal Joshi"
+      }
+    ]
+  },
+  {
+    "groupId": "A20",
+    "title": "Smart IoT Assistive Cane For Public Mobility",
+    "guide": "Ms. Hetal Rana",
+    "domain": "Computing and System Design",
+    "sdg": 8,
+    "sdgTitle": "Decent Work and Economic Growth",
+    "category": "Multidisciplinary",
+    "projectApplication": "Society Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO3, PO6, PO8",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 70,
+        "name": "Aditya Chaubey"
+      },
+      {
+        "rollNo": 69,
+        "name": "Shivam Thakur"
+      },
+      {
+        "rollNo": 67,
+        "name": "Yash Shah"
+      }
+    ]
+  },
+  {
+    "groupId": "A21",
+    "title": "AgroLens: A Novel Vision-Based System for Crop Monitoring and Weed Detection",
+    "guide": "Dr.Vaishali Nirgude",
+    "domain": "Intelligent System Design and Development",
+    "sdg": 2,
+    "sdgTitle": "Zero Hunger",
+    "category": "Multidisciplinary",
+    "projectApplication": "Government Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO3, PO4, PO6",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 46,
+        "name": "Hricha Mehra"
+      },
+      {
+        "rollNo": 51,
+        "name": "Isha Kotecha"
+      },
+      {
+        "rollNo": 45,
+        "name": "Nisarg Kasturiwale"
+      }
+    ]
+  },
+  {
+    "groupId": "A22",
+    "title": "KissanSanjivani : An explainable AI powered mobile app for disease Management",
+    "guide": "Dr. Sheetal Rathi/ Co guide: Dr.Vaishali Nirgude",
+    "domain": "Intelligent System Design and Development",
+    "sdg": 2,
+    "sdgTitle": "Zero Hunger",
+    "category": "Multidisciplinary",
+    "projectApplication": "Government Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO2, PO3, PO4, PO6",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 50,
+        "name": "Aditya Kotian"
+      },
+      {
+        "rollNo": 63,
+        "name": "Katkade Rugved Sanjay"
+      },
+      {
+        "rollNo": 52,
+        "name": "Kulkarni Archis Avinash"
+      }
+    ]
+  },
+  {
+    "groupId": "B2",
+    "title": "AI-Driven Adaptive Training Platform with Digital Twin-Based Skill Gap Analysis and Future Readiness Insights",
+    "guide": "Ms. Drashti S",
+    "domain": "Software Development & Information System Management",
+    "sdg": 4,
+    "sdgTitle": "Quality Education",
+    "category": "Application",
+    "projectApplication": "Industry Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO3, PO5, PO10, PO11",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 13,
+        "name": "Manasvi Nayak"
+      },
+      {
+        "rollNo": 14,
+        "name": "Pratik Neupane"
+      },
+      {
+        "rollNo": 15,
+        "name": "Pranali Pahurkar"
+      }
+    ]
+  },
+  {
+    "groupId": "B3",
+    "title": "Design Smart Alert-Based Inventory System for Reducing Supermarket Food Surplus using ML",
+    "guide": "Ms. Tanmayi N",
+    "domain": "Computing and System Design",
+    "sdg": 12,
+    "sdgTitle": "Responsible Consumption and Production",
+    "category": "Application",
+    "projectApplication": "Industry Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO2, PO3, PO6",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 1,
+        "name": "Snehi Mehta"
+      },
+      {
+        "rollNo": 11,
+        "name": "Nimesh Nakhwa"
+      },
+      {
+        "rollNo": 30,
+        "name": "Aman Prajapati"
+      }
+    ]
+  },
+  {
+    "groupId": "B5",
+    "title": "Design and development of AI driven Assessment Platform for Soft Skill Enhancement",
+    "guide": "Dr. R. R. Sedamkar/ Co guide: Ms. Siddhi Ambre",
+    "domain": "Software Development & Information System Management",
+    "sdg": 4,
+    "sdgTitle": "Quality Education",
+    "category": "Application",
+    "projectApplication": "Institute Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO3, PO5, PO9",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 4,
+        "name": "Aditya Mishra"
+      },
+      {
+        "rollNo": 16,
+        "name": "Harsh Pal"
+      },
+      {
+        "rollNo": 10,
+        "name": "Pawankumar Mudaliar"
+      }
+    ]
+  },
+  {
+    "groupId": "B6",
+    "title": "AuthenticityNet: Deep Learning Model for Face Image Forgery Detection",
+    "guide": "Mr. Swapnil Bhagat",
+    "domain": "Intelligent System Design and Development",
+    "sdg": 9,
+    "sdgTitle": "Industry, Innovation and Infrastructure",
+    "category": "Application",
+    "projectApplication": "Institute Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO2, PO4, PO7",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 44,
+        "name": "Shivam Sati"
+      },
+      {
+        "rollNo": 46,
+        "name": "Meet Shah"
+      },
+      {
+        "rollNo": 38,
+        "name": "Yash Rawal"
+      }
+    ]
+  },
+  {
+    "groupId": "B8",
+    "title": "AI-Powered Cyber Threat Response System using Firewall",
+    "guide": "Mr. Swapnil Bhagat",
+    "domain": "Communication Networking and Web Engineering",
+    "sdg": 9,
+    "sdgTitle": "Industry, Innovation and Infrastructure",
+    "category": "Core",
+    "projectApplication": "Industry Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO2, PO5, PO7",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 25,
+        "name": "Anoop Patel"
+      },
+      {
+        "rollNo": 29,
+        "name": "Karthik Prabhu"
+      },
+      {
+        "rollNo": 32,
+        "name": "Harshit Prasad"
+      }
+    ]
+  },
+  {
+    "groupId": "B13",
+    "title": "Magic Learn - DrawInAir: Redefining Creativity, Problem Solving, Building Worlds with AI-Powered Gesture Learning",
+    "guide": "Ms. Drashti S",
+    "domain": "Multimedia Design and Development",
+    "sdg": 4,
+    "sdgTitle": "Quality Education",
+    "category": "Research",
+    "projectApplication": "Institute Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO3, PO5, PO11",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 42,
+        "name": "Sudeep Sarkar"
+      },
+      {
+        "rollNo": 41,
+        "name": "Deval Saliya"
+      },
+      {
+        "rollNo": 26,
+        "name": "Hiya Patel"
+      }
+    ]
+  },
+  {
+    "groupId": "B18",
+    "title": "AquaSentinel -AI powered water quality monitoring system",
+    "guide": "Dr.Rashmi Thakur",
+    "domain": "Computing and System Design",
+    "sdg": 6,
+    "sdgTitle": "Clean Water and Sanitation",
+    "category": "Multidisciplinary",
+    "projectApplication": "Government Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO2, PO3, PO6",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 2,
+        "name": "Amanteja Metla"
+      },
+      {
+        "rollNo": 35,
+        "name": "Sahili Rane"
+      },
+      {
+        "rollNo": 19,
+        "name": "Aditi Pandey"
+      }
+    ]
+  },
+  {
+    "groupId": "C1",
+    "title": "Nayay: A Multilingual AI Framework for Scalable Legal Assistance, Professional Collaboration, and Document Intelligence",
+    "guide": "Dr. Megharani Patil",
+    "domain": "Intelligent System Design and Development",
+    "sdg": 16,
+    "sdgTitle": "Peace, Justice and Strong Institutions",
+    "category": "Research",
+    "projectApplication": "Government Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO3, PO6, PO7, PO9",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 9,
+        "name": "Shashank Singh"
+      },
+      {
+        "rollNo": 10,
+        "name": "Shivanshu Singh"
+      },
+      {
+        "rollNo": 28,
+        "name": "Pranay Tiwari"
+      }
+    ]
+  },
+  {
+    "groupId": "C6",
+    "title": "An Integrated Framework for Smart Waste Detection, Segregation, and Capacity Monitoring Using Embedded Intelligence",
+    "guide": "Ms. Loukik S",
+    "domain": "Software Development & Information System Management",
+    "sdg": 9,
+    "sdgTitle": "Industry, Innovation and Infrastructure",
+    "category": "Research",
+    "projectApplication": "Society Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO3, PO5, PO6",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 23,
+        "name": "Purva Tijare"
+      },
+      {
+        "rollNo": 20,
+        "name": "Khushi Thakkar"
+      }
+    ]
+  },
+  {
+    "groupId": "C8",
+    "title": "Development of a web application for simulating real time mock interviews using AI",
+    "guide": "Mrs.Lydia Suganya",
+    "domain": "Communication Networking and Web Engineering",
+    "sdg": 16,
+    "sdgTitle": "Peace, Justice and Strong Institutions",
+    "category": "Application",
+    "projectApplication": "Society Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO3, PO9, PO10",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 3,
+        "name": "Dipti Singh"
+      },
+      {
+        "rollNo": 4,
+        "name": "Kashish Singh"
+      },
+      {
+        "rollNo": 70,
+        "name": "Samruddhi Kamble"
+      }
+    ]
+  },
+  {
+    "groupId": "C9",
+    "title": "AI-enabled drone detection system",
+    "guide": "Dr.Preksha Pareek",
+    "domain": "Computing and System Design",
+    "sdg": 4,
+    "sdgTitle": "Quality Education",
+    "category": "Application",
+    "projectApplication": "Society Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO2, PO3, PO5",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 44,
+        "name": "Abhay wadkar"
+      },
+      {
+        "rollNo": 60,
+        "name": "Shivam Yadav"
+      },
+      {
+        "rollNo": 46,
+        "name": "Samayak waghmare"
+      }
+    ]
+  },
+  {
+    "groupId": "C10",
+    "title": "Animal Rescue and Adoption platform",
+    "guide": "Dr. Sheetal Rathi/ Co guide: Mrs. Sonali Gandhi",
+    "domain": "Communication Networking and Web Engineering",
+    "sdg": 15,
+    "sdgTitle": "Life on Land",
+    "category": "Application",
+    "projectApplication": "Society Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO3, PO6, PO7",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 61,
+        "name": "Sonam Yadav"
+      },
+      {
+        "rollNo": 17,
+        "name": "Swathi Harish"
+      },
+      {
+        "rollNo": 54,
+        "name": "Madhu Yadav"
+      }
+    ]
+  },
+  {
+    "groupId": "C22",
+    "title": "UETP: Smart Equity Trading with AI and Predictive Analytics",
+    "guide": "Dr.Vaishali Nirgude",
+    "domain": "Computing and System Design",
+    "sdg": 9,
+    "sdgTitle": "Industry, Innovation and Infrastructure",
+    "category": "Research",
+    "projectApplication": "Government Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO2, PO3, PO6",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 50,
+        "name": "Damodar Yadav"
+      },
+      {
+        "rollNo": 49,
+        "name": "Akash Yadav"
+      },
+      {
+        "rollNo": 52,
+        "name": "Kaushal Yadav"
+      }
+    ]
+  },
+  {
+    "groupId": "C23",
+    "title": "Building a custom fuzzer to improve security of open source projects",
+    "guide": "Dr. R. R. Sedamkar/ Co guide: Ms. Siddhi Ambre",
+    "domain": "Software Development & Information System Management",
+    "sdg": 9,
+    "sdgTitle": "Industry, Innovation and Infrastructure",
+    "category": "Core",
+    "projectApplication": "Society Use",
+    "type": "Inhouse",
+    "expectedOutcome": "Publication",
+    "poMapped": "PO1, PO2, PO5, PO7",
+    "psoMapped": "1,2",
+    "students": [
+      {
+        "rollNo": 38,
+        "name": "Atharva Vartak"
+      },
+      {
+        "rollNo": 22,
+        "name": "Hiral Tibrewal"
+      },
+      {
+        "rollNo": 63,
+        "name": "Vishal Yadav"
+      }
+    ]
+  }
+]
