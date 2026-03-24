@@ -5,7 +5,7 @@ import Image from "next/image";
 import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
 import { getPublicShowcaseProjectById } from "@/server/actions/showcase";
 import Footer from "@/components/ui/Footer";
-import { ExternalLink, Github } from "lucide-react";
+import { ExternalLink, Github, FileText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -22,8 +22,13 @@ export default async function ShowcaseProjectDetailPage({
     notFound();
   }
 
+  // Extract both Screenshots and Documentation from project assets
   const screenshots =
     project.assets?.filter((asset: any) => asset.kind === "SCREENSHOT") || [];
+  const documentationFiles =
+    project.assets?.filter((asset: any) => asset.kind === "DOCUMENTATION") ||
+    [];
+
   const heroVisual = screenshots[0]?.accessUrl || screenshots[0]?.fileUrl;
 
   return (
@@ -52,7 +57,7 @@ export default async function ShowcaseProjectDetailPage({
               </div>
             </div>
 
-            {/* Breadcrumb Navigation - Domain Removed */}
+            {/* Breadcrumb Navigation */}
             <nav className="text-sm font-medium text-gray-500 flex items-center gap-2">
               <Link
                 href="/showcase"
@@ -81,7 +86,7 @@ export default async function ShowcaseProjectDetailPage({
         <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-12">
           {/* LEFT COLUMN: PROJECT REPORT (8 cols) */}
           <div className="lg:col-span-8 space-y-12">
-            {/* Featured Image - ONLY renders if heroVisual exists */}
+            {/* Featured Image */}
             {heroVisual && (
               <div className="w-full aspect-[16/9] rounded-xl overflow-hidden bg-gray-200 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 shadow-sm">
                 <img
@@ -149,7 +154,7 @@ export default async function ShowcaseProjectDetailPage({
                 </section>
               )}
 
-              {/* Gallery Grid - ONLY renders if there are multiple screenshots */}
+              {/* Gallery Grid */}
               {screenshots.length > 1 && (
                 <section>
                   <h2 className="text-2xl font-semibold border-b border-gray-200 dark:border-zinc-800 pb-2 mb-6">
@@ -164,7 +169,6 @@ export default async function ShowcaseProjectDetailPage({
                         rel="noopener noreferrer"
                         className="block group overflow-hidden rounded-lg border border-gray-200 dark:border-zinc-700 shadow-sm"
                       >
-                        {/* Removed hover:opacity-90 and added group-hover:scale-105 for a clean zoom effect at full opacity */}
                         <img
                           src={shot.accessUrl || shot.fileUrl}
                           alt="Project screenshot"
@@ -208,6 +212,40 @@ export default async function ShowcaseProjectDetailPage({
                     </a>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* NEW: Documentation & Resources Card */}
+            {documentationFiles.length > 0 && (
+              <div className="bg-white dark:bg-[#111111] p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
+                  Documentation & Resources
+                </h3>
+                <ul className="flex flex-col gap-3">
+                  {documentationFiles.map((doc: any, index: number) => {
+                    const key =
+                      doc.id ||
+                      doc.fileUrl ||
+                      doc.accessUrl ||
+                      `${doc.fileName || "document"}-${index}`;
+
+                    return (
+                      <li key={key}>
+                        <a
+                          href={doc.accessUrl || doc.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-start gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline group"
+                        >
+                          <FileText className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                          <span className="truncate break-all">
+                            {doc.fileName || `Document ${index + 1}`}
+                          </span>
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
             )}
 
