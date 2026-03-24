@@ -5,7 +5,7 @@ import Image from "next/image";
 import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
 import { getPublicShowcaseProjectById } from "@/server/actions/showcase";
 import Footer from "@/components/ui/Footer";
-import { ExternalLink, Github, FileText } from "lucide-react"; // Added FileText
+import { ExternalLink, Github, FileText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
