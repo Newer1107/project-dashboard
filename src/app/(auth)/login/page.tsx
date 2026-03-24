@@ -168,7 +168,7 @@ function LoginContent() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@university.edu"
+                  placeholder="you@tcetmumbai.in"
                   {...register("email")}
                   className={errors.email ? "border-destructive" : ""}
                 />
@@ -237,9 +237,6 @@ function LoginContent() {
                 <Link href="/register" className="text-primary hover:underline">
                   Create an account
                 </Link>
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Demo credentials: admin@university.edu / password123
               </p>
             </div>
           </div>
