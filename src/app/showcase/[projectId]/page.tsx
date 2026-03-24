@@ -222,21 +222,29 @@ export default async function ShowcaseProjectDetailPage({
                   Documentation & Resources
                 </h3>
                 <ul className="flex flex-col gap-3">
-                  {documentationFiles.map((doc: any, index: number) => (
-                    <li key={doc.id || index}>
-                      <a
-                        href={doc.accessUrl || doc.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-start gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline group"
-                      >
-                        <FileText className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                        <span className="truncate break-all">
-                          {doc.fileName || `Document ${index + 1}`}
-                        </span>
-                      </a>
-                    </li>
-                  ))}
+                  {documentationFiles.map((doc: any, index: number) => {
+                    const key =
+                      doc.id ||
+                      doc.fileUrl ||
+                      doc.accessUrl ||
+                      `${doc.fileName || "document"}-${index}`;
+
+                    return (
+                      <li key={key}>
+                        <a
+                          href={doc.accessUrl || doc.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-start gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline group"
+                        >
+                          <FileText className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                          <span className="truncate break-all">
+                            {doc.fileName || `Document ${index + 1}`}
+                          </span>
+                        </a>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}
