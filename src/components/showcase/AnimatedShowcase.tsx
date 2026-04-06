@@ -2,6 +2,10 @@
 "use client";
 
 import Link from "next/link";
+<<<<<<< feature/my-change
+import Magnetic from "@/components/ui/Magnetic"; // Adjust path if needed
+import { SplineScene } from "@/components/ui/splite";
+=======
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Box, Line, Grid } from "@react-three/drei";
 import * as THREE from "three";
@@ -196,6 +200,7 @@ function LabScene() {
     </Canvas>
   );
 }
+>>>>>>> main
 
 // --- MAIN SHOWCASE COMPONENT ---
 export default function AnimatedShowcase({ projects }: { projects: any[] }) {
@@ -204,22 +209,38 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
   return (
     <div className="text-[#111111] dark:text-[#E5E5E5] transition-colors duration-500 w-full overflow-x-hidden">
       {/* 1. HERO SECTION */}
+<<<<<<< feature/my-change
+      <section className="px-4 sm:px-6 md:px-10 lg:px-16 py-12 sm:py-16 lg:py-24 max-w-7xl mx-auto min-h-[55vh] lg:min-h-[85vh] flex items-center justify-center">
+        <div className="flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(320px,520px)] gap-8 sm:gap-10 lg:gap-16 items-center w-full">
+          <div className="w-full z-10 text-center lg:text-left">
+            <h1 className="font-monument font-extralight text-[clamp(2.7rem,7vw,6.5rem)] leading-[0.92] tracking-tighter break-words">
+=======
       <section className="px-4 sm:px-6 md:px-20 py-12 sm:py-16 md:py-32 max-w-7xl mx-auto min-h-[50vh] md:min-h-screen flex items-center justify-center">
         <div className="flex flex-col md:grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-12 lg:gap-16 items-center w-full">
           <div className="w-full z-10 text-center md:text-left">
             <h1 className="font-monument font-extralight text-[40px] md:text-[80px] lg:text-[100px] leading-[0.9] tracking-tighter break-words">
+>>>>>>> main
               EVERY <br /> PROJECT MATTERS.
             </h1>
-            <p className="font-montreal text-gray-500 dark:text-gray-400 mt-6 mx-auto md:mx-0 max-w-md text-base md:text-lg">
+            <p className="font-montreal text-gray-500 dark:text-gray-400 mt-5 sm:mt-6 mx-auto lg:mx-0 max-w-[44ch] text-[clamp(0.98rem,1.25vw,1.22rem)] leading-relaxed">
               A collection of digital products and systems designed with a focus
               on performance, structure and clarity by the students of TCET.
             </p>
           </div>
+<<<<<<< feature/my-change
+          <div className="relative w-full max-w-[520px] aspect-[4/5] min-h-[320px] sm:min-h-[380px] lg:min-h-0 overflow-hidden rounded-3xl border border-black/15 dark:border-white/10 bg-[#1a1f2e] dark:bg-[#0e1117]">
+            <SplineScene
+              scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
+              className="h-full w-full saturate-[0.10] contrast-[0.95] hue-rotate-[200deg]"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-black/20" />
+=======
           <div className="relative h-[40vh] md:h-[60vh] w-full rounded-2xl overflow-hidden">
             <div className="absolute inset-0 z-10 touch-pan-y block md:hidden" />
             <div className="relative w-full h-full z-0 md:cursor-grab md:active:cursor-grabbing">
               <LabScene />
             </div>
+>>>>>>> main
           </div>
         </div>
       </section>
