@@ -2,205 +2,8 @@
 "use client";
 
 import Link from "next/link";
-<<<<<<< feature/my-change
 import Magnetic from "@/components/ui/Magnetic"; // Adjust path if needed
 import { SplineScene } from "@/components/ui/splite";
-=======
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Box, Line, Grid } from "@react-three/drei";
-import * as THREE from "three";
-import { useTheme } from "next-themes";
-import Magnetic from "@/components/ui/Magnetic"; // Adjust path if needed
-
-// --- 3D LAB SCENE COMPONENTS ---
-function LabTable({ position }: { position: [number, number, number] }) {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-  const lineColor = isDark ? "#444444" : "#bbbbbb";
-
-  return (
-    <group position={position}>
-      <lineSegments>
-        <edgesGeometry args={[new THREE.BoxGeometry(3, 0.1, 1.5)]} />
-        <lineBasicMaterial color={lineColor} />
-      </lineSegments>
-      {[
-        [-1.4, -0.4, -0.7],
-        [1.4, -0.4, -0.7],
-        [-1.4, -0.4, 0.7],
-        [1.4, -0.4, 0.7],
-      ].map((pos, i) => (
-        <Line
-          key={i}
-          points={[
-            [pos[0], pos[1], pos[2]],
-            [pos[0], pos[1] - 0.7, pos[2]],
-          ]}
-          color={lineColor}
-          lineWidth={1}
-        />
-      ))}
-    </group>
-  );
-}
-
-function Equipment({ position, color = "#ff4500" }: any) {
-  return (
-    <group position={position}>
-      <Box args={[0.4, 0.3, 0.3]}>
-        <meshBasicMaterial color={color} />
-      </Box>
-    </group>
-  );
-}
-
-function Monitor({ position }: any) {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-
-  return (
-    <group position={position}>
-      <lineSegments>
-        <edgesGeometry args={[new THREE.BoxGeometry(0.8, 0.5, 0.05)]} />
-        <lineBasicMaterial color={isDark ? "#666666" : "#999999"} />
-      </lineSegments>
-      <Box args={[0.75, 0.45, 0.01]} position={[0, 0, 0.03]}>
-        <meshBasicMaterial color={isDark ? "#001122" : "#e6f2ff"} />
-      </Box>
-    </group>
-  );
-}
-
-function ServerRack({ position }: any) {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-
-  return (
-    <group position={position}>
-      <lineSegments>
-        <edgesGeometry args={[new THREE.BoxGeometry(0.6, 1.8, 0.6)]} />
-        <lineBasicMaterial color={isDark ? "#555555" : "#aaaaaa"} />
-      </lineSegments>
-      {[0.6, 0.3, 0, -0.3, -0.6].map((y, i) => (
-        <lineSegments key={i} position={[0, y, 0]}>
-          <edgesGeometry args={[new THREE.BoxGeometry(0.55, 0.08, 0.55)]} />
-          <lineBasicMaterial color={isDark ? "#777777" : "#888888"} />
-        </lineSegments>
-      ))}
-      {[0.6, 0.3, 0, -0.3, -0.6].map((y, i) => (
-        <Box
-          key={`led-${i}`}
-          args={[0.02, 0.02, 0.02]}
-          position={[0.25, y, 0.28]}
-        >
-          <meshBasicMaterial color="#00ff00" />
-        </Box>
-      ))}
-    </group>
-  );
-}
-
-function WallOutline() {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-  const wallColor = isDark ? "#333333" : "#cccccc";
-
-  return (
-    <group>
-      <Line
-        points={[
-          [-5, -3, -4],
-          [5, -3, -4],
-          [5, 3, -4],
-          [-5, 3, -4],
-          [-5, -3, -4],
-        ]}
-        color={wallColor}
-        lineWidth={1}
-      />
-      <Line
-        points={[
-          [-5, -3, -4],
-          [-5, -3, 4],
-          [-5, 3, 4],
-          [-5, 3, -4],
-        ]}
-        color={wallColor}
-        lineWidth={1}
-      />
-      <Line
-        points={[
-          [5, -3, -4],
-          [5, -3, 4],
-          [5, 3, 4],
-          [5, 3, -4],
-        ]}
-        color={wallColor}
-        lineWidth={1}
-      />
-    </group>
-  );
-}
-
-function LabScene3D() {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-
-  return (
-    <>
-      <WallOutline />
-      <Grid
-        position={[0, -3, 0]}
-        args={[20, 20]}
-        cellSize={0.5}
-        cellThickness={0.7}
-        cellColor={isDark ? "#222222" : "#e5e5e5"}
-        sectionSize={2.5}
-        sectionThickness={1.2}
-        sectionColor={isDark ? "#444444" : "#bbbbbb"}
-        fadeDistance={12}
-        fadeStrength={1.5}
-        infiniteGrid={true}
-      />
-
-      <LabTable position={[-2, -2.5, 0]} />
-      <LabTable position={[2, -2.5, 0]} />
-      <LabTable position={[0, -2.5, -2]} />
-      <Equipment position={[-2, -2.3, 0.2]} color="#ff4500" />
-      <Equipment position={[2, -2.3, -0.3]} color="#00ff88" />
-      <Equipment position={[0.5, -2.3, -2]} color="#4a90e2" />
-      <Monitor position={[-1.5, -2.1, -2]} />
-      <Monitor position={[1.5, -2.1, -2]} />
-      <ServerRack position={[-4, -1.1, -1]} />
-      <ServerRack position={[4, -1.1, -1]} />
-    </>
-  );
-}
-
-function LabScene() {
-  return (
-    <Canvas
-      camera={{ position: [8, 4, 8], fov: 50 }}
-      style={{ touchAction: "pan-y" }}
-    >
-      <ambientLight intensity={0.5} />
-      <LabScene3D />
-
-      <OrbitControls
-        enableZoom={false}
-        target={[0, 0, 0]}
-        autoRotate={true}
-        autoRotateSpeed={2}
-        enablePan={false}
-        minDistance={5}
-        maxDistance={20}
-        minPolarAngle={Math.PI / 6}
-        maxPolarAngle={Math.PI / 2.2}
-      />
-    </Canvas>
-  );
-}
->>>>>>> main
 
 // --- MAIN SHOWCASE COMPONENT ---
 export default function AnimatedShowcase({ projects }: { projects: any[] }) {
@@ -209,17 +12,10 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
   return (
     <div className="text-[#111111] dark:text-[#E5E5E5] transition-colors duration-500 w-full overflow-x-hidden">
       {/* 1. HERO SECTION */}
-<<<<<<< feature/my-change
       <section className="px-4 sm:px-6 md:px-10 lg:px-16 py-12 sm:py-16 lg:py-24 max-w-7xl mx-auto min-h-[55vh] lg:min-h-[85vh] flex items-center justify-center">
         <div className="flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(320px,520px)] gap-8 sm:gap-10 lg:gap-16 items-center w-full">
           <div className="w-full z-10 text-center lg:text-left">
             <h1 className="font-monument font-extralight text-[clamp(2.7rem,7vw,6.5rem)] leading-[0.92] tracking-tighter break-words">
-=======
-      <section className="px-4 sm:px-6 md:px-20 py-12 sm:py-16 md:py-32 max-w-7xl mx-auto min-h-[50vh] md:min-h-screen flex items-center justify-center">
-        <div className="flex flex-col md:grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-12 lg:gap-16 items-center w-full">
-          <div className="w-full z-10 text-center md:text-left">
-            <h1 className="font-monument font-extralight text-[40px] md:text-[80px] lg:text-[100px] leading-[0.9] tracking-tighter break-words">
->>>>>>> main
               EVERY <br /> PROJECT MATTERS.
             </h1>
             <p className="font-montreal text-gray-500 dark:text-gray-400 mt-5 sm:mt-6 mx-auto lg:mx-0 max-w-[44ch] text-[clamp(0.98rem,1.25vw,1.22rem)] leading-relaxed">
@@ -227,20 +23,12 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
               on performance, structure and clarity by the students of TCET.
             </p>
           </div>
-<<<<<<< feature/my-change
-          <div className="relative w-full max-w-[520px] aspect-[4/5] min-h-[320px] sm:min-h-[380px] lg:min-h-0 overflow-hidden rounded-3xl border border-black/15 dark:border-white/10 bg-[#1a1f2e] dark:bg-[#0e1117]">
+          <div className="relative w-full max-w-[520px] aspect-[4/5] min-h-[320px] sm:min-h-[380px] lg:min-h-0 overflow-hidden rounded-3xl bg-[#262626] dark:bg-[#111111] shadow-[0_18px_48px_-28px_rgba(0,0,0,0.45)] dark:shadow-none">
             <SplineScene
               scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
-              className="h-full w-full saturate-[0.10] contrast-[0.95] hue-rotate-[200deg]"
+              className="h-full w-full grayscale saturate-0 brightness-[0.98] contrast-[0.94] dark:brightness-[0.82] dark:contrast-[1.05]"
             />
-            <div className="pointer-events-none absolute inset-0 bg-black/20" />
-=======
-          <div className="relative h-[40vh] md:h-[60vh] w-full rounded-2xl overflow-hidden">
-            <div className="absolute inset-0 z-10 touch-pan-y block md:hidden" />
-            <div className="relative w-full h-full z-0 md:cursor-grab md:active:cursor-grabbing">
-              <LabScene />
-            </div>
->>>>>>> main
+            <div className="pointer-events-none absolute inset-0 bg-black/12 dark:bg-[#111111]/45" />
           </div>
         </div>
       </section>
