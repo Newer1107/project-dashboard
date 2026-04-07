@@ -1,43 +1,380 @@
 // components/showcase/AnimatedShowcase.tsx
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
-import Magnetic from "@/components/ui/Magnetic"; // Adjust path if needed
-import { SplineScene } from "@/components/ui/splite";
+import Image from "next/image";
+import Magnetic from "@/components/ui/Magnetic";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+import Lenis from "lenis";
+
+// Register ScrollTrigger
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 // --- MAIN SHOWCASE COMPONENT ---
 export default function AnimatedShowcase({ projects }: { projects: any[] }) {
   const displayProjects = projects?.length > 0 ? projects : [];
 
+  // Refs
+  const containerRef = useRef<HTMLDivElement>(null);
+  const heroImageRef = useRef<HTMLDivElement>(null);
+  const maskTextGroupRef = useRef<SVGGElement>(null);
+  const maskLineRefs = useRef<Array<SVGTextElement | null>>([]);
+  const maskSvgRef = useRef<SVGSVGElement>(null);
+  const overlayRef = useRef<SVGRectElement>(null);
+  const heroContentRef = useRef<HTMLDivElement>(null);
+  const textBgWashRef = useRef<HTMLDivElement>(null); // NEW: Readability wash ref
+
+  // 1. SMOOTH SCROLL SETUP (Lenis + GSAP Sync)
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: "vertical",
+      gestureOrientation: "vertical",
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 2,
+    });
+
+    lenis.on("scroll", ScrollTrigger.update);
+
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
+
+    gsap.ticker.lagSmoothing(0, 0);
+
+    return () => {
+      lenis.destroy();
+      gsap.ticker.remove(lenis.raf);
+    };
+  }, []);
+
+  // 2. GSAP ANIMATIONS
+  useGSAP(
+    () => {
+      const [lineOne, lineTwo, lineThree] = maskLineRefs.current;
+
+      gsap.set(heroContentRef.current, { opacity: 0, y: 80 });
+      gsap.set(maskSvgRef.current, { opacity: 1, filter: "blur(0px)" });
+      gsap.set(maskTextGroupRef.current, {
+        transformBox: "view-box",
+        transformOrigin: "50% 50%",
+        x: 0,
+        y: 0,
+      });
+      gsap.set([lineOne, lineTwo, lineThree], {
+        x: 0,
+        y: 0,
+        rotation: 0,
+      });
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top top",
+          end: "+=260vh",
+          scrub: 1.2,
+          pin: true,
+        },
+      });
+
+      // Camera settles slightly while text rushes toward the viewer.
+      tl.fromTo(
+        heroImageRef.current,
+        { scale: 1.22, yPercent: 2 },
+        { scale: 1.02, yPercent: -1, ease: "none" },
+        0,
+      )
+        .to(
+        maskTextGroupRef.current,
+        {
+          scale: 165,
+          opacity: 0.78,
+          svgOrigin: "960 540",
+          ease: "power3.in",
+        },
+        0,
+      )
+        // Netflix-like break: each word line peels in a different direction.
+        .to(
+          lineOne,
+          {
+            x: -40,
+            y: -8,
+            rotation: -2,
+            transformOrigin: "50% 50%",
+            ease: "power2.inOut",
+          },
+          0.14,
+        )
+        .to(
+          lineTwo,
+          {
+            x: 36,
+            y: 6,
+            rotation: 1.4,
+            transformOrigin: "50% 50%",
+            ease: "power2.inOut",
+          },
+          0.14,
+        )
+        .to(
+          lineThree,
+          {
+            x: -32,
+            y: 7,
+            rotation: -1.6,
+            transformOrigin: "50% 50%",
+            ease: "power2.inOut",
+          },
+          0.14,
+        )
+        .to(
+          maskSvgRef.current,
+          {
+            filter: "blur(9px)",
+            ease: "power2.in",
+          },
+          0.42,
+        )
+        // Fade out the mask completely
+        .to(
+          overlayRef.current,
+          {
+            opacity: 0,
+            ease: "power2.out",
+            duration: 0.75,
+          },
+          0.52,
+        )
+        .to(
+          maskSvgRef.current,
+          {
+            opacity: 0,
+            ease: "power2.out",
+            duration: 0.65,
+          },
+          0.64,
+        )
+        // Keep only a subtle wash so the campus remains visible.
+        .to(
+          textBgWashRef.current,
+          {
+            opacity: 0.22,
+            ease: "power2.inOut",
+            duration: 0.9,
+          },
+          0.7,
+        )
+        // Bring in supporting hero copy after reveal.
+        .fromTo(
+          heroContentRef.current,
+          { opacity: 0, y: 60 },
+          { opacity: 1, y: 0, ease: "power3.out", duration: 1 },
+          0.9,
+        );
+    },
+    { scope: containerRef },
+  );
+
   return (
-    <div className="text-[#111111] dark:text-[#E5E5E5] transition-colors duration-500 w-full overflow-x-hidden">
-      {/* 1. HERO SECTION */}
-      <section className="px-4 sm:px-6 md:px-10 lg:px-16 py-12 sm:py-16 lg:py-24 max-w-7xl mx-auto min-h-[55vh] lg:min-h-[85vh] flex items-center justify-center">
-        <div className="flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(320px,520px)] gap-8 sm:gap-10 lg:gap-16 items-center w-full">
-          <div className="w-full z-10 text-center lg:text-left">
-            <h1 className="font-monument font-extralight text-[clamp(2.7rem,7vw,6.5rem)] leading-[0.92] tracking-tighter break-words">
-              EVERY <br /> PROJECT MATTERS.
-            </h1>
-            <p className="font-montreal text-gray-500 dark:text-gray-400 mt-5 sm:mt-6 mx-auto lg:mx-0 max-w-[44ch] text-[clamp(0.98rem,1.25vw,1.22rem)] leading-relaxed">
-              A collection of digital products and systems designed with a focus
-              on performance, structure and clarity by the students of TCET.
-            </p>
-          </div>
-          <div className="relative w-full max-w-[520px] aspect-[4/5] min-h-[320px] sm:min-h-[380px] lg:min-h-0 overflow-hidden rounded-3xl bg-[#262626] dark:bg-[#111111] shadow-[0_18px_48px_-28px_rgba(0,0,0,0.45)] dark:shadow-none">
-            <SplineScene
-              scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
-              className="h-full w-full grayscale saturate-0 brightness-[0.98] contrast-[0.94] dark:brightness-[0.82] dark:contrast-[1.05]"
+    <div className="text-[#111111] dark:text-[#E5E5E5] transition-colors duration-500 w-full overflow-x-hidden bg-white dark:bg-[#050505]">
+      {/* ========================================
+          1. CINEMATIC HERO DIVE
+          ======================================== */}
+      <section
+        ref={containerRef}
+        className="relative h-screen w-full bg-white dark:bg-[#050505]"
+      >
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+          {/* BASE IMAGE (z-0) */}
+          <div ref={heroImageRef} className="absolute inset-0 w-full h-full z-0">
+            <Image
+              src="/tcetimage.png"
+              alt="TCET campus building"
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover object-center"
             />
-            <div className="pointer-events-none absolute inset-0 bg-black/12 dark:bg-[#111111]/45" />
+          </div>
+
+          {/* DYNAMIC READABILITY WASH (z-10) - Starts transparent, fades in with text */}
+          <div
+            ref={textBgWashRef}
+            className="absolute inset-0 z-10 opacity-0 pointer-events-none"
+          >
+            {/* Soft full-screen blur to push the building back */}
+            <div className="absolute inset-0 bg-white/12 dark:bg-black/18 backdrop-blur-[2px] transition-colors duration-500" />
+            {/* Taller gradient to perfectly contrast the text */}
+            <div className="absolute inset-x-0 bottom-0 h-[72vh] bg-gradient-to-t from-white/70 via-white/38 to-transparent dark:from-[#050505]/68 dark:via-[#050505]/32 transition-colors duration-500" />
+          </div>
+
+          {/* SVG MASK OVERLAY (z-20) */}
+          <svg
+            ref={maskSvgRef}
+            className="absolute inset-0 w-full h-full pointer-events-none z-20"
+            viewBox="0 0 1920 1080"
+            preserveAspectRatio="xMidYMid slice"
+          >
+            <defs>
+              <mask id="dive-mask">
+                <rect width="1920" height="1080" fill="white" />
+                <g ref={maskTextGroupRef}>
+                  <text
+                    ref={(el) => {
+                      maskLineRefs.current[0] = el;
+                    }}
+                    x="960"
+                    y="300"
+                    dominantBaseline="middle"
+                    textAnchor="middle"
+                    fill="black"
+                    className="font-monument font-black text-[clamp(4rem,14vw,16rem)] tracking-tight"
+                  >
+                    EVERY
+                  </text>
+                  <text
+                    ref={(el) => {
+                      maskLineRefs.current[1] = el;
+                    }}
+                    x="960"
+                    y="540"
+                    dominantBaseline="middle"
+                    textAnchor="middle"
+                    fill="black"
+                    className="font-monument font-black text-[clamp(4rem,14vw,16rem)] tracking-tight"
+                  >
+                    PROJECT
+                  </text>
+                  <text
+                    ref={(el) => {
+                      maskLineRefs.current[2] = el;
+                    }}
+                    x="960"
+                    y="780"
+                    dominantBaseline="middle"
+                    textAnchor="middle"
+                    fill="black"
+                    className="font-monument font-black text-[clamp(4rem,14vw,16rem)] tracking-tight"
+                  >
+                    MATTERS.
+                  </text>
+                </g>
+              </mask>
+              <pattern
+                id="grid"
+                width="40"
+                height="40"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M 40 0 L 0 0 0 40"
+                  fill="none"
+                  stroke="rgba(0,0,0,0.04)"
+                  strokeWidth="1"
+                />
+              </pattern>
+            </defs>
+
+            <g ref={overlayRef} className="transition-colors duration-500">
+              <rect
+                width="100%"
+                height="100%"
+                className="fill-[#fafafa] dark:fill-[#050505]"
+                mask="url(#dive-mask)"
+              />
+              <rect
+                width="100%"
+                height="100%"
+                fill="url(#grid)"
+                mask="url(#dive-mask)"
+              />
+            </g>
+          </svg>
+
+          {/* REVEALED CONTENT (z-30) */}
+          <div className="absolute inset-0 z-30 flex flex-col justify-end px-6 sm:px-10 lg:px-20 pb-16 lg:pb-24 pointer-events-none">
+            <div
+              ref={heroContentRef}
+              className="w-full max-w-5xl pointer-events-auto opacity-0"
+            >
+              <p className="font-montreal text-xs sm:text-sm uppercase tracking-[0.25em] text-cyan-700 dark:text-cyan-400 font-bold mb-4 drop-shadow-sm">
+                TCET Research Culture Development Cell
+              </p>
+              <h1 className="font-monument text-[clamp(2.5rem,6vw,5.5rem)] leading-[0.95] tracking-tight text-slate-900 dark:text-white mb-6 drop-shadow-sm">
+                Building India's Next <br className="hidden lg:block" />{" "}
+                Research Breakthroughs.
+              </h1>
+
+              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
+                <p className="max-w-2xl font-montreal text-[clamp(1rem,1.2vw,1.25rem)] leading-relaxed text-slate-700 dark:text-slate-200">
+                  A future-forward academic ecosystem where engineering rigor,
+                  publication excellence, and innovation programs converge to
+                  shape impactful technology for society.
+                </p>
+
+                <div className="flex flex-wrap gap-4 shrink-0">
+                  <Magnetic>
+                    <Link
+                      href="https://coe.raunakcodes.me/"
+                      className="flex items-center justify-center rounded-full bg-slate-900 dark:bg-white px-8 py-4 font-montreal text-sm font-bold text-white dark:text-black transition-transform hover:scale-105"
+                    >
+                      Explore Centre Of Excellence
+                    </Link>
+                  </Magnetic>
+                  <Link
+                    href="/majorprojects"
+                    className="flex items-center justify-center rounded-full border border-slate-300 dark:border-white/20 bg-white/50 dark:bg-black/50 backdrop-blur-md px-8 py-4 font-montreal text-sm font-medium text-slate-800 dark:text-white transition hover:bg-slate-100 dark:hover:bg-white/10"
+                  >
+                    View Publications
+                  </Link>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-12 sm:gap-20 pt-10 mt-10 border-t border-slate-300/60 dark:border-white/10">
+                <div>
+                  <p className="font-monument text-3xl sm:text-4xl text-slate-900 dark:text-white">
+                    45+
+                  </p>
+                  <p className="font-montreal text-xs text-slate-600 dark:text-slate-400 uppercase tracking-widest mt-2 font-medium">
+                    Funded Tracks
+                  </p>
+                </div>
+                <div>
+                  <p className="font-monument text-3xl sm:text-4xl text-slate-900 dark:text-white">
+                    120+
+                  </p>
+                  <p className="font-montreal text-xs text-slate-600 dark:text-slate-400 uppercase tracking-widest mt-2 font-medium">
+                    Researchers
+                  </p>
+                </div>
+                <div>
+                  <p className="font-monument text-3xl sm:text-4xl text-cyan-600 dark:text-cyan-400">
+                    18
+                  </p>
+                  <p className="font-montreal text-xs text-slate-600 dark:text-slate-400 uppercase tracking-widest mt-2 font-medium">
+                    Collaborations
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 2. PROJECT GRID REEL */}
-      <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-20 py-8 sm:py-16 mb-24">
+      {/* ========================================
+          2. PROJECT GRID REEL
+          ======================================== */}
+      <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-20 py-8 sm:py-16 mb-24 z-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 xl:gap-10">
           {displayProjects.map((p, i) => {
-            // DYNAMIC IMAGE LOGIC
             const preview = (p.assets ?? [])[0];
             const projectImage = preview?.accessUrl || preview?.fileUrl || "";
 
@@ -46,7 +383,6 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
                 key={p.id || i}
                 className="group flex flex-col bg-white dark:bg-[#0A0A0A] border border-black/5 dark:border-white/10 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 ease-out"
               >
-                {/* CARD IMAGE CONTAINER */}
                 <div className="relative w-full aspect-video overflow-hidden bg-gray-100 dark:bg-zinc-900">
                   {projectImage ? (
                     <img
@@ -55,14 +391,11 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
                       className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105"
                     />
                   ) : (
-                    // Fallback gradient if no image is available
                     <div className="w-full h-full bg-[radial-gradient(circle_at_25%_20%,rgba(56,189,248,0.35),transparent_42%),radial-gradient(circle_at_85%_0%,rgba(99,102,241,0.4),transparent_36%),linear-gradient(160deg,#0f172a,#020617)]" />
                   )}
-                  {/* Subtle dark overlay that lifts on hover */}
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500" />
                 </div>
 
-                {/* CARD CONTENT */}
                 <div className="flex flex-col flex-1 p-5 sm:p-6">
                   <div className="flex-1">
                     <h2 className="font-monument text-lg sm:text-xl uppercase tracking-tight line-clamp-2 mb-4">
@@ -70,7 +403,6 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
                     </h2>
                   </div>
 
-                  {/* VIEW WORK BUTTON (Pushed to bottom using mt-auto from flex-1 above) */}
                   <div className="mt-4 w-full">
                     <Magnetic>
                       <Link
