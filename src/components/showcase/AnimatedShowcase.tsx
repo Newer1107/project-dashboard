@@ -234,10 +234,10 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
                 <div className="flex flex-wrap gap-4 shrink-0">
                   <Magnetic>
                     <Link
-                      href="#categories"
+                      href="https://coe.raunakcodes.me/"
                       className="flex items-center justify-center rounded-full bg-slate-900 dark:bg-white px-8 py-4 font-montreal text-sm font-bold text-white dark:text-black transition-transform hover:scale-105"
                     >
-                      Explore Research
+                      Explore Centre Of Excellence
                     </Link>
                   </Magnetic>
                   <Link
