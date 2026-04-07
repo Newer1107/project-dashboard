@@ -21,7 +21,10 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
 
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
+  const heroImageRef = useRef<HTMLDivElement>(null);
   const maskTextGroupRef = useRef<SVGGElement>(null);
+  const maskLineRefs = useRef<Array<SVGTextElement | null>>([]);
+  const maskSvgRef = useRef<SVGSVGElement>(null);
   const overlayRef = useRef<SVGRectElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
   const textBgWashRef = useRef<HTMLDivElement>(null); // NEW: Readability wash ref
@@ -55,51 +58,126 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
   // 2. GSAP ANIMATIONS
   useGSAP(
     () => {
+      const [lineOne, lineTwo, lineThree] = maskLineRefs.current;
+
+      gsap.set(heroContentRef.current, { opacity: 0, y: 80 });
+      gsap.set(maskSvgRef.current, { opacity: 1, filter: "blur(0px)" });
+      gsap.set(maskTextGroupRef.current, {
+        transformBox: "view-box",
+        transformOrigin: "50% 50%",
+        x: 0,
+        y: 0,
+      });
+      gsap.set([lineOne, lineTwo, lineThree], {
+        x: 0,
+        y: 0,
+        rotation: 0,
+      });
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
-          end: "+=200vh",
-          scrub: 1,
+          end: "+=260vh",
+          scrub: 1.2,
           pin: true,
         },
       });
 
-      // Dive through the text
-      tl.to(
+      // Camera settles slightly while text rushes toward the viewer.
+      tl.fromTo(
+        heroImageRef.current,
+        { scale: 1.22, yPercent: 2 },
+        { scale: 1.02, yPercent: -1, ease: "none" },
+        0,
+      )
+        .to(
         maskTextGroupRef.current,
         {
-          scale: 120,
-          transformOrigin: "50% 50%",
-          ease: "power2.inOut",
+          scale: 165,
+          opacity: 0.78,
+          svgOrigin: "960 540",
+          ease: "power3.in",
         },
         0,
       )
+        // Netflix-like break: each word line peels in a different direction.
+        .to(
+          lineOne,
+          {
+            x: -40,
+            y: -8,
+            rotation: -2,
+            transformOrigin: "50% 50%",
+            ease: "power2.inOut",
+          },
+          0.14,
+        )
+        .to(
+          lineTwo,
+          {
+            x: 36,
+            y: 6,
+            rotation: 1.4,
+            transformOrigin: "50% 50%",
+            ease: "power2.inOut",
+          },
+          0.14,
+        )
+        .to(
+          lineThree,
+          {
+            x: -32,
+            y: 7,
+            rotation: -1.6,
+            transformOrigin: "50% 50%",
+            ease: "power2.inOut",
+          },
+          0.14,
+        )
+        .to(
+          maskSvgRef.current,
+          {
+            filter: "blur(9px)",
+            ease: "power2.in",
+          },
+          0.42,
+        )
         // Fade out the mask completely
         .to(
           overlayRef.current,
           {
             opacity: 0,
-            ease: "power2.in",
+            ease: "power2.out",
+            duration: 0.75,
           },
-          0.6,
+          0.52,
         )
-        // NEW: Fade in the readability blur & gradient ONLY after the dive clears
+        .to(
+          maskSvgRef.current,
+          {
+            opacity: 0,
+            ease: "power2.out",
+            duration: 0.65,
+          },
+          0.64,
+        )
+        // Keep only a subtle wash so the campus remains visible.
         .to(
           textBgWashRef.current,
           {
-            opacity: 1,
+            opacity: 0.22,
             ease: "power2.inOut",
-            duration: 1,
+            duration: 0.9,
           },
-          0.6,
+          0.7,
         )
-        // Slide up the fully integrated text
+        // Bring in supporting hero copy after reveal.
         .fromTo(
           heroContentRef.current,
           { opacity: 0, y: 60 },
           { opacity: 1, y: 0, ease: "power3.out", duration: 1 },
-          0.8,
+          0.9,
         );
     },
     { scope: containerRef },
@@ -116,14 +194,14 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
       >
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           {/* BASE IMAGE (z-0) */}
-          <div className="absolute inset-0 w-full h-full z-0">
+          <div ref={heroImageRef} className="absolute inset-0 w-full h-full z-0">
             <Image
               src="/tcetimage.png"
               alt="TCET campus building"
               fill
               priority
               sizes="100vw"
-              className="object-cover object-center scale-105"
+              className="object-cover object-center"
             />
           </div>
 
@@ -133,23 +211,28 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
             className="absolute inset-0 z-10 opacity-0 pointer-events-none"
           >
             {/* Soft full-screen blur to push the building back */}
-            <div className="absolute inset-0 bg-white/40 dark:bg-black/50 backdrop-blur-[8px] transition-colors duration-500" />
+            <div className="absolute inset-0 bg-white/12 dark:bg-black/18 backdrop-blur-[2px] transition-colors duration-500" />
             {/* Taller gradient to perfectly contrast the text */}
-            <div className="absolute inset-x-0 bottom-0 h-[85vh] bg-gradient-to-t from-white via-white/95 to-transparent dark:from-[#050505] dark:via-[#050505]/95 transition-colors duration-500" />
+            <div className="absolute inset-x-0 bottom-0 h-[72vh] bg-gradient-to-t from-white/70 via-white/38 to-transparent dark:from-[#050505]/68 dark:via-[#050505]/32 transition-colors duration-500" />
           </div>
 
           {/* SVG MASK OVERLAY (z-20) */}
           <svg
+            ref={maskSvgRef}
             className="absolute inset-0 w-full h-full pointer-events-none z-20"
+            viewBox="0 0 1920 1080"
             preserveAspectRatio="xMidYMid slice"
           >
             <defs>
               <mask id="dive-mask">
-                <rect width="100%" height="100%" fill="white" />
+                <rect width="1920" height="1080" fill="white" />
                 <g ref={maskTextGroupRef}>
                   <text
-                    x="50%"
-                    y="28%"
+                    ref={(el) => {
+                      maskLineRefs.current[0] = el;
+                    }}
+                    x="960"
+                    y="300"
                     dominantBaseline="middle"
                     textAnchor="middle"
                     fill="black"
@@ -158,8 +241,11 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
                     EVERY
                   </text>
                   <text
-                    x="50%"
-                    y="50%"
+                    ref={(el) => {
+                      maskLineRefs.current[1] = el;
+                    }}
+                    x="960"
+                    y="540"
                     dominantBaseline="middle"
                     textAnchor="middle"
                     fill="black"
@@ -168,8 +254,11 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
                     PROJECT
                   </text>
                   <text
-                    x="50%"
-                    y="72%"
+                    ref={(el) => {
+                      maskLineRefs.current[2] = el;
+                    }}
+                    x="960"
+                    y="780"
                     dominantBaseline="middle"
                     textAnchor="middle"
                     fill="black"
