@@ -326,7 +326,7 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
               ref={heroContentRef}
               className="w-full max-w-5xl pointer-events-auto opacity-0"
             >
-              <p className="font-montreal text-[10px] sm:text-xs lg:text-sm uppercase tracking-[0.25em] text-cyan-700 dark:text-cyan-400 font-bold mb-3 sm:mb-4 drop-shadow-sm">
+              <p className="font-montreal text-[10px] sm:text-xs lg:text-xl uppercase tracking-[0.25em] text-slate-900 dark:text-cyan-400 font-bold mb-3 sm:mb-4 drop-shadow-sm">
                 TCET Research Culture Development Cell
               </p>
 
@@ -336,9 +336,10 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
 
               <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 sm:gap-10">
                 <p className="max-w-2xl font-montreal text-sm sm:text-base lg:text-[clamp(1rem,1.2vw,1.25rem)] leading-relaxed text-slate-700 dark:text-slate-200">
-                  A future-forward academic ecosystem where engineering rigor,
-                  publication excellence, and innovation programs converge to
-                  shape impactful technology for society.
+                  The TCET Research Culture Development Cell fosters high-impact
+                  research through funded projects, industry collaborations, and
+                  publication-driven innovation, enabling students and faculty
+                  to solve real-world challenges.
                 </p>
 
                 <div className="flex flex-col w-full sm:w-auto sm:flex-row sm:flex-wrap gap-3 sm:gap-4 shrink-0">
@@ -365,12 +366,12 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
                     45+
                   </p>
                   <p className="font-montreal text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 uppercase tracking-widest mt-1 sm:mt-2 font-medium">
-                    Funded Tracks
+                    Faculty Guides
                   </p>
                 </div>
                 <div>
                   <p className="font-monument text-2xl sm:text-3xl lg:text-4xl text-slate-900 dark:text-white">
-                    120+
+                    280+
                   </p>
                   <p className="font-montreal text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 uppercase tracking-widest mt-1 sm:mt-2 font-medium">
                     Researchers
