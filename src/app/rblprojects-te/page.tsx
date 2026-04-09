@@ -3,7 +3,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "@/components/ui/ThemeToggle";
-import Image from "next/image";
 import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
 import rblGroupsRaw from "./RBL_NBA_groups.json";
 const rblGroups = rblGroupsRaw;
@@ -59,24 +58,12 @@ export default function ProjectTable() {
       return matchesSearch && matchesFilter;
     });
   }, [searchTerm, selectedGroup]);
+
   return (
     <div className="relative w-full min-h-screen bg-neutral-50 dark:bg-neutral-950 overflow-hidden font-sans">
       <div className="fixed inset-0 -z-20 overflow-hidden">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-200/20 dark:bg-emerald-900/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
         <div className="absolute -bottom-32 -left-32 w-[600px] h-[600px] bg-blue-200/20 dark:bg-blue-900/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse animation-delay-2000"></div>
-      </div>
-
-      <div className="absolute top-6 left-6 z-40">
-        <div className="bg-white/80 dark:bg-black/80 p-2 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-800 w-fit backdrop-blur-xl">
-          <Image
-            src="/tcetlogo.png"
-            alt="TCET Logo"
-            width={64}
-            height={64}
-            unoptimized
-            className="object-contain w-10 h-10 md:w-12 md:h-12"
-          />
-        </div>
       </div>
 
       <div className="fixed top-0 left-0 right-0 z-50 h-24 pointer-events-none">

@@ -1,3 +1,4 @@
+// components/showcase/AnimatedShowcase.tsx
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -54,10 +55,27 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
     };
   }, []);
 
-  // 2. GSAP ANIMATIONS
+  // Replace the GSAP animations section with this improved version:
+
   useGSAP(
     () => {
       const [lineOne, lineTwo, lineThree] = maskLineRefs.current;
+      if (!lineOne || !lineTwo || !lineThree) return;
+
+      // ==========================================
+      // IMPROVED RESPONSIVE MATH
+      // ==========================================
+      const isDesktop = window.innerWidth >= 768;
+      const isMobile = window.innerWidth < 768;
+
+      // Better mobile positioning - move text higher up and tighter spacing
+      const textCenterY = isDesktop ? 640 : 420; // Much higher on mobile
+      const textGap = isDesktop ? 180 : 85; // Tighter spacing on mobile
+
+      // Set the Y coordinates directly via GSAP
+      gsap.set(lineOne, { attr: { y: textCenterY - textGap } });
+      gsap.set(lineTwo, { attr: { y: textCenterY } });
+      gsap.set(lineThree, { attr: { y: textCenterY + textGap } });
 
       gsap.set(heroContentRef.current, { opacity: 0, y: 80 });
       gsap.set(maskSvgRef.current, { opacity: 1, filter: "blur(0px)" });
@@ -82,8 +100,9 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
-          end: "+=400vh",
-          scrub: 1.5,
+          // CRITICAL FIX: Much longer scroll distance on mobile
+          end: isMobile ? "+=800vh" : "+=400vh", // Double the scroll distance on mobile
+          scrub: isMobile ? 2.5 : 1.5, // Slower scrub on mobile for more control
           pin: true,
         },
       });
@@ -105,73 +124,73 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
         .to(
           maskTextGroupRef.current,
           {
-            scale: 165,
+            // Reduced scale on mobile so text doesn't get too big
+            scale: isMobile ? 120 : 165,
             opacity: 0.78,
-            // Zoom target moved up to 480 to match our new text center
-            svgOrigin: "960 480",
+            svgOrigin: `960 ${textCenterY}`,
             ease: "power3.in",
           },
           0,
         )
-        // Peeling text effect
+        // Peeling text effect - start later on mobile for better pacing
         .to(
           lineOne,
           {
-            x: -40,
-            y: -8,
+            x: isMobile ? -25 : -40,
+            y: isMobile ? -5 : -8,
             rotation: -2,
             transformOrigin: "50% 50%",
             ease: "power2.inOut",
           },
-          0.14,
+          isMobile ? 0.25 : 0.14,
         )
         .to(
           lineTwo,
           {
-            x: 36,
-            y: 6,
+            x: isMobile ? 22 : 36,
+            y: isMobile ? 4 : 6,
             rotation: 1.4,
             transformOrigin: "50% 50%",
             ease: "power2.inOut",
           },
-          0.14,
+          isMobile ? 0.25 : 0.14,
         )
         .to(
           lineThree,
           {
-            x: -32,
-            y: 7,
+            x: isMobile ? -20 : -32,
+            y: isMobile ? 4 : 7,
             rotation: -1.6,
             transformOrigin: "50% 50%",
             ease: "power2.inOut",
           },
-          0.14,
+          isMobile ? 0.25 : 0.14,
         )
         .to(
           maskSvgRef.current,
           { filter: "blur(9px)", ease: "power2.in" },
-          0.42,
+          isMobile ? 0.55 : 0.42,
         )
         .to(
           overlayRef.current,
           { opacity: 0, ease: "power2.out", duration: 0.75 },
-          0.52,
+          isMobile ? 0.65 : 0.52,
         )
         .to(
           maskSvgRef.current,
           { opacity: 0, ease: "power2.out", duration: 0.65 },
-          0.64,
+          isMobile ? 0.75 : 0.64,
         )
         .to(
           textBgWashRef.current,
           { opacity: 0.95, ease: "power2.inOut", duration: 0.9 },
-          0.7,
+          isMobile ? 0.8 : 0.7,
         )
         .fromTo(
           heroContentRef.current,
           { opacity: 0, y: 60 },
           { opacity: 1, y: 0, ease: "power3.out", duration: 1 },
-          0.9,
+          isMobile ? 0.95 : 0.9,
         );
     },
     { scope: containerRef },
@@ -179,10 +198,10 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
 
   return (
     <div className="text-[#111111] dark:text-[#E5E5E5] transition-colors duration-500 w-full overflow-x-hidden bg-white dark:bg-[#050505]">
-      {/* Changed to 100dvh (Dynamic Viewport Height) so mobile browser bars don't swallow the bottom */}
+      {/* Reverted to h-screen to fix mobile address-bar jitter */}
       <section
         ref={containerRef}
-        className="relative h-[100dvh] w-full bg-white dark:bg-[#050505]"
+        className="relative h-screen w-full bg-white dark:bg-[#050505]"
       >
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           <div
@@ -218,14 +237,12 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
               <mask id="dive-mask">
                 <rect width="1920" height="1080" fill="white" />
                 <g ref={maskTextGroupRef}>
-                  {/* FIXED: Shifted everything UP by 60px (Center is now 480). 
-                      Restored proper Y spacing so they NEVER overlap on desktop. */}
+                  {/* The Y coordinates are now perfectly injected by GSAP on load! */}
                   <text
                     ref={(el) => {
                       maskLineRefs.current[0] = el;
                     }}
                     x="960"
-                    y="260"
                     dominantBaseline="middle"
                     textAnchor="middle"
                     fill="black"
@@ -238,7 +255,6 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
                       maskLineRefs.current[1] = el;
                     }}
                     x="960"
-                    y="480"
                     dominantBaseline="middle"
                     textAnchor="middle"
                     fill="black"
@@ -251,7 +267,6 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
                       maskLineRefs.current[2] = el;
                     }}
                     x="960"
-                    y="700"
                     dominantBaseline="middle"
                     textAnchor="middle"
                     fill="black"
@@ -293,7 +308,6 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
           </svg>
 
           {/* SCROLL HELPER INDICATOR */}
-          {/* Lifted it slightly higher on mobile (bottom-20) to ensure it clears any safe areas */}
           <div
             ref={scrollIndicatorRef}
             className="absolute bottom-20 sm:bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-40 pointer-events-none"
