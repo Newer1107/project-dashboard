@@ -58,7 +58,15 @@ export default function ProjectDetailPage() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold">{p.title}</h1>
-            <p className="text-muted-foreground text-sm mt-1">{p.domain}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-muted-foreground text-sm">{p.domain}</p>
+              {p.department && (
+                <>
+                  <span className="text-muted-foreground text-xs">•</span>
+                  <p className="text-muted-foreground text-sm font-medium">{p.department}</p>
+                </>
+              )}
+            </div>
           </div>
           <Badge className={statusColors[p.status] ?? ""}>
             {p.status.replace("_", " ")}

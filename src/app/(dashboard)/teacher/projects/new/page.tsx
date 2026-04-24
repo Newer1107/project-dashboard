@@ -16,10 +16,36 @@ import { useTags } from "@/hooks/useProjects";
 import { createProject } from "@/server/actions/projects";
 import { toast } from "sonner";
 
+const DOMAINS = [
+  "Communication Networking and Web Engineering",
+  "Computing and System Design",
+  "Intelligent System Design and Development",
+  "Multimedia Design and Development",
+  "Software Development & Information Systems",
+] as const;
+
+const DEPARTMENTS = [
+  "B.E. Computer Engineering",
+  "B.E. Information Technology",
+  "B.E. Electronics & Tele-Communication",
+  "B.E - Electronics and Computer Science",
+  "B.E - Mechanical Engineering",
+  "B.E. Civil Engineering",
+  "B.E. Computer Science and Engineering (Cyber Security)",
+  "B.E. Mechanical and Mechatronics Engineering (Additive Manufacturing)",
+  "B.Tech – Artificial Intelligence & Machine Learning",
+  "B.Tech – Artificial Intelligence & Data Science",
+  "B.Tech – Internet of Things (IoT)",
+  "B.Tech – Computer Science & Engineering (CSE-IOT)",
+] as const;
+
 const projectSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  domain: z.string().min(2, "Domain is required"),
+  domain: z.enum(DOMAINS, { required_error: "Please select a domain" }),
+  department: z.enum(DEPARTMENTS, {
+    required_error: "Please select a department",
+  }),
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().min(1, "End date is required"),
   maxGroupSize: z.coerce.number().min(1).max(10),
@@ -51,7 +77,13 @@ export default function NewProjectPage() {
 
   async function goNext() {
     if (step === 0) {
-      const valid = await trigger(["title", "description", "domain", "maxGroupSize"]);
+      const valid = await trigger([
+        "title",
+        "description",
+        "domain",
+        "department",
+        "maxGroupSize",
+      ]);
       if (!valid) return;
     }
     if (step === 1) {
@@ -76,7 +108,7 @@ export default function NewProjectPage() {
 
   function toggleTag(tagId: string) {
     setSelectedTags((prev) =>
-      prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]
+      prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId],
     );
   }
 
@@ -99,8 +131,8 @@ export default function NewProjectPage() {
                   i < step
                     ? "bg-primary text-primary-foreground"
                     : i === step
-                    ? "bg-primary/20 text-primary border-2 border-primary"
-                    : "bg-secondary text-muted-foreground"
+                      ? "bg-primary/20 text-primary border-2 border-primary"
+                      : "bg-secondary text-muted-foreground"
                 }`}
               >
                 {i < step ? <Check className="h-4 w-4" /> : i + 1}
@@ -136,8 +168,16 @@ export default function NewProjectPage() {
             >
               <div className="space-y-2">
                 <Label htmlFor="title">Project Title</Label>
-                <Input id="title" {...register("title")} placeholder="e.g., AI Chatbot for Campus" />
-                {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
+                <Input
+                  id="title"
+                  {...register("title")}
+                  placeholder="e.g., AI Chatbot for Campus"
+                />
+                {errors.title && (
+                  <p className="text-sm text-destructive">
+                    {errors.title.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
@@ -147,25 +187,72 @@ export default function NewProjectPage() {
                   placeholder="Describe the project objectives, deliverables..."
                   rows={4}
                 />
-                {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
+                {errors.description && (
+                  <p className="text-sm text-destructive">
+                    {errors.description.message}
+                  </p>
+                )}
               </div>
+
+              {/* Added Domain and Department Selectors */}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="domain">Domain</Label>
-                  <Input id="domain" {...register("domain")} placeholder="e.g., Machine Learning" />
-                  {errors.domain && <p className="text-sm text-destructive">{errors.domain.message}</p>}
+                  <select
+                    id="domain"
+                    {...register("domain")}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="">Select Domain...</option>
+                    {DOMAINS.map((domain) => (
+                      <option key={domain} value={domain}>
+                        {domain}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.domain && (
+                    <p className="text-sm text-destructive">
+                      {errors.domain.message}
+                    </p>
+                  )}
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="maxGroupSize">Max Group Size</Label>
-                  <Input
-                    id="maxGroupSize"
-                    type="number"
-                    {...register("maxGroupSize")}
-                    min={1}
-                    max={10}
-                  />
-                  {errors.maxGroupSize && <p className="text-sm text-destructive">{errors.maxGroupSize.message}</p>}
+                  <Label htmlFor="department">Department</Label>
+                  <select
+                    id="department"
+                    {...register("department")}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="">Select Department...</option>
+                    {DEPARTMENTS.map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.department && (
+                    <p className="text-sm text-destructive">
+                      {errors.department.message}
+                    </p>
+                  )}
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="maxGroupSize">Max Group Size</Label>
+                <Input
+                  id="maxGroupSize"
+                  type="number"
+                  {...register("maxGroupSize")}
+                  min={1}
+                  max={10}
+                />
+                {errors.maxGroupSize && (
+                  <p className="text-sm text-destructive">
+                    {errors.maxGroupSize.message}
+                  </p>
+                )}
               </div>
             </motion.div>
           )}
@@ -181,13 +268,25 @@ export default function NewProjectPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="startDate">Start Date</Label>
-                  <Input id="startDate" type="date" {...register("startDate")} />
-                  {errors.startDate && <p className="text-sm text-destructive">{errors.startDate.message}</p>}
+                  <Input
+                    id="startDate"
+                    type="date"
+                    {...register("startDate")}
+                  />
+                  {errors.startDate && (
+                    <p className="text-sm text-destructive">
+                      {errors.startDate.message}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="endDate">End Date</Label>
                   <Input id="endDate" type="date" {...register("endDate")} />
-                  {errors.endDate && <p className="text-sm text-destructive">{errors.endDate.message}</p>}
+                  {errors.endDate && (
+                    <p className="text-sm text-destructive">
+                      {errors.endDate.message}
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -206,7 +305,9 @@ export default function NewProjectPage() {
                 {(tags ?? []).map((tag: any) => (
                   <Badge
                     key={tag.id}
-                    variant={selectedTags.includes(tag.id) ? "default" : "outline"}
+                    variant={
+                      selectedTags.includes(tag.id) ? "default" : "outline"
+                    }
                     className="cursor-pointer transition-colors"
                     style={
                       selectedTags.includes(tag.id)
@@ -219,7 +320,9 @@ export default function NewProjectPage() {
                   </Badge>
                 ))}
                 {(tags ?? []).length === 0 && (
-                  <p className="text-sm text-muted-foreground">No tags available</p>
+                  <p className="text-sm text-muted-foreground">
+                    No tags available
+                  </p>
                 )}
               </div>
             </motion.div>

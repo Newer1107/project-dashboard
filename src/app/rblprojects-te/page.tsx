@@ -2,24 +2,30 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
-import rblGroupsRaw from "./RBL_NBA_groups.json";
-const rblGroups = rblGroupsRaw;
+import { getPublicRBLProjects } from "@/server/actions/publicProjects"; // Adjust import path as needed
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProjectTable() {
   const [scrollY, setScrollY] = React.useState(0);
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [selectedGroup, setSelectedGroup] = React.useState<string | null>(null);
+  const [selectedDepartment, setSelectedDepartment] = React.useState<
+    string | null
+  >(null);
+
+  // Fetch live data from Prisma
+  const { data: rblProjects = [], isLoading } = useQuery({
+    queryKey: ["public-rbl-projects"],
+    queryFn: () => getPublicRBLProjects(),
+  });
 
   React.useEffect(() => {
     let animationFrameId: number | null = null;
 
     const handleScroll = () => {
-      if (animationFrameId !== null) {
-        return;
-      }
-
+      if (animationFrameId !== null) return;
       animationFrameId = window.requestAnimationFrame(() => {
         setScrollY(window.scrollY);
         animationFrameId = null;
@@ -27,37 +33,37 @@ export default function ProjectTable() {
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-
     return () => {
-      if (animationFrameId !== null) {
+      if (animationFrameId !== null)
         window.cancelAnimationFrame(animationFrameId);
-      }
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
-  // Stats calculation
-  const teACount = rblGroups.filter((g) => g.groupId.startsWith("A")).length;
-  const teBCount = rblGroups.filter((g) => g.groupId.startsWith("B")).length;
-  const teCCount = rblGroups.filter((g) => g.groupId.startsWith("C")).length;
-  const totalCount = rblGroups.length;
+  // Extract unique departments for the dropdown filter dynamically
+  const uniqueDepartments = React.useMemo(() => {
+    const depts = new Set(rblProjects.map((p) => p.department));
+    return Array.from(depts).sort();
+  }, [rblProjects]);
 
   // Filter logic
-  const filteredGroups = React.useMemo(() => {
+  const filteredProjects = React.useMemo(() => {
     const searchLower = searchTerm.toLowerCase();
 
-    return rblGroups.filter((group) => {
+    return rblProjects.filter((project) => {
       const matchesSearch =
-        group.title.toLowerCase().includes(searchLower) ||
-        group.guide.toLowerCase().includes(searchLower) ||
-        group.students.some((s) => s.name.toLowerCase().includes(searchLower));
+        project.title.toLowerCase().includes(searchLower) ||
+        project.guide.toLowerCase().includes(searchLower) ||
+        project.students.some((s) =>
+          s.name.toLowerCase().includes(searchLower),
+        );
 
       const matchesFilter =
-        !selectedGroup || group.groupId.startsWith(selectedGroup);
+        !selectedDepartment || project.department === selectedDepartment;
 
       return matchesSearch && matchesFilter;
     });
-  }, [searchTerm, selectedGroup]);
+  }, [rblProjects, searchTerm, selectedDepartment]);
 
   return (
     <div className="relative w-full min-h-screen bg-neutral-50 dark:bg-neutral-950 overflow-hidden font-sans">
@@ -130,20 +136,29 @@ export default function ProjectTable() {
           </div>
 
           <select
-            value={selectedGroup || ""}
-            onChange={(e) => setSelectedGroup(e.target.value || null)}
-            className="px-4 py-3 w-full md:w-48 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-900/80 text-neutral-900 dark:text-white font-medium outline-none cursor-pointer focus:border-emerald-500 transition-colors"
+            value={selectedDepartment || ""}
+            onChange={(e) => setSelectedDepartment(e.target.value || null)}
+            className="px-4 py-3 w-full md:w-56 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-900/80 text-neutral-900 dark:text-white font-medium outline-none cursor-pointer focus:border-emerald-500 transition-colors capitalize"
           >
-            <option value="">All Groups</option>
-            <option value="A">Class A</option>
-            <option value="B">Class B</option>
-            <option value="C">Class C</option>
+            <option value="">All Departments</option>
+            {uniqueDepartments.map((dept) => (
+              <option key={dept} value={dept}>
+                {dept}
+              </option>
+            ))}
           </select>
         </motion.div>
 
         <p className="text-sm text-neutral-600 dark:text-neutral-400 font-medium">
-          Showing <span className="font-bold">{filteredGroups.length}</span> of{" "}
-          <span className="font-bold">{totalCount}</span> projects
+          Showing{" "}
+          <span className="font-bold">
+            {isLoading ? "..." : filteredProjects.length}
+          </span>{" "}
+          of{" "}
+          <span className="font-bold">
+            {isLoading ? "..." : rblProjects.length}
+          </span>{" "}
+          projects
         </p>
 
         <motion.div
@@ -161,7 +176,8 @@ export default function ProjectTable() {
               >
                 <thead className="bg-neutral-50 dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 sticky top-0 z-20 shadow-sm">
                   <tr>
-                    <th className="px-4 py-4 font-semibold w-24">Group</th>
+                    <th className="px-4 py-4 font-semibold w-56">Department</th>{" "}
+                    {/* Increased width here */}
                     <th className="px-4 py-4 font-semibold w-72">Project</th>
                     <th className="px-4 py-4 font-semibold w-56">Students</th>
                     <th className="px-4 py-4 font-semibold w-48">Guide</th>
@@ -170,10 +186,27 @@ export default function ProjectTable() {
 
                 <AnimatePresence>
                   <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/50">
-                    {filteredGroups.length > 0 ? (
-                      filteredGroups.map((group, idx) => (
+                    {isLoading ? (
+                      Array.from({ length: 5 }).map((_, i) => (
+                        <tr key={i}>
+                          <td className="px-4 py-4">
+                            <Skeleton className="h-6 w-24" />
+                          </td>
+                          <td className="px-4 py-4">
+                            <Skeleton className="h-6 w-48" />
+                          </td>
+                          <td className="px-4 py-4">
+                            <Skeleton className="h-12 w-32" />
+                          </td>
+                          <td className="px-4 py-4">
+                            <Skeleton className="h-6 w-24" />
+                          </td>
+                        </tr>
+                      ))
+                    ) : filteredProjects.length > 0 ? (
+                      filteredProjects.map((project, idx) => (
                         <motion.tr
-                          key={group.groupId}
+                          key={project.id}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.95 }}
@@ -181,25 +214,26 @@ export default function ProjectTable() {
                           className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/20 transition-colors group/row"
                         >
                           <td className="px-4 py-4 align-top">
-                            <span className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-bold">
-                              {group.groupId}
+                            <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-medium text-xs whitespace-normal text-left">
+                              {project.department}
                             </span>
                           </td>
 
                           <td className="px-4 py-4 align-top">
                             <p className="font-bold text-neutral-900 dark:text-neutral-100 leading-snug">
-                              {group.title}
+                              {project.title}
                             </p>
                           </td>
 
                           <td className="px-4 py-4 align-top">
                             <ul className="space-y-1">
-                              {group.students.map((student) => (
+                              {project.students.map((student) => (
                                 <li
-                                  key={`${group.groupId}-${student.rollNo}`}
+                                  key={`${project.id}-${student.rollNo}`}
                                   className="text-neutral-600 dark:text-neutral-400 flex items-center gap-2"
                                 >
-                                  <span className="text-xs font-mono text-neutral-400 dark:text-neutral-600">
+                                  {/* Changed w-12 to w-24 below */}
+                                  <span className="text-xs font-mono text-neutral-400 dark:text-neutral-600 w-24 shrink-0">
                                     {student.rollNo}
                                   </span>
                                   <span className="font-medium group-hover/row:text-neutral-900 dark:group-hover/row:text-neutral-200 transition-colors">
@@ -211,7 +245,7 @@ export default function ProjectTable() {
                           </td>
 
                           <td className="px-4 py-4 align-top text-neutral-600 dark:text-neutral-400 font-medium">
-                            {group.guide}
+                            {project.guide}
                           </td>
                         </motion.tr>
                       ))
@@ -229,7 +263,7 @@ export default function ProjectTable() {
                             <button
                               onClick={() => {
                                 setSearchTerm("");
-                                setSelectedGroup(null);
+                                setSelectedDepartment(null);
                               }}
                               className="mt-2 px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-black rounded-lg text-sm font-semibold hover:opacity-80 transition"
                             >

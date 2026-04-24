@@ -54,6 +54,7 @@ export default function AdminProjectsPage() {
       (project: any) =>
         project.title.toLowerCase().includes(q) ||
         project.domain.toLowerCase().includes(q) ||
+        project.department?.toLowerCase().includes(q) ||
         project.teacher?.name?.toLowerCase().includes(q)
     );
   }, [projects, search]);
@@ -144,11 +145,12 @@ export default function AdminProjectsPage() {
         title: String(formData.get("title") || ""),
         description: String(formData.get("description") || ""),
         domain: String(formData.get("domain") || ""),
+        department: String(formData.get("department") || ""),
         status: String(formData.get("status") || "DRAFT") as StatusValue,
         maxGroupSize: Number(formData.get("maxGroupSize") || 4),
         startDate: String(formData.get("startDate") || ""),
         endDate: String(formData.get("endDate") || ""),
-      });
+      } as any); // Type assertion used here assuming backend schema supports department
       toast.success("Project updated");
       setEditingProject(null);
       await refreshData();
@@ -169,7 +171,7 @@ export default function AdminProjectsPage() {
         <Input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search by title, domain, or mentor"
+          placeholder="Search by title, domain, dept..."
           className="w-full max-w-sm"
         />
       </div>
@@ -200,7 +202,15 @@ export default function AdminProjectsPage() {
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <CardTitle className="text-lg">{project.title}</CardTitle>
-                      <p className="mt-1 text-sm text-muted-foreground">{project.domain}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-sm text-muted-foreground">{project.domain}</p>
+                        {project.department && (
+                          <>
+                            <span className="text-muted-foreground text-xs">•</span>
+                            <p className="text-sm text-muted-foreground font-medium">{project.department}</p>
+                          </>
+                        )}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline">{project.status}</Badge>
@@ -238,15 +248,8 @@ export default function AdminProjectsPage() {
                                 <Input name="domain" defaultValue={project.domain} required />
                               </div>
                               <div className="space-y-1.5">
-                                <Label>Max Group Size</Label>
-                                <Input
-                                  name="maxGroupSize"
-                                  type="number"
-                                  min={1}
-                                  max={10}
-                                  defaultValue={project.maxGroupSize}
-                                  required
-                                />
+                                <Label>Department</Label>
+                                <Input name="department" defaultValue={project.department} required />
                               </div>
                             </div>
                             <div className="grid gap-3 sm:grid-cols-2">
@@ -259,22 +262,35 @@ export default function AdminProjectsPage() {
                                 <Input name="endDate" type="date" defaultValue={toDateInputValue(project.endDate)} required />
                               </div>
                             </div>
-                            <div className="space-y-1.5">
-                              <Label>Status</Label>
-                              <Select name="status" defaultValue={project.status}>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="DRAFT">DRAFT</SelectItem>
-                                  <SelectItem value="ACTIVE">ACTIVE</SelectItem>
-                                  <SelectItem value="UNDER_REVIEW">UNDER_REVIEW</SelectItem>
-                                  <SelectItem value="COMPLETED">COMPLETED</SelectItem>
-                                  <SelectItem value="ARCHIVED">ARCHIVED</SelectItem>
-                                </SelectContent>
-                              </Select>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                               <div className="space-y-1.5">
+                                <Label>Max Group Size</Label>
+                                <Input
+                                  name="maxGroupSize"
+                                  type="number"
+                                  min={1}
+                                  max={10}
+                                  defaultValue={project.maxGroupSize}
+                                  required
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label>Status</Label>
+                                <Select name="status" defaultValue={project.status}>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="DRAFT">DRAFT</SelectItem>
+                                    <SelectItem value="ACTIVE">ACTIVE</SelectItem>
+                                    <SelectItem value="UNDER_REVIEW">UNDER_REVIEW</SelectItem>
+                                    <SelectItem value="COMPLETED">COMPLETED</SelectItem>
+                                    <SelectItem value="ARCHIVED">ARCHIVED</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
                             </div>
-                            <Button type="submit" className="w-full" disabled={isSaving}>
+                            <Button type="submit" className="w-full mt-2" disabled={isSaving}>
                               {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                               Save Changes
                             </Button>
