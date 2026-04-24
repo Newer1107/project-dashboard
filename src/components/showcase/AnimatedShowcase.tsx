@@ -69,8 +69,8 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
       const isMobile = window.innerWidth < 768;
 
       // Better mobile positioning - move text higher up and tighter spacing
-      const textCenterY = isDesktop ? 640 : 420; // Much higher on mobile
-      const textGap = isDesktop ? 180 : 85; // Tighter spacing on mobile
+      const textCenterY = 540; // exact center of 1080px viewBox — always correct
+      const textGap = isDesktop ? 195 : 90;
 
       // Set the Y coordinates directly via GSAP
       gsap.set(lineOne, { attr: { y: textCenterY - textGap } });
@@ -102,7 +102,7 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
           start: "top top",
           // CRITICAL FIX: Much longer scroll distance on mobile
           end: isMobile ? "+=800vh" : "+=400vh", // Double the scroll distance on mobile
-          scrub: isMobile ? 2.5 : 1.5, // Slower scrub on mobile for more control
+          scrub: isMobile ? 3 : 2, // Slower scrub on mobile for more control
           pin: true,
         },
       });
