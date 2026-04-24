@@ -3,6 +3,13 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
 import { getPublicRBLProjects } from "@/server/actions/publicProjects"; // Adjust import path as needed
@@ -135,18 +142,28 @@ export default function ProjectTable() {
             </div>
           </div>
 
-          <select
-            value={selectedDepartment || ""}
-            onChange={(e) => setSelectedDepartment(e.target.value || null)}
-            className="px-4 py-3 w-full md:w-56 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-900/80 text-neutral-900 dark:text-white font-medium outline-none cursor-pointer focus:border-emerald-500 transition-colors capitalize"
-          >
-            <option value="">All Departments</option>
-            {uniqueDepartments.map((dept) => (
-              <option key={dept} value={dept}>
-                {dept}
-              </option>
-            ))}
-          </select>
+          <div className="w-full md:w-64">
+            <Select
+              value={selectedDepartment || "ALL"}
+              onValueChange={(value) =>
+                setSelectedDepartment(value === "ALL" ? null : value)
+              }
+            >
+              <SelectTrigger className="w-full h-12 px-4 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-900/80 text-neutral-900 dark:text-white font-medium outline-none focus:ring-1 focus:ring-emerald-500 transition-colors">
+                <SelectValue placeholder="All Departments" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 shadow-xl">
+                <SelectItem value="ALL" className="font-medium">
+                  All Departments
+                </SelectItem>
+                {uniqueDepartments.map((dept) => (
+                  <SelectItem key={dept} value={dept} className="font-medium">
+                    {dept}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </motion.div>
 
         <p className="text-sm text-neutral-600 dark:text-neutral-400 font-medium">
@@ -176,8 +193,7 @@ export default function ProjectTable() {
               >
                 <thead className="bg-neutral-50 dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 sticky top-0 z-20 shadow-sm">
                   <tr>
-                    <th className="px-4 py-4 font-semibold w-56">Department</th>{" "}
-                    {/* Increased width here */}
+                    <th className="px-4 py-4 font-semibold w-56">Department</th>
                     <th className="px-4 py-4 font-semibold w-72">Project</th>
                     <th className="px-4 py-4 font-semibold w-56">Students</th>
                     <th className="px-4 py-4 font-semibold w-48">Guide</th>
