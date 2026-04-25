@@ -9,7 +9,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { ProjectCard } from "@/components/dashboard/ProjectCard";
 import { ProjectCompletionChart } from "@/components/charts/ProjectCompletionChart";
 import { TaskDistributionDonut } from "@/components/charts/TaskDistributionDonut";
-import { MilestoneGanttBar } from "@/components/charts/MilestoneGanttBar";
+// import { MilestoneGanttBar } from "@/components/charts/MilestoneGanttBar";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const container = {

@@ -27,7 +27,8 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
   const maskSvgRef = useRef<SVGSVGElement>(null);
   const overlayRef = useRef<SVGRectElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
-  const textBgWashRef = useRef<HTMLDivElement>(null); // NEW: Readability wash ref
+  const textBgWashRef = useRef<HTMLDivElement>(null);
+  const scrollIndicatorRef = useRef<HTMLDivElement>(null);
 
   // 1. SMOOTH SCROLL SETUP (Lenis + GSAP Sync)
   useEffect(() => {
@@ -38,7 +39,6 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
       gestureOrientation: "vertical",
       smoothWheel: true,
       wheelMultiplier: 1,
-      touchMultiplier: 2,
     });
 
     lenis.on("scroll", ScrollTrigger.update);
@@ -55,10 +55,27 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
     };
   }, []);
 
-  // 2. GSAP ANIMATIONS
+  // Replace the GSAP animations section with this improved version:
+
   useGSAP(
     () => {
       const [lineOne, lineTwo, lineThree] = maskLineRefs.current;
+      if (!lineOne || !lineTwo || !lineThree) return;
+
+      // ==========================================
+      // IMPROVED RESPONSIVE MATH
+      // ==========================================
+      const isDesktop = window.innerWidth >= 768;
+      const isMobile = window.innerWidth < 768;
+
+      // Better mobile positioning - move text higher up and tighter spacing
+      const textCenterY = 540; // exact center of 1080px viewBox — always correct
+      const textGap = isDesktop ? 195 : 90;
+
+      // Set the Y coordinates directly via GSAP
+      gsap.set(lineOne, { attr: { y: textCenterY - textGap } });
+      gsap.set(lineTwo, { attr: { y: textCenterY } });
+      gsap.set(lineThree, { attr: { y: textCenterY + textGap } });
 
       gsap.set(heroContentRef.current, { opacity: 0, y: 80 });
       gsap.set(maskSvgRef.current, { opacity: 1, filter: "blur(0px)" });
@@ -68,21 +85,34 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
         x: 0,
         y: 0,
       });
-      gsap.set([lineOne, lineTwo, lineThree], {
-        x: 0,
-        y: 0,
-        rotation: 0,
+      gsap.set([lineOne, lineTwo, lineThree], { x: 0, y: 0, rotation: 0 });
+
+      // Gentle bounce animation for the scroll helper
+      gsap.to(scrollIndicatorRef.current, {
+        y: 8,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        duration: 1.5,
       });
 
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
-          end: "+=260vh",
-          scrub: 1.2,
+          // CRITICAL FIX: Much longer scroll distance on mobile
+          end: isMobile ? "+=800vh" : "+=400vh", // Double the scroll distance on mobile
+          scrub: isMobile ? 3 : 2, // Slower scrub on mobile for more control
           pin: true,
         },
       });
+
+      // Immediately fade out the scroll indicator on scroll
+      tl.to(
+        scrollIndicatorRef.current,
+        { opacity: 0, duration: 0.05, ease: "power2.out" },
+        0,
+      );
 
       // Camera settles slightly while text rushes toward the viewer.
       tl.fromTo(
@@ -92,92 +122,75 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
         0,
       )
         .to(
-        maskTextGroupRef.current,
-        {
-          scale: 165,
-          opacity: 0.78,
-          svgOrigin: "960 540",
-          ease: "power3.in",
-        },
-        0,
-      )
-        // Netflix-like break: each word line peels in a different direction.
+          maskTextGroupRef.current,
+          {
+            // Reduced scale on mobile so text doesn't get too big
+            scale: isMobile ? 120 : 165,
+            opacity: 0.78,
+            svgOrigin: `960 ${textCenterY}`,
+            ease: "power3.in",
+          },
+          0,
+        )
+        // Peeling text effect - start later on mobile for better pacing
         .to(
           lineOne,
           {
-            x: -40,
-            y: -8,
+            x: isMobile ? -25 : -40,
+            y: isMobile ? -5 : -8,
             rotation: -2,
             transformOrigin: "50% 50%",
             ease: "power2.inOut",
           },
-          0.14,
+          isMobile ? 0.25 : 0.14,
         )
         .to(
           lineTwo,
           {
-            x: 36,
-            y: 6,
+            x: isMobile ? 22 : 36,
+            y: isMobile ? 4 : 6,
             rotation: 1.4,
             transformOrigin: "50% 50%",
             ease: "power2.inOut",
           },
-          0.14,
+          isMobile ? 0.25 : 0.14,
         )
         .to(
           lineThree,
           {
-            x: -32,
-            y: 7,
+            x: isMobile ? -20 : -32,
+            y: isMobile ? 4 : 7,
             rotation: -1.6,
             transformOrigin: "50% 50%",
             ease: "power2.inOut",
           },
-          0.14,
+          isMobile ? 0.25 : 0.14,
         )
         .to(
           maskSvgRef.current,
-          {
-            filter: "blur(9px)",
-            ease: "power2.in",
-          },
-          0.42,
+          { filter: "blur(9px)", ease: "power2.in" },
+          isMobile ? 0.55 : 0.42,
         )
-        // Fade out the mask completely
         .to(
           overlayRef.current,
-          {
-            opacity: 0,
-            ease: "power2.out",
-            duration: 0.75,
-          },
-          0.52,
+          { opacity: 0, ease: "power2.out", duration: 0.75 },
+          isMobile ? 0.65 : 0.52,
         )
         .to(
           maskSvgRef.current,
-          {
-            opacity: 0,
-            ease: "power2.out",
-            duration: 0.65,
-          },
-          0.64,
+          { opacity: 0, ease: "power2.out", duration: 0.65 },
+          isMobile ? 0.75 : 0.64,
         )
-        // Keep only a subtle wash so the campus remains visible.
         .to(
           textBgWashRef.current,
-          {
-            opacity: 0.22,
-            ease: "power2.inOut",
-            duration: 0.9,
-          },
-          0.7,
+          { opacity: 0.95, ease: "power2.inOut", duration: 0.9 },
+          isMobile ? 0.8 : 0.7,
         )
-        // Bring in supporting hero copy after reveal.
         .fromTo(
           heroContentRef.current,
           { opacity: 0, y: 60 },
           { opacity: 1, y: 0, ease: "power3.out", duration: 1 },
-          0.9,
+          isMobile ? 0.95 : 0.9,
         );
     },
     { scope: containerRef },
@@ -185,16 +198,16 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
 
   return (
     <div className="text-[#111111] dark:text-[#E5E5E5] transition-colors duration-500 w-full overflow-x-hidden bg-white dark:bg-[#050505]">
-      {/* ========================================
-          1. CINEMATIC HERO DIVE
-          ======================================== */}
+      {/* Reverted to h-screen to fix mobile address-bar jitter */}
       <section
         ref={containerRef}
         className="relative h-screen w-full bg-white dark:bg-[#050505]"
       >
         <div className="absolute inset-0 w-full h-full overflow-hidden">
-          {/* BASE IMAGE (z-0) */}
-          <div ref={heroImageRef} className="absolute inset-0 w-full h-full z-0">
+          <div
+            ref={heroImageRef}
+            className="absolute inset-0 w-full h-full z-0"
+          >
             <Image
               src="/tcetimage.png"
               alt="TCET campus building"
@@ -205,15 +218,12 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
             />
           </div>
 
-          {/* DYNAMIC READABILITY WASH (z-10) - Starts transparent, fades in with text */}
           <div
             ref={textBgWashRef}
             className="absolute inset-0 z-10 opacity-0 pointer-events-none"
           >
-            {/* Soft full-screen blur to push the building back */}
-            <div className="absolute inset-0 bg-white/12 dark:bg-black/18 backdrop-blur-[2px] transition-colors duration-500" />
-            {/* Taller gradient to perfectly contrast the text */}
-            <div className="absolute inset-x-0 bottom-0 h-[72vh] bg-gradient-to-t from-white/70 via-white/38 to-transparent dark:from-[#050505]/68 dark:via-[#050505]/32 transition-colors duration-500" />
+            <div className="absolute inset-0 bg-white/20 dark:bg-black/40 backdrop-blur-[4px] transition-colors duration-500" />
+            <div className="absolute inset-x-0 bottom-0 h-[85vh] md:h-[75vh] bg-gradient-to-t from-white via-white/85 to-transparent dark:from-[#050505] dark:via-[#050505]/85 transition-colors duration-500" />
           </div>
 
           {/* SVG MASK OVERLAY (z-20) */}
@@ -227,16 +237,16 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
               <mask id="dive-mask">
                 <rect width="1920" height="1080" fill="white" />
                 <g ref={maskTextGroupRef}>
+                  {/* The Y coordinates are now perfectly injected by GSAP on load! */}
                   <text
                     ref={(el) => {
                       maskLineRefs.current[0] = el;
                     }}
                     x="960"
-                    y="300"
                     dominantBaseline="middle"
                     textAnchor="middle"
                     fill="black"
-                    className="font-monument font-black text-[clamp(4rem,14vw,16rem)] tracking-tight"
+                    className="font-monument font-black text-[clamp(3.5rem,11vw,13rem)] tracking-tight"
                   >
                     EVERY
                   </text>
@@ -245,11 +255,10 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
                       maskLineRefs.current[1] = el;
                     }}
                     x="960"
-                    y="540"
                     dominantBaseline="middle"
                     textAnchor="middle"
                     fill="black"
-                    className="font-monument font-black text-[clamp(4rem,14vw,16rem)] tracking-tight"
+                    className="font-monument font-black text-[clamp(3.5rem,11vw,13rem)] tracking-tight"
                   >
                     PROJECT
                   </text>
@@ -258,11 +267,10 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
                       maskLineRefs.current[2] = el;
                     }}
                     x="960"
-                    y="780"
                     dominantBaseline="middle"
                     textAnchor="middle"
                     fill="black"
-                    className="font-monument font-black text-[clamp(4rem,14vw,16rem)] tracking-tight"
+                    className="font-monument font-black text-[clamp(3.5rem,11vw,13rem)] tracking-tight"
                   >
                     MATTERS.
                   </text>
@@ -299,67 +307,81 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
             </g>
           </svg>
 
+          {/* SCROLL HELPER INDICATOR */}
+          <div
+            ref={scrollIndicatorRef}
+            className="absolute bottom-20 sm:bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-40 pointer-events-none"
+          >
+            <span className="font-montreal text-[10px] sm:text-xs tracking-[0.2em] uppercase text-black/60 dark:text-white/60 font-medium drop-shadow-sm">
+              Scroll to explore
+            </span>
+            <div className="w-[1px] h-10 sm:h-12 bg-black/20 dark:bg-white/20 overflow-hidden relative">
+              <div className="absolute top-0 left-0 w-full h-1/2 bg-black dark:bg-white animate-[bounce_2s_infinite]" />
+            </div>
+          </div>
+
           {/* REVEALED CONTENT (z-30) */}
-          <div className="absolute inset-0 z-30 flex flex-col justify-end px-6 sm:px-10 lg:px-20 pb-16 lg:pb-24 pointer-events-none">
+          <div className="absolute inset-0 z-30 flex flex-col justify-end px-5 sm:px-10 lg:px-20 pb-10 sm:pb-12 lg:pb-12 pointer-events-none">
             <div
               ref={heroContentRef}
               className="w-full max-w-5xl pointer-events-auto opacity-0"
             >
-              <p className="font-montreal text-xs sm:text-sm uppercase tracking-[0.25em] text-cyan-700 dark:text-cyan-400 font-bold mb-4 drop-shadow-sm">
+              <p className="font-montreal text-[10px] sm:text-xs lg:text-xl uppercase tracking-[0.25em] text-slate-900 dark:text-cyan-400 font-bold mb-3 sm:mb-4 drop-shadow-sm">
                 TCET Research Culture Development Cell
               </p>
-              <h1 className="font-monument text-[clamp(2.5rem,6vw,5.5rem)] leading-[0.95] tracking-tight text-slate-900 dark:text-white mb-6 drop-shadow-sm">
-                Building India's Next <br className="hidden lg:block" />{" "}
-                Research Breakthroughs.
+
+              <h1 className="font-sans text-4xl sm:text-5xl lg:text-[clamp(3.5rem,6vw,5.5rem)] leading-[1.15] lg:leading-[0.95] tracking-tight text-slate-900 dark:text-white mb-5 lg:mb-6 drop-shadow-sm">
+                From Research to Real-World Impact
               </h1>
 
-              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
-                <p className="max-w-2xl font-montreal text-[clamp(1rem,1.2vw,1.25rem)] leading-relaxed text-slate-700 dark:text-slate-200">
-                  A future-forward academic ecosystem where engineering rigor,
-                  publication excellence, and innovation programs converge to
-                  shape impactful technology for society.
+              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 sm:gap-10">
+                <p className="max-w-2xl font-montreal text-sm sm:text-base lg:text-[clamp(1rem,1.2vw,1.25rem)] leading-relaxed text-slate-700 dark:text-slate-200">
+                  The TCET Research Culture Development Cell fosters high-impact
+                  research through funded projects, industry collaborations, and
+                  publication-driven innovation, enabling students and faculty
+                  to solve real-world challenges.
                 </p>
 
-                <div className="flex flex-wrap gap-4 shrink-0">
+                <div className="flex flex-col w-full sm:w-auto sm:flex-row sm:flex-wrap gap-3 sm:gap-4 shrink-0">
                   <Magnetic>
                     <Link
                       href="https://coe.raunakcodes.me/"
-                      className="flex items-center justify-center rounded-full bg-slate-900 dark:bg-white px-8 py-4 font-montreal text-sm font-bold text-white dark:text-black transition-transform hover:scale-105"
+                      className="flex items-center justify-center rounded-full bg-slate-900 dark:bg-white px-6 sm:px-8 py-3.5 sm:py-4 font-montreal text-xs sm:text-sm font-bold text-white dark:text-black transition-transform hover:scale-105"
                     >
                       Explore Centre Of Excellence
                     </Link>
                   </Magnetic>
                   <Link
                     href="/majorprojects"
-                    className="flex items-center justify-center rounded-full border border-slate-300 dark:border-white/20 bg-white/50 dark:bg-black/50 backdrop-blur-md px-8 py-4 font-montreal text-sm font-medium text-slate-800 dark:text-white transition hover:bg-slate-100 dark:hover:bg-white/10"
+                    className="flex items-center justify-center rounded-full border border-slate-300 dark:border-white/20 bg-white/50 dark:bg-black/50 backdrop-blur-md px-6 sm:px-8 py-3.5 sm:py-4 font-montreal text-xs sm:text-sm font-medium text-slate-800 dark:text-white transition hover:bg-slate-100 dark:hover:bg-white/10"
                   >
                     View Publications
                   </Link>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-12 sm:gap-20 pt-10 mt-10 border-t border-slate-300/60 dark:border-white/10">
+              <div className="flex flex-wrap items-center gap-8 sm:gap-12 lg:gap-20 pt-8 mt-8 lg:pt-10 lg:mt-10 border-t border-slate-300/60 dark:border-white/10">
                 <div>
-                  <p className="font-monument text-3xl sm:text-4xl text-slate-900 dark:text-white">
+                  <p className="font-monument text-2xl sm:text-3xl lg:text-4xl text-slate-900 dark:text-white">
                     45+
                   </p>
-                  <p className="font-montreal text-xs text-slate-600 dark:text-slate-400 uppercase tracking-widest mt-2 font-medium">
-                    Funded Tracks
+                  <p className="font-montreal text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 uppercase tracking-widest mt-1 sm:mt-2 font-medium">
+                    Faculty Guides
                   </p>
                 </div>
                 <div>
-                  <p className="font-monument text-3xl sm:text-4xl text-slate-900 dark:text-white">
-                    120+
+                  <p className="font-monument text-2xl sm:text-3xl lg:text-4xl text-slate-900 dark:text-white">
+                    280+
                   </p>
-                  <p className="font-montreal text-xs text-slate-600 dark:text-slate-400 uppercase tracking-widest mt-2 font-medium">
+                  <p className="font-montreal text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 uppercase tracking-widest mt-1 sm:mt-2 font-medium">
                     Researchers
                   </p>
                 </div>
                 <div>
-                  <p className="font-monument text-3xl sm:text-4xl text-cyan-600 dark:text-cyan-400">
+                  <p className="font-monument text-2xl sm:text-3xl lg:text-4xl text-cyan-600 dark:text-cyan-400">
                     18
                   </p>
-                  <p className="font-montreal text-xs text-slate-600 dark:text-slate-400 uppercase tracking-widest mt-2 font-medium">
+                  <p className="font-montreal text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 uppercase tracking-widest mt-1 sm:mt-2 font-medium">
                     Collaborations
                   </p>
                 </div>
@@ -369,9 +391,7 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
         </div>
       </section>
 
-      {/* ========================================
-          2. PROJECT GRID REEL
-          ======================================== */}
+      {/* PROJECT GRID REEL */}
       <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-20 py-8 sm:py-16 mb-24 z-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 xl:gap-10">
           {displayProjects.map((p, i) => {

@@ -119,25 +119,25 @@ model User {
   updatedAt    DateTime @updatedAt
 
   // Relations
-  managedProjects Project[]       @relation("TeacherProjects")
-  memberships     ProjectMember[]
-  assignedTasks   Task[]          @relation("TaskAssignee")
-  reviews         Review[]        @relation("ReviewReviewer")
-  uploadedFiles   ProjectFile[]
-  comments        Comment[]
-  notifications   Notification[]
-  showcaseProjects ShowcaseProject[]
-  showcaseFeedback ReviewFeedback[]
+  managedProjects       Project[]                  @relation("TeacherProjects")
+  memberships           ProjectMember[]
+  assignedTasks         Task[]                     @relation("TaskAssignee")
+  reviews               Review[]                   @relation("ReviewReviewer")
+  uploadedFiles         ProjectFile[]
+  comments              Comment[]
+  notifications         Notification[]
+  showcaseProjects      ShowcaseProject[]
+  showcaseFeedback      ReviewFeedback[]
   pendingProjectInvites PendingProjectAssignment[] @relation("PendingAssignmentInviter")
 
   @@map("users")
 }
 
 model AllowedEmail {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String    @id @default(cuid())
+  email     String    @unique
   addedBy   String
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   expiresAt DateTime?
 
   @@index([expiresAt])
@@ -161,6 +161,7 @@ model Project {
   title                String
   description          String        @db.Text
   domain               String
+  department           String
   status               ProjectStatus @default(DRAFT)
   startDate            DateTime
   endDate              DateTime
@@ -171,13 +172,13 @@ model Project {
   updatedAt            DateTime      @updatedAt
 
   // Relations
-  teacher    User            @relation("TeacherProjects", fields: [teacherId], references: [id])
-  members    ProjectMember[]
-  tasks      Task[]
-  milestones Milestone[]
-  reviews    Review[]
-  files      ProjectFile[]
-  tags       ProjectTag[]
+  teacher            User                       @relation("TeacherProjects", fields: [teacherId], references: [id])
+  members            ProjectMember[]
+  tasks              Task[]
+  milestones         Milestone[]
+  reviews            Review[]
+  files              ProjectFile[]
+  tags               ProjectTag[]
   pendingAssignments PendingProjectAssignment[]
 
   @@index([teacherId])
@@ -393,36 +394,36 @@ model ProjectTag {
 }
 
 model ShowcaseProject {
-  id             String                @id @default(cuid())
-  title          String
-  shortDescription String              @default("") @db.VarChar(500)
-  fullDescription  String              @db.Text
-  problemStatement String?             @db.Text
-  objectives       String?             @db.Text
-  methodology      String?             @db.Text
-  architectureDescription String?      @db.Text
-  databaseUsed     String?
-  githubUrl        String?             @db.VarChar(500)
-  liveDemoUrl      String?             @db.VarChar(500)
-  documentationUrl String?             @db.VarChar(500)
-  projectDomain    ShowcaseProjectDomain @default(OTHER)
-  mentorName       String?
-  mentorEmail      String?
-  keyFeatures      Json
-  techStack      Json
-  apiIntegrations Json
-  categories      Json
-  ownerId        String
-  status         ShowcaseProjectStatus @default(DRAFT)
-  currentVersion Int                   @default(1)
-  isPublic       Boolean               @default(false)
-  createdAt      DateTime              @default(now())
-  updatedAt      DateTime              @updatedAt
+  id                      String                @id @default(cuid())
+  title                   String
+  shortDescription        String                @default("") @db.VarChar(500)
+  fullDescription         String                @db.Text
+  problemStatement        String?               @db.Text
+  objectives              String?               @db.Text
+  methodology             String?               @db.Text
+  architectureDescription String?               @db.Text
+  databaseUsed            String?
+  githubUrl               String?               @db.VarChar(500)
+  liveDemoUrl             String?               @db.VarChar(500)
+  documentationUrl        String?               @db.VarChar(500)
+  projectDomain           ShowcaseProjectDomain @default(OTHER)
+  mentorName              String?
+  mentorEmail             String?
+  keyFeatures             Json
+  techStack               Json
+  apiIntegrations         Json
+  categories              Json
+  ownerId                 String
+  status                  ShowcaseProjectStatus @default(DRAFT)
+  currentVersion          Int                   @default(1)
+  isPublic                Boolean               @default(false)
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
 
-  owner     User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  versions  ProjectVersion[]
-  feedbacks ReviewFeedback[]
-  assets    ProjectAsset[]
+  owner       User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  versions    ProjectVersion[]
+  feedbacks   ReviewFeedback[]
+  assets      ProjectAsset[]
   teamMembers ShowcaseTeamMember[]
 
   @@index([ownerId])
@@ -433,13 +434,13 @@ model ShowcaseProject {
 }
 
 model ProjectVersion {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   projectId   String
   version     Int
   snapshot    Json
-  submittedAt DateTime  @default(now())
+  submittedAt DateTime @default(now())
 
-  project  ShowcaseProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project  ShowcaseProject  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   feedback ReviewFeedback[]
   assets   ProjectAsset[]
 
@@ -468,12 +469,12 @@ model ReviewFeedback {
 }
 
 model ProjectAsset {
-  id        String @id @default(cuid())
+  id        String            @id @default(cuid())
   projectId String
   versionId String?
   kind      ShowcaseAssetKind @default(OTHER)
   fileName  String?
-  fileUrl   String @db.Text
+  fileUrl   String            @db.Text
   fileType  String
 
   project ShowcaseProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -486,12 +487,12 @@ model ProjectAsset {
 }
 
 model ShowcaseTeamMember {
-  id        String   @id @default(cuid())
-  projectId String
-  name      String
-  role      String
-  orderIndex Int     @default(0)
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  projectId  String
+  name       String
+  role       String
+  orderIndex Int      @default(0)
+  createdAt  DateTime @default(now())
 
   project ShowcaseProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
