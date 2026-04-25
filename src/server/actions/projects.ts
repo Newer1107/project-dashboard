@@ -10,7 +10,8 @@ import { updateProjectCompletion } from "@/lib/completion";
 const createProjectSchema = z.object({
   title: z.string().min(3),
   description: z.string().min(10),
-  domain: z.string().min(2),
+  domain: z.string(),      // Accepts any string from the frontend
+  department: z.string(),  // Accepts any string from the frontend
   startDate: z.string(),
   endDate: z.string(),
   maxGroupSize: z.number().min(1).max(10).default(4),
@@ -201,12 +202,13 @@ export async function adminUploadProjectAssignments(data: z.infer<typeof adminUp
     const endDate = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
 
     const created = await Promise.all(
-      missingProjectNames.map((projectName) =>
+      missingProjectNames.map((projectName)  =>
         prisma.project.create({
           data: {
             title: projectName,
             description: `Auto-created from CSV import on ${now.toISOString().slice(0, 10)}.`,
             domain: "GENERAL",
+            department: "GENERAL",
             startDate: now,
             endDate,
             teacherId: adminId,
@@ -563,6 +565,7 @@ export async function createProject(data: z.infer<typeof createProjectSchema>) {
       title: validated.title,
       description: validated.description,
       domain: validated.domain,
+      department: validated.department,
       startDate: new Date(validated.startDate),
       endDate: new Date(validated.endDate),
       maxGroupSize: validated.maxGroupSize,
@@ -597,6 +600,7 @@ export async function updateProject(
       ...(data.title && { title: data.title }),
       ...(data.description && { description: data.description }),
       ...(data.domain && { domain: data.domain }),
+      ...(data.department && { department: data.department }),
       ...(data.startDate && { startDate: new Date(data.startDate) }),
       ...(data.endDate && { endDate: new Date(data.endDate) }),
       ...(data.maxGroupSize && { maxGroupSize: data.maxGroupSize }),
@@ -661,6 +665,7 @@ export async function duplicateProject(projectId: string) {
       title: `${original.title} (Copy)`,
       description: original.description,
       domain: original.domain,
+      department: original.department,
       startDate: new Date(),
       endDate: new Date(Date.now() + 90 * 86400000),
       maxGroupSize: original.maxGroupSize,

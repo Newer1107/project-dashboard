@@ -156,7 +156,7 @@ New notification types:
 - TanStack Query + Zustand
 - Tailwind CSS + shadcn/ui + Radix
 - Framer Motion
-- AWS S3 (uploads)
+- MinIO (S3-compatible uploads)
 - Nodemailer (SMTP/Gmail)
 
 ---
@@ -745,13 +745,15 @@ OTP_HASH_SECRET="<strong-random-secret>"
 EMAIL_QUEUE_CRON_SECRET="<strong-random-secret>"
 ```
 
-### AWS S3
+### MinIO Object Storage
 
 ```env
-AWS_REGION="..."
-AWS_ACCESS_KEY_ID="..."
-AWS_SECRET_ACCESS_KEY="..."
 S3_BUCKET_NAME="..."
+MINIO_ENDPOINT="https://minio.your-domain.com"
+MINIO_REGION="us-east-1"
+MINIO_ACCESS_KEY="..."
+MINIO_SECRET_KEY="..."
+S3_FORCE_PATH_STYLE="true"
 ```
 
 ### SMTP/Gmail
@@ -759,10 +761,12 @@ S3_BUCKET_NAME="..."
 ```env
 SMTP_PROVIDER="gmail"
 SMTP_HOST="smtp.gmail.com"
-SMTP_PORT="465"
-SMTP_SECURE="true"
+SMTP_PORT="587"
+SMTP_SECURE="false"
 SMTP_USER="your-email@gmail.com"
-SMTP_PASS="your-app-password"
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GOOGLE_REFRESH_TOKEN="your-google-refresh-token"
 SMTP_FROM="your-email@gmail.com"
 ```
 

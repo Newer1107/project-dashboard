@@ -28,8 +28,8 @@ If using Docker mode:
 ## Required accounts/services
 
 - Domain name (for production)
-- Gmail account with App Password (for SMTP)
-- AWS S3 bucket (optional but required for file uploads)
+- Google Cloud OAuth credentials + Gmail account (for SMTP)
+- MinIO bucket (required for file uploads)
 
 ---
 
@@ -73,34 +73,30 @@ Generate a secure NextAuth secret:
 openssl rand -base64 32
 ```
 
-## AWS S3 (if file uploads are enabled)
+## MinIO Object Storage (if file uploads are enabled)
 
 ```env
-AWS_REGION="ap-south-1"
-AWS_ACCESS_KEY_ID="..."
-AWS_SECRET_ACCESS_KEY="..."
 S3_BUCKET_NAME="your-bucket-name"
+MINIO_ENDPOINT="https://minio.your-domain.com"
+MINIO_REGION="us-east-1"
+MINIO_ACCESS_KEY="..."
+MINIO_SECRET_KEY="..."
+S3_FORCE_PATH_STYLE="true"
 ```
 
-Important: this codebase uses `S3_BUCKET_NAME` (not `AWS_S3_BUCKET`).
-
-## Gmail SMTP (App Password)
+## Gmail SMTP (OAuth2)
 
 ```env
 SMTP_PROVIDER="gmail"
 SMTP_HOST="smtp.gmail.com"
-SMTP_PORT="465"
-SMTP_SECURE="true"
+SMTP_PORT="587"
+SMTP_SECURE="false"
 SMTP_USER="your-email@gmail.com"
-SMTP_PASS="your-gmail-app-password"
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GOOGLE_REFRESH_TOKEN="your-google-refresh-token"
 SMTP_FROM="your-email@gmail.com"
 ```
-
-How to get Gmail App Password:
-
-1. Enable 2-Step Verification on your Google account.
-2. Go to Google Account -> Security -> App passwords.
-3. Create a password for "Mail" and use it as `SMTP_PASS`.
 
 ---
 
@@ -170,9 +166,11 @@ In `docker-compose.yml`, ensure app env includes:
 
 ```yaml
 - S3_BUCKET_NAME=${S3_BUCKET_NAME:-}
+- MINIO_ENDPOINT=${MINIO_ENDPOINT:-}
+- MINIO_REGION=${MINIO_REGION:-}
+- MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-}
+- MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-}
 ```
-
-If it currently says `AWS_S3_BUCKET`, replace it with `S3_BUCKET_NAME`.
 
 ## 6.4 Build and run
 
@@ -276,7 +274,7 @@ sudo certbot --nginx -d your-domain.com
 - `/admin/allowed-emails` works
 - `/admin/showcase` and `/showcase/my-projects` load correctly
 - Public showcase page `/showcase` loads
-- File uploads to S3 work
+- File uploads to MinIO work
 - SMTP email is delivered
 - Notifications are created for showcase actions
 
@@ -304,15 +302,16 @@ If no migrations exist yet, first create baseline migration once using `prisma m
 
 ## Email not sending
 
-- Use Gmail App Password, not account password
 - Check `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`
+- Verify `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`
 - Verify `SMTP_FROM` is valid
 
-## S3 upload failing
+## MinIO upload failing
 
 - Confirm `S3_BUCKET_NAME` is set
-- Confirm IAM permissions: `s3:PutObject`, `s3:GetObject`, `s3:DeleteObject`
-- Confirm region matches bucket region
+- Confirm `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY` are set
+- Confirm MinIO user policy allows `s3:PutObject`, `s3:GetObject`, `s3:DeleteObject`
+- Confirm bucket exists and `MINIO_REGION` matches server configuration
 
 ---
 
@@ -358,4 +357,4 @@ mysql -u <user> -p project_dashboard < backup.sql
 - Restrict DB access to private network
 - Enable firewall (`ufw`) and allow only required ports
 - Keep Docker images and server packages updated
-- Rotate SMTP and AWS keys periodically
+- Rotate SMTP OAuth credentials periodically

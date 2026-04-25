@@ -3,7 +3,6 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "@/components/ui/ThemeToggle";
-import Image from "next/image";
 import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis,
@@ -532,13 +531,6 @@ export default function AnalyticsDashboard() {
         <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-emerald-200/10 dark:bg-emerald-900/10 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" style={{animationDelay:"4s"}} />
       </div>
 
-      {/* Logo
-      <div className="absolute top-6 left-6 z-40">
-        <div className="bg-white/80 dark:bg-black/80 p-2 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-800 w-fit backdrop-blur-xl">
-          <Image src="/tcetlogo.png" alt="TCET Logo" width={64} height={64} unoptimized className="object-contain w-10 h-10 md:w-12 md:h-12" />
-        </div>
-      </div> */}
-
       {/* Navbar */}
       <div className="fixed top-0 left-0 right-0 z-50 h-24 pointer-events-none">
         <div className="relative w-full max-w-7xl mx-auto h-full px-6">
@@ -552,9 +544,6 @@ export default function AnalyticsDashboard() {
         {/* Hero */}
         <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{duration:0.6}} className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-white dark:bg-black rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-800 backdrop-blur-xl">
-              <Image src="/tcetlogo.png" alt="TCET Logo" width={40} height={40} unoptimized className="object-contain w-8 h-8 md:w-10 md:h-10" />
-            </div>
             <div>
               <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight bg-gradient-to-br from-neutral-900 to-neutral-500 dark:from-white dark:to-neutral-500 bg-clip-text text-transparent">
                 Project Analytics

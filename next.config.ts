@@ -1,19 +1,31 @@
 import type { NextConfig } from "next";
 
+const remotePatterns: NonNullable<NextConfig["images"]>["remotePatterns"] = [];
+
+const storageEndpoint = process.env.MINIO_ENDPOINT;
+if (storageEndpoint) {
+  try {
+    const resolved = storageEndpoint.startsWith("http://") ||
+      storageEndpoint.startsWith("https://")
+      ? storageEndpoint
+      : `https://${storageEndpoint}`;
+    const url = new URL(resolved);
+    remotePatterns.push({
+      protocol: url.protocol.replace(":", "") as "http" | "https",
+      hostname: url.hostname,
+      ...(url.port ? { port: url.port } : {}),
+      pathname: "/**",
+    });
+  } catch {
+    // Ignore invalid endpoint in build-time config.
+  }
+}
+
 const nextConfig: NextConfig = {
   output: "standalone",
   transpilePackages: ['three', '@react-three/fiber', '@react-three/drei'],
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "*.amazonaws.com",
-      },
-      {
-        protocol: "https",
-        hostname: "*.s3.*.amazonaws.com",
-      },
-    ],
+    remotePatterns,
   },
   experimental: {
     serverActions: {

@@ -28,7 +28,14 @@ export function OverviewTab({ project }: OverviewTabProps) {
   return (
     <div className="space-y-6">
       <div className="rounded-xl border bg-card p-6">
-        <h3 className="text-sm font-semibold text-muted-foreground mb-2">Description</h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-semibold text-muted-foreground">Description</h3>
+          {project.department && (
+            <span className="px-2.5 py-0.5 rounded-full bg-secondary text-secondary-foreground text-xs font-medium">
+              {project.department}
+            </span>
+          )}
+        </div>
         <p className="text-sm leading-relaxed">{project.description}</p>
       </div>
 

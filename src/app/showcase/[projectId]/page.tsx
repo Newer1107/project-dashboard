@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
-import Image from "next/image";
 import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
 import { getPublicShowcaseProjectById } from "@/server/actions/showcase";
 import Footer from "@/components/ui/Footer";
@@ -38,17 +37,9 @@ export default async function ShowcaseProjectDetailPage({
       {/* HEADER / BRANDING */}
       <header className="bg-white dark:bg-[#111111] border-b border-gray-200 dark:border-zinc-800 pt-24 pb-8 md:pt-32 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          {/* Top Row: Logo & Breadcrumbs */}
+          {/* Top Row: Title & Breadcrumbs */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div className="flex items-center gap-4">
-              <Image
-                src="/tcetlogo.png"
-                alt="TCET Logo"
-                width={48}
-                height={48}
-                unoptimized
-                className="object-contain"
-              />
               <div>
                 <h2 className="text-sm font-bold tracking-tight">TCET</h2>
                 <p className="text-xs text-gray-500 uppercase tracking-wider">
@@ -349,8 +340,6 @@ export default async function ShowcaseProjectDetailPage({
           </aside>
         </div>
       </main>
-
-      {/* <Footer /> */}
     </div>
   );
 }
