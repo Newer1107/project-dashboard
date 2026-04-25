@@ -2,7 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { generatePresignedDownloadUrl } from "@/lib/s3";
+import { generateAssetAccessUrl } from "@/lib/s3";
 import { createBulkNotifications, createNotification } from "@/lib/notifications";
 import { revalidatePath } from "next/cache";
 import { ShowcaseAssetKind, ShowcaseProjectDomain, ShowcaseProjectStatus } from "@prisma/client";
@@ -240,7 +240,7 @@ async function resolveAssetAccessUrl(fileUrl: string): Promise<string> {
   if (!trimmed) return trimmed;
 
   if (isLikelyS3Key(trimmed)) {
-    return generatePresignedDownloadUrl(trimmed, 900);
+    return generateAssetAccessUrl(trimmed, 900);
   }
 
   return trimmed;

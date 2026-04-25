@@ -26,6 +26,29 @@ function normalizeEndpoint(endpoint: string | undefined): string | undefined {
   return `${useSsl ? "https" : "http"}://${trimmed}`;
 }
 
+function isLocalEndpoint(endpoint: string | undefined): boolean {
+  if (!endpoint) return false;
+
+  try {
+    const { hostname } = new URL(endpoint);
+    return (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "0.0.0.0" ||
+      hostname === "::1"
+    );
+  } catch {
+    return false;
+  }
+}
+
+function encodeS3KeyPath(key: string): string {
+  return key
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+}
+
 const STORAGE_REGION =
   readEnvTrimmed(process.env.MINIO_REGION) ??
   readEnvTrimmed(process.env.AWS_REGION) ??
@@ -38,6 +61,8 @@ const STORAGE_FORCE_PATH_STYLE = parseBoolean(
   process.env.S3_FORCE_PATH_STYLE,
   Boolean(STORAGE_ENDPOINT),
 );
+const STORAGE_USE_PROXY =
+  parseBoolean(process.env.MINIO_USE_PROXY, false) || isLocalEndpoint(STORAGE_ENDPOINT);
 
 if (!STORAGE_ACCESS_KEY || !STORAGE_SECRET_KEY || !STORAGE_ENDPOINT || !STORAGE_REGION) {
   throw new Error(
@@ -94,6 +119,21 @@ export async function generatePresignedDownloadUrl(
     Key: key,
   });
   return getSignedUrl(s3Client, command, { expiresIn });
+}
+
+export function buildStorageProxyUrl(key: string): string {
+  return `/api/storage/${encodeS3KeyPath(key)}`;
+}
+
+export async function generateAssetAccessUrl(
+  key: string,
+  expiresIn: number = 900
+): Promise<string> {
+  if (STORAGE_USE_PROXY) {
+    return buildStorageProxyUrl(key);
+  }
+
+  return generatePresignedDownloadUrl(key, expiresIn);
 }
 
 export async function deleteS3Object(key: string): Promise<void> {

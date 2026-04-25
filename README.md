@@ -754,7 +754,10 @@ MINIO_REGION="us-east-1"
 MINIO_ACCESS_KEY="..."
 MINIO_SECRET_KEY="..."
 S3_FORCE_PATH_STYLE="true"
+MINIO_USE_PROXY="false"
 ```
+
+`MINIO_USE_PROXY="true"` forces app-served URLs (`/api/storage/...`) instead of direct MinIO presigned URLs.
 
 ### SMTP/Gmail
 
@@ -906,3 +909,8 @@ Default password for seeded users:
 ### Standalone runtime warning
 
 - In standalone output mode, run with node .next/standalone/server.js in production instead of next start.
+
+### Images fail when MINIO endpoint is private/local
+
+- If `MINIO_ENDPOINT` points to `localhost` or a private host, browsers cannot fetch presigned URLs directly.
+- Set `MINIO_USE_PROXY="true"` to stream assets through `/api/storage/[...path]` from the app domain.
