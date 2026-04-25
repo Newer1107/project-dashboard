@@ -1,19 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { buildS3Key } from "@/lib/s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { BUCKET, buildS3Key, s3Client } from "@/lib/s3";
 
 export const runtime = "nodejs";
-
-const s3 = new S3Client({
-  region: process.env.AWS_REGION!,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-  requestChecksumCalculation: "WHEN_REQUIRED",
-  responseChecksumValidation: "WHEN_REQUIRED",
-});
 
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 
@@ -42,9 +32,9 @@ export async function POST(req: NextRequest) {
     const s3Key = buildS3Key(projectId, `showcase-${normalizedKind}`, file.name);
     const body = Buffer.from(await file.arrayBuffer());
 
-    await s3.send(
+    await s3Client.send(
       new PutObjectCommand({
-        Bucket: process.env.S3_BUCKET_NAME!,
+        Bucket: BUCKET,
         Key: s3Key,
         Body: body,
         ContentType: fileType,

@@ -6,17 +6,49 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION!,
+function parseBoolean(value: string | undefined, fallback: boolean): boolean {
+  if (value == null || value.trim() === "") return fallback;
+  const normalized = value.trim().toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "yes";
+}
+
+function normalizeEndpoint(endpoint: string | undefined): string | undefined {
+  if (!endpoint) return undefined;
+  const trimmed = endpoint.trim();
+  if (!trimmed) return undefined;
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
+  const useSsl = parseBoolean(process.env.MINIO_USE_SSL, true);
+  return `${useSsl ? "https" : "http"}://${trimmed}`;
+}
+
+const STORAGE_REGION = process.env.MINIO_REGION || "us-east-1";
+const STORAGE_ACCESS_KEY = process.env.MINIO_ACCESS_KEY;
+const STORAGE_SECRET_KEY = process.env.MINIO_SECRET_KEY;
+const STORAGE_ENDPOINT = normalizeEndpoint(process.env.MINIO_ENDPOINT);
+const STORAGE_FORCE_PATH_STYLE = parseBoolean(
+  process.env.S3_FORCE_PATH_STYLE,
+  Boolean(STORAGE_ENDPOINT),
+);
+
+if (!STORAGE_ACCESS_KEY || !STORAGE_SECRET_KEY || !STORAGE_ENDPOINT) {
+  throw new Error(
+    "Missing MinIO config: set MINIO_ENDPOINT, MINIO_ACCESS_KEY, and MINIO_SECRET_KEY.",
+  );
+}
+
+export const s3Client = new S3Client({
+  region: STORAGE_REGION,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    accessKeyId: STORAGE_ACCESS_KEY!,
+    secretAccessKey: STORAGE_SECRET_KEY!,
   },
+  endpoint: STORAGE_ENDPOINT,
+  forcePathStyle: STORAGE_FORCE_PATH_STYLE,
   requestChecksumCalculation: "WHEN_REQUIRED",
   responseChecksumValidation: "WHEN_REQUIRED",
 });
 
-const BUCKET = process.env.S3_BUCKET_NAME!;
+export const BUCKET = process.env.S3_BUCKET_NAME!;
 
 export function buildS3Key(
   projectId: string,

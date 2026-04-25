@@ -4,14 +4,33 @@ const isGmail =
   process.env.SMTP_PROVIDER?.toLowerCase() === "gmail" ||
   process.env.SMTP_HOST === "smtp.gmail.com";
 
+function getTrimmedEnv(name: string): string | undefined {
+  const value = process.env[name]?.trim();
+  return value ? value : undefined;
+}
+
+const smtpUser = getTrimmedEnv("SMTP_USER");
+const googleClientId = getTrimmedEnv("GOOGLE_CLIENT_ID");
+const googleClientSecret = getTrimmedEnv("GOOGLE_CLIENT_SECRET");
+const googleRefreshToken = getTrimmedEnv("GOOGLE_REFRESH_TOKEN");
+
+const hasGmailOAuth2 = Boolean(
+  isGmail && smtpUser && googleClientId && googleClientSecret && googleRefreshToken,
+);
+
+const auth = {
+  type: "OAuth2" as const,
+  user: smtpUser,
+  clientId: googleClientId,
+  clientSecret: googleClientSecret,
+  refreshToken: googleRefreshToken,
+};
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: parseInt(process.env.SMTP_PORT || (isGmail ? "465" : "587")),
   secure: (process.env.SMTP_SECURE === "true") || (isGmail && process.env.SMTP_PORT !== "587"),
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
+  auth,
 });
 
 function getFromHeader(): string {
@@ -38,10 +57,28 @@ export async function sendEmail(options: {
 }) {
   if (!process.env.SMTP_HOST) {
     if (options.requireConfigured) {
-      throw new Error("SMTP is not configured. Please set SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASS.");
+      throw new Error("SMTP is not configured. Please set SMTP_HOST and SMTP_USER.");
     }
     console.log("[Email] SMTP not configured, skipping:", options.subject);
     return;
+  }
+
+  if (options.requireConfigured) {
+    if (!smtpUser) {
+      throw new Error("SMTP is not configured. Please set SMTP_USER.");
+    }
+
+    if (!isGmail) {
+      throw new Error(
+        "Email transport must use Gmail SMTP. Set SMTP_PROVIDER=gmail and SMTP_HOST=smtp.gmail.com.",
+      );
+    }
+
+    if (!hasGmailOAuth2) {
+      throw new Error(
+        "Gmail OAuth2 is not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REFRESH_TOKEN.",
+      );
+    }
   }
 
   try {
