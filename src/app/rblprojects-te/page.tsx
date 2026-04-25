@@ -15,6 +15,19 @@ import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
 import { getPublicRBLProjects } from "@/server/actions/publicProjects"; // Adjust import path as needed
 import { Skeleton } from "@/components/ui/skeleton";
 
+type RBLStudent = {
+  name: string;
+  rollNo: string;
+};
+
+type RBLProject = {
+  id: string;
+  department: string;
+  title: string;
+  guide: string;
+  students: RBLStudent[];
+};
+
 export default function ProjectTable() {
   const [scrollY, setScrollY] = React.useState(0);
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -23,7 +36,7 @@ export default function ProjectTable() {
   >(null);
 
   // Fetch live data from Prisma
-  const { data: rblProjects = [], isLoading } = useQuery({
+  const { data: rblProjects = [], isLoading } = useQuery<RBLProject[]>({
     queryKey: ["public-rbl-projects"],
     queryFn: () => getPublicRBLProjects(),
   });
