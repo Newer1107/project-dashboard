@@ -893,3 +893,64 @@ export async function createTag(name: string, color: string) {
 
   return prisma.tag.create({ data: { name, color } });
 }
+
+
+
+const leaderUpdateDetailsSchema = z.object({
+  projectId: z.string().min(1),
+  type: z.enum(["INHOUSE", "OUTHOUSE", "INDUSTRY_SPONSORED"]),
+  category: z.enum(["APPLICATION", "MULTIDISCIPLINARY", "RESEARCH", "CORE"]),
+  application: z.enum(["SOCIETY_USE", "GOVERNMENT_USE", "INSTITUTE_USE", "INDUSTRY_USE"]),
+  outcome: z.enum(["PUBLICATION", "PATENT", "PRODUCT", "COPYRIGHT"]),
+  poMapping: z.string().min(1, "PO Mapping is required"),
+  psoMapping: z.string().min(1, "PSO Mapping is required"),
+  sdg: z.enum([
+    "GOAL_1_NO_POVERTY", "GOAL_2_ZERO_HUNGER", "GOAL_3_GOOD_HEALTH", 
+    "GOAL_4_QUALITY_EDUCATION", "GOAL_5_GENDER_EQUALITY", "GOAL_6_CLEAN_WATER", 
+    "GOAL_7_CLEAN_ENERGY", "GOAL_8_DECENT_WORK", "GOAL_9_INDUSTRY_INNOVATION", 
+    "GOAL_10_REDUCED_INEQUALITIES", "GOAL_11_SUSTAINABLE_CITIES", "GOAL_12_RESPONSIBLE_CONSUMPTION", 
+    "GOAL_13_CLIMATE_ACTION", "GOAL_14_LIFE_BELOW_WATER", "GOAL_15_LIFE_ON_LAND", 
+    "GOAL_16_PEACE_AND_JUSTICE", "GOAL_17_PARTNERSHIPS"
+  ]),
+});
+
+export async function updateLeaderProjectDetails(data: z.infer<typeof leaderUpdateDetailsSchema>) {
+  const session = await auth();
+  if (!session?.user?.id || (session.user as any).role !== "STUDENT") {
+    throw new Error("Unauthorized: Only students can perform this action");
+  }
+
+  const validated = leaderUpdateDetailsSchema.parse(data);
+
+  // Security Check: Ensure the user is actually the LEAD of this project
+  const membership = await prisma.projectMember.findUnique({
+    where: {
+      projectId_studentId: {
+        projectId: validated.projectId,
+        studentId: session.user.id,
+      },
+    },
+  });
+
+  if (!membership || membership.role !== "LEAD") {
+    throw new Error("Unauthorized: Only the Group Leader can update these details.");
+  }
+
+  const updatedProject = await prisma.project.update({
+    where: { id: validated.projectId },
+    data: {
+      type: validated.type,
+      category: validated.category,
+      application: validated.application,
+      outcome: validated.outcome,
+      poMapping: validated.poMapping,
+      psoMapping: validated.psoMapping,
+      sdg: validated.sdg,
+    },
+  });
+
+  revalidatePath(`/student/projects/${validated.projectId}`);
+  revalidatePath('/rblprojects-te'); // Revalidate your public list board too
+  
+  return { ok: true, project: updatedProject };
+}
