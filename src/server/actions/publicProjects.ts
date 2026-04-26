@@ -4,11 +4,15 @@ import { prisma } from "@/lib/prisma";
 
 export async function getPublicRBLProjects() {
   const projects = await prisma.project.findMany({
-    where: { status: { not: "DRAFT" } }, 
+    where: { 
+      status: { not: "DRAFT" },
+      isRblProject: true, // Only fetch projects marked as RBL
+    }, 
     select: {
       id: true,
       title: true,
       department: true,
+      groupNo: true,      // Fetching new field from DB
       type: true,         // Fetching from DB
       category: true,     // Fetching from DB
       application: true,  // Fetching from DB
@@ -33,6 +37,7 @@ export async function getPublicRBLProjects() {
   // Map the Prisma relational data to a flat structure for the frontend
   return projects.map((p) => ({
     id: p.id,
+    groupNo: p.groupNo || "N/A", // Pass groupNo to frontend
     department: p.department || "General",
     title: p.title,
     guide: p.teacher?.name || "Unassigned",
@@ -40,7 +45,7 @@ export async function getPublicRBLProjects() {
       name: m.student.name,
       rollNo: m.student.rollNumber || "N/A",
     })),
-    // 👇 THESE WERE MISSING! Passing them to the frontend
+    // Additional RBL details
     type: p.type,
     category: p.category,
     application: p.application,

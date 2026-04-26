@@ -224,6 +224,8 @@ model Project {
   poMapping            String? // Keeping as String for simple comma-separated entry like "PO1, PO2"
   psoMapping           String? // e.g., "1, 2"
   sdg                  SDG?
+  groupNo              String?
+  isRblProject         Boolean             @default(false)
 
   // Relations
   teacher            User                       @relation("TeacherProjects", fields: [teacherId], references: [id])

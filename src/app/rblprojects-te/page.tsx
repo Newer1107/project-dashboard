@@ -14,17 +14,17 @@ import ThemeToggle from "@/components/ui/ThemeToggle";
 import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
 import { getPublicRBLProjects } from "@/server/actions/publicProjects";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge"; // Added Badge import
+import { Badge } from "@/components/ui/badge";
 
 type RBLStudent = {
   name: string;
   rollNo: string;
 };
 
-// 1. Updated Interface with new fields
 type RBLProject = {
   id: string;
   department: string;
+  groupNo?: string; // Added Group No
   title: string;
   guide: string;
   students: RBLStudent[];
@@ -104,6 +104,8 @@ export default function ProjectTable() {
       const matchesSearch =
         project.title.toLowerCase().includes(searchLower) ||
         project.guide.toLowerCase().includes(searchLower) ||
+        (project.groupNo &&
+          project.groupNo.toLowerCase().includes(searchLower)) || // Search by groupNo
         project.students.some((s) =>
           s.name.toLowerCase().includes(searchLower),
         );
@@ -175,7 +177,7 @@ export default function ProjectTable() {
               </svg>
               <input
                 type="text"
-                placeholder="Search projects, guides, or students..."
+                placeholder="Search projects, guides, groups, or students..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="flex-1 bg-transparent outline-none text-neutral-900 dark:text-white placeholder-neutral-500"
@@ -227,17 +229,17 @@ export default function ProjectTable() {
           className="origin-top"
         >
           <div className="w-full overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl">
-            {/* 2. Increased max-width to allow scrolling for the new columns */}
             <div className="w-full overflow-x-auto max-h-[70vh] custom-scrollbar">
               <table
                 className="w-full text-left text-sm whitespace-nowrap"
-                style={{ minWidth: "1400px" }}
+                style={{ minWidth: "1500px" }} // Widened to fit the extra column neatly
               >
                 <thead className="bg-neutral-50 dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 sticky top-0 z-20 shadow-sm">
                   <tr>
                     <th className="px-4 py-4 font-semibold w-72">
                       Project & Domain
                     </th>
+                    <th className="px-4 py-4 font-semibold w-32">Group No</th>
                     <th className="px-4 py-4 font-semibold w-32">Type</th>
                     <th className="px-4 py-4 font-semibold w-40">Category</th>
                     <th className="px-4 py-4 font-semibold w-40">
@@ -258,11 +260,16 @@ export default function ProjectTable() {
                     {isLoading ? (
                       Array.from({ length: 5 }).map((_, i) => (
                         <tr key={i}>
-                          {Array.from({ length: 9 }).map((_, colIdx) => (
-                            <td key={colIdx} className="px-4 py-4">
-                              <Skeleton className="h-6 w-full max-w-[120px]" />
-                            </td>
-                          ))}
+                          {Array.from({ length: 10 }).map(
+                            (
+                              _,
+                              colIdx, // 10 columns
+                            ) => (
+                              <td key={colIdx} className="px-4 py-4">
+                                <Skeleton className="h-6 w-full max-w-[120px]" />
+                              </td>
+                            ),
+                          )}
                         </tr>
                       ))
                     ) : filteredProjects.length > 0 ? (
@@ -283,6 +290,17 @@ export default function ProjectTable() {
                             <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-medium text-[10px] tracking-wider uppercase">
                               {project.department}
                             </span>
+                          </td>
+
+                          {/* Group No */}
+                          <td className="px-4 py-4 align-top">
+                            {project.groupNo && project.groupNo !== "N/A" ? (
+                              <span className="font-mono text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded border border-neutral-200 dark:border-neutral-700 uppercase tracking-wider">
+                                {project.groupNo}
+                              </span>
+                            ) : (
+                              <span className="text-neutral-400">—</span>
+                            )}
                           </td>
 
                           {/* Type Badge */}
@@ -335,17 +353,20 @@ export default function ProjectTable() {
                           {/* Students List */}
                           <td className="px-4 py-4 align-top">
                             <ul className="space-y-1">
-                              {project.students.map((student) => (
+                              {project.students.map((student, index) => (
                                 <li
-                                  key={`${project.id}-${student.rollNo}`}
+                                  key={`${project.id}-${student.rollNo}-${index}`}
                                   className="text-neutral-600 dark:text-neutral-400 flex items-center gap-2"
                                 >
-                                  <span className="text-xs font-mono text-neutral-400 dark:text-neutral-500 w-16 shrink-0">
-                                    {student.rollNo}
-                                  </span>
-                                  <span className="font-medium text-sm group-hover/row:text-neutral-900 dark:group-hover/row:text-neutral-200 transition-colors truncate max-w-[150px]">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+                                  <span className="font-medium">
                                     {student.name}
                                   </span>
+                                  {student.rollNo !== "N/A" && (
+                                    <span className="text-xs text-neutral-400 font-mono">
+                                      ({student.rollNo})
+                                    </span>
+                                  )}
                                 </li>
                               ))}
                             </ul>
@@ -370,7 +391,7 @@ export default function ProjectTable() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={9} className="px-4 py-16 text-center">
+                        <td colSpan={10} className="px-4 py-16 text-center">
                           <div className="flex flex-col items-center justify-center space-y-3">
                             <span className="text-4xl">📭</span>
                             <h3 className="text-lg font-bold text-neutral-900 dark:text-white">

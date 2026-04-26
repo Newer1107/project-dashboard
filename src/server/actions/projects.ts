@@ -12,6 +12,8 @@ const createProjectSchema = z.object({
   description: z.string().min(10),
   domain: z.string(),      // Accepts any string from the frontend
   department: z.string(),  // Accepts any string from the frontend
+  groupNo: z.string().regex(/^[a-zA-Z]{2}-[a-zA-Z]+(?:-[a-zA-Z]+)?-\d+$/, "Format must be YEAR-DEPT-DIV-GROUP"),
+  isRblProject: z.boolean().default(false),
   startDate: z.string(),
   endDate: z.string(),
   maxGroupSize: z.number().min(1).max(10).default(4),
@@ -27,6 +29,8 @@ const adminUpdateProjectSchema = z.object({
   title: z.string().min(3),
   description: z.string().min(10),
   domain: z.string().min(2),
+  groupNo: z.string().regex(/^[a-zA-Z]{2}-[a-zA-Z]+(?:-[a-zA-Z]+)?-\d+$/),
+  isRblProject: z.boolean(),
   status: z.enum(["DRAFT", "ACTIVE", "UNDER_REVIEW", "COMPLETED", "ARCHIVED"]),
   maxGroupSize: z.number().min(1).max(10),
   startDate: z.string(),
@@ -209,6 +213,8 @@ export async function adminUploadProjectAssignments(data: z.infer<typeof adminUp
             description: `Auto-created from CSV import on ${now.toISOString().slice(0, 10)}.`,
             domain: "GENERAL",
             department: "GENERAL",
+            groupNo: "XX-GEN-1", // Default placeholder for CSV created projects
+            isRblProject: false,
             startDate: now,
             endDate,
             teacherId: adminId,
@@ -332,6 +338,8 @@ export async function getAdminProjectsManagementData() {
         description: true,
         domain: true,
         status: true,
+        groupNo: true,        // Added field
+        isRblProject: true,   // Added field
         maxGroupSize: true,
         startDate: true,
         endDate: true,
@@ -396,6 +404,8 @@ export async function adminUpdateProject(data: z.infer<typeof adminUpdateProject
       title: validated.title,
       description: validated.description,
       domain: validated.domain,
+      groupNo: validated.groupNo,             // Added field
+      isRblProject: validated.isRblProject,   // Added field
       status: validated.status,
       maxGroupSize: validated.maxGroupSize,
       startDate: new Date(validated.startDate),
@@ -566,6 +576,8 @@ export async function createProject(data: z.infer<typeof createProjectSchema>) {
       description: validated.description,
       domain: validated.domain,
       department: validated.department,
+      groupNo: validated.groupNo,             // Added field
+      isRblProject: validated.isRblProject,   // Added field
       startDate: new Date(validated.startDate),
       endDate: new Date(validated.endDate),
       maxGroupSize: validated.maxGroupSize,
@@ -601,6 +613,8 @@ export async function updateProject(
       ...(data.description && { description: data.description }),
       ...(data.domain && { domain: data.domain }),
       ...(data.department && { department: data.department }),
+      ...(data.groupNo && { groupNo: data.groupNo }),                             // Added field
+      ...(typeof data.isRblProject === "boolean" && { isRblProject: data.isRblProject }), // Added field
       ...(data.startDate && { startDate: new Date(data.startDate) }),
       ...(data.endDate && { endDate: new Date(data.endDate) }),
       ...(data.maxGroupSize && { maxGroupSize: data.maxGroupSize }),
@@ -666,6 +680,8 @@ export async function duplicateProject(projectId: string) {
       description: original.description,
       domain: original.domain,
       department: original.department,
+      groupNo: original.groupNo,             // Added field
+      isRblProject: original.isRblProject,   // Added field
       startDate: new Date(),
       endDate: new Date(Date.now() + 90 * 86400000),
       maxGroupSize: original.maxGroupSize,
@@ -893,8 +909,6 @@ export async function createTag(name: string, color: string) {
 
   return prisma.tag.create({ data: { name, color } });
 }
-
-
 
 const leaderUpdateDetailsSchema = z.object({
   projectId: z.string().min(1),
