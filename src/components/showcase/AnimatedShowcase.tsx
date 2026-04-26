@@ -345,7 +345,7 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
                 <div className="flex flex-col w-full sm:w-auto sm:flex-row sm:flex-wrap gap-3 sm:gap-4 shrink-0">
                   <Magnetic>
                     <Link
-                      href="https://coe.raunakcodes.me/"
+                      href="https://tcetcercd.in"
                       className="flex items-center justify-center rounded-full bg-slate-900 dark:bg-white px-6 sm:px-8 py-3.5 sm:py-4 font-montreal text-xs sm:text-sm font-bold text-white dark:text-black transition-transform hover:scale-105"
                     >
                       Explore Centre Of Excellence
