@@ -2,6 +2,8 @@
 
 import React from "react";
 import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { LeaderDetailsForm } from "@/components/dashboard/LeaderDetailsForm";
 import { motion } from "framer-motion";
 import { useProject } from "@/hooks/useProjects";
 import { useProjectTasks, useUpdateTask } from "@/hooks/useTasks";
@@ -31,6 +33,7 @@ const statusColors: Record<string, string> = {
 
 export default function StudentProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
+  const { data: session } = useSession();
   const { data: project, isLoading } = useProject(projectId);
   const { data: tasks } = useProjectTasks(projectId);
   const updateTask = useUpdateTask();
@@ -64,6 +67,13 @@ export default function StudentProjectDetailPage() {
   }
 
   const p = project as any;
+  const currentUserId = (session?.user as any)?.id;
+
+  // Check if the current user is a LEAD in this project
+  const isLeader = p.members?.some(
+    (member: any) =>
+      member.studentId === currentUserId && member.role === "LEAD",
+  );
 
   async function handleTaskUpdate(taskId: string, data: any) {
     try {
@@ -87,20 +97,29 @@ export default function StudentProjectDetailPage() {
 
   return (
     <div className="space-y-6">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-3"
+      >
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold">{p.title}</h1>
             <p className="text-muted-foreground text-sm mt-1">{p.domain}</p>
           </div>
-          <Badge className={statusColors[p.status] ?? ""}>
-            {p.status.replace("_", " ")}
-          </Badge>
+          <div className="flex items-center gap-4">
+            {/* Render the details form button only if the student is the group leader */}
+            {isLeader && <LeaderDetailsForm project={p} />}
+            <Badge className={statusColors[p.status] ?? ""}>
+              {p.status.replace("_", " ")}
+            </Badge>
+          </div>
         </div>
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <span className="flex items-center gap-1">
             <Calendar className="h-4 w-4" />
-            {new Date(p.startDate).toLocaleDateString()} - {new Date(p.endDate).toLocaleDateString()}
+            {new Date(p.startDate).toLocaleDateString()} -{" "}
+            {new Date(p.endDate).toLocaleDateString()}
           </span>
           <span className="flex items-center gap-1">
             <Users className="h-4 w-4" />
@@ -111,15 +130,24 @@ export default function StudentProjectDetailPage() {
 
       <Tabs defaultValue="tasks" className="w-full">
         <TabsList className="w-full justify-start gap-1 bg-transparent border-b rounded-none px-0 pb-0">
-          <TabsTrigger value="tasks" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
+          <TabsTrigger
+            value="tasks"
+            className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+          >
             <ListTodo className="mr-2 h-4 w-4" />
             Tasks
           </TabsTrigger>
-          <TabsTrigger value="milestones" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
+          <TabsTrigger
+            value="milestones"
+            className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+          >
             <Calendar className="mr-2 h-4 w-4" />
             Milestones
           </TabsTrigger>
-          <TabsTrigger value="files" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
+          <TabsTrigger
+            value="files"
+            className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+          >
             <FileText className="mr-2 h-4 w-4" />
             Files
           </TabsTrigger>
@@ -154,7 +182,9 @@ export default function StudentProjectDetailPage() {
                     <p className="text-sm font-medium">{file.fileName}</p>
                     <p className="text-xs text-muted-foreground">
                       {(file.fileSize / 1024).toFixed(1)} KB •{" "}
-                      {formatDistanceToNow(new Date(file.uploadedAt), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(file.uploadedAt), {
+                        addSuffix: true,
+                      })}
                     </p>
                   </div>
                 </div>

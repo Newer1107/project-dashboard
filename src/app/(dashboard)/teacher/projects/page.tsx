@@ -4,12 +4,18 @@ import React from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search, Filter, BookOpen } from "lucide-react";
 import { useTeacherProjects } from "@/hooks/useProjects";
 import { ProjectCard } from "@/components/dashboard/ProjectCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const container = {
@@ -28,23 +34,39 @@ export default function TeacherProjectsPage() {
 
   const [search, setSearch] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("ALL");
+  const [rblFilter, setRblFilter] = React.useState("ALL"); // New filter for RBL
 
   const filtered = React.useMemo(() => {
     let list = projects ?? [];
+
+    // Search by Title, Domain, Department, or Group Number
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
         (p: any) =>
           p.title.toLowerCase().includes(q) ||
           p.domain.toLowerCase().includes(q) ||
-          (p.department && p.department.toLowerCase().includes(q))
+          (p.department && p.department.toLowerCase().includes(q)) ||
+          (p.groupNo && p.groupNo.toLowerCase().includes(q)), // Added groupNo to search
       );
     }
+
+    // Filter by Status
     if (statusFilter !== "ALL") {
       list = list.filter((p: any) => p.status === statusFilter);
     }
+
+    // Filter by RBL Project Type
+    if (rblFilter === "RBL") {
+      list = list.filter((p: any) => p.isRblProject === true);
+    } else if (rblFilter === "STANDARD") {
+      list = list.filter(
+        (p: any) => p.isRblProject === false || p.isRblProject === null,
+      );
+    }
+
     return list;
-  }, [projects, search, statusFilter]);
+  }, [projects, search, statusFilter, rblFilter]);
 
   return (
     <div className="space-y-6">
@@ -64,30 +86,47 @@ export default function TeacherProjectsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-sm">
+      <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="relative flex-1 w-full sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search projects by title, domain, or dept..."
+            placeholder="Search title, domain, dept, or group no..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40">
-            <Filter className="mr-2 h-4 w-4" />
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">All Status</SelectItem>
-            <SelectItem value="DRAFT">Draft</SelectItem>
-            <SelectItem value="ACTIVE">Active</SelectItem>
-            <SelectItem value="UNDER_REVIEW">Under Review</SelectItem>
-            <SelectItem value="COMPLETED">Completed</SelectItem>
-            <SelectItem value="ARCHIVED">Archived</SelectItem>
-          </SelectContent>
-        </Select>
+
+        <div className="flex w-full sm:w-auto gap-3">
+          {/* Status Filter */}
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full sm:w-40">
+              <Filter className="mr-2 h-4 w-4" />
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Status</SelectItem>
+              <SelectItem value="DRAFT">Draft</SelectItem>
+              <SelectItem value="ACTIVE">Active</SelectItem>
+              <SelectItem value="UNDER_REVIEW">Under Review</SelectItem>
+              <SelectItem value="COMPLETED">Completed</SelectItem>
+              <SelectItem value="ARCHIVED">Archived</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* New RBL Filter */}
+          <Select value={rblFilter} onValueChange={setRblFilter}>
+            <SelectTrigger className="w-full sm:w-40">
+              <BookOpen className="mr-2 h-4 w-4 text-muted-foreground" />
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Types</SelectItem>
+              <SelectItem value="RBL">RBL Projects</SelectItem>
+              <SelectItem value="STANDARD">Standard</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Grid */}

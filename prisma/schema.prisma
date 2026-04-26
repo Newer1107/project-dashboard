@@ -105,6 +105,53 @@ enum EmailQueueStatus {
   FAILED
 }
 
+enum ProjectType {
+  INHOUSE
+  OUTHOUSE
+  INDUSTRY_SPONSORED
+}
+
+enum ProjectCategory {
+  APPLICATION
+  MULTIDISCIPLINARY
+  RESEARCH
+  CORE
+}
+
+enum ProjectApplication {
+  SOCIETY_USE
+  GOVERNMENT_USE
+  INSTITUTE_USE
+  INDUSTRY_USE
+}
+
+enum ProjectOutcome {
+  PUBLICATION
+  PATENT
+  PRODUCT
+  COPYRIGHT
+}
+
+enum SDG {
+  GOAL_1_NO_POVERTY
+  GOAL_2_ZERO_HUNGER
+  GOAL_3_GOOD_HEALTH
+  GOAL_4_QUALITY_EDUCATION
+  GOAL_5_GENDER_EQUALITY
+  GOAL_6_CLEAN_WATER
+  GOAL_7_CLEAN_ENERGY
+  GOAL_8_DECENT_WORK
+  GOAL_9_INDUSTRY_INNOVATION
+  GOAL_10_REDUCED_INEQUALITIES
+  GOAL_11_SUSTAINABLE_CITIES
+  GOAL_12_RESPONSIBLE_CONSUMPTION
+  GOAL_13_CLIMATE_ACTION
+  GOAL_14_LIFE_BELOW_WATER
+  GOAL_15_LIFE_ON_LAND
+  GOAL_16_PEACE_AND_JUSTICE
+  GOAL_17_PARTNERSHIPS
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
@@ -157,19 +204,28 @@ model EmailVerificationOTP {
 }
 
 model Project {
-  id                   String        @id @default(cuid())
+  id                   String              @id @default(cuid())
   title                String
-  description          String        @db.Text
+  description          String              @db.Text
   domain               String
   department           String
-  status               ProjectStatus @default(DRAFT)
+  status               ProjectStatus       @default(DRAFT)
   startDate            DateTime
   endDate              DateTime
-  maxGroupSize         Int           @default(4)
-  completionPercentage Float         @default(0)
+  maxGroupSize         Int                 @default(4)
+  completionPercentage Float               @default(0)
   teacherId            String
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  type                 ProjectType?
+  category             ProjectCategory?
+  application          ProjectApplication?
+  outcome              ProjectOutcome?
+  poMapping            String? // Keeping as String for simple comma-separated entry like "PO1, PO2"
+  psoMapping           String? // e.g., "1, 2"
+  sdg                  SDG?
+  groupNo              String?
+  isRblProject         Boolean             @default(false)
 
   // Relations
   teacher            User                       @relation("TeacherProjects", fields: [teacherId], references: [id])

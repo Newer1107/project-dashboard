@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/select";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
-import { getPublicRBLProjects } from "@/server/actions/publicProjects"; // Adjust import path as needed
+import { getPublicRBLProjects } from "@/server/actions/publicProjects";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 type RBLStudent = {
   name: string;
@@ -23,9 +24,32 @@ type RBLStudent = {
 type RBLProject = {
   id: string;
   department: string;
+  groupNo?: string; // Added Group No
   title: string;
   guide: string;
   students: RBLStudent[];
+  type?: string;
+  category?: string;
+  application?: string;
+  outcome?: string;
+  poMapping?: string;
+  psoMapping?: string;
+  sdg?: string;
+};
+
+// Helper function to format Enums (e.g., "SOCIETY_USE" -> "Society Use")
+const formatEnum = (str?: string) => {
+  if (!str) return "—";
+  return str
+    .split("_")
+    .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+    .join(" ");
+};
+
+// Helper to clean up SDG strings
+const formatSDG = (sdg?: string) => {
+  if (!sdg) return "—";
+  return sdg.replace("GOAL_", "").replace(/_/g, " ");
 };
 
 export default function ProjectTable() {
@@ -36,10 +60,16 @@ export default function ProjectTable() {
   >(null);
 
   // Fetch live data from Prisma
-  const { data: rblProjects = [], isLoading } = useQuery<RBLProject[]>({
+  const { data, isLoading } = useQuery({
     queryKey: ["public-rbl-projects"],
-    queryFn: () => getPublicRBLProjects(),
+    queryFn: async () => {
+      const res = await getPublicRBLProjects();
+      return res as RBLProject[];
+    },
   });
+
+  // Provide the default array here so TypeScript strict-typing catches it perfectly
+  const rblProjects: RBLProject[] = data || [];
 
   React.useEffect(() => {
     let animationFrameId: number | null = null;
@@ -74,6 +104,8 @@ export default function ProjectTable() {
       const matchesSearch =
         project.title.toLowerCase().includes(searchLower) ||
         project.guide.toLowerCase().includes(searchLower) ||
+        (project.groupNo &&
+          project.groupNo.toLowerCase().includes(searchLower)) || // Search by groupNo
         project.students.some((s) =>
           s.name.toLowerCase().includes(searchLower),
         );
@@ -87,6 +119,7 @@ export default function ProjectTable() {
 
   return (
     <div className="relative w-full min-h-screen bg-neutral-50 dark:bg-neutral-950 overflow-hidden font-sans">
+      {/* Background Effects */}
       <div className="fixed inset-0 -z-20 overflow-hidden">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-200/20 dark:bg-emerald-900/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
         <div className="absolute -bottom-32 -left-32 w-[600px] h-[600px] bg-blue-200/20 dark:bg-blue-900/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse animation-delay-2000"></div>
@@ -102,7 +135,7 @@ export default function ProjectTable() {
 
       <ThemeToggle />
 
-      <div className="relative w-full max-w-7xl mx-auto px-6 pb-12 pt-32 space-y-12 text-neutral-800 dark:text-neutral-100">
+      <div className="relative w-full max-w-[1600px] mx-auto px-6 pb-12 pt-32 space-y-12 text-neutral-800 dark:text-neutral-100">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -113,10 +146,9 @@ export default function ProjectTable() {
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight bg-gradient-to-br from-neutral-900 to-neutral-500 dark:from-white dark:to-neutral-500 bg-clip-text text-transparent">
               RBL Projects <br />
             </h1>
-
             <p className="text-neutral-600 dark:text-neutral-400 max-w-2xl text-lg leading-relaxed">
               Explore TE RBL projects from TCET with student allocation details,
-              project titles, and assigned guides.
+              project titles, classifications, and assigned guides.
             </p>
           </div>
         </motion.div>
@@ -125,11 +157,10 @@ export default function ProjectTable() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="flex flex-col md:flex-row gap-4"
+          className="flex flex-col md:flex-row gap-4 max-w-4xl"
         >
           <div className="relative flex-1 group">
             <div className="absolute inset-0 bg-emerald-500/20 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition duration-300 -z-10"></div>
-
             <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl focus-within:border-emerald-500 transition-colors">
               <svg
                 className="w-5 h-5 text-neutral-400"
@@ -144,10 +175,9 @@ export default function ProjectTable() {
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
-
               <input
                 type="text"
-                placeholder="Search projects, guides, or students..."
+                placeholder="Search projects, guides, groups, or students..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="flex-1 bg-transparent outline-none text-neutral-900 dark:text-white placeholder-neutral-500"
@@ -199,17 +229,29 @@ export default function ProjectTable() {
           className="origin-top"
         >
           <div className="w-full overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl">
-            <div className="w-full overflow-x-auto max-h-[70vh]">
+            <div className="w-full overflow-x-auto max-h-[70vh] custom-scrollbar">
               <table
-                className="w-full text-left text-sm"
-                style={{ minWidth: "800px" }}
+                className="w-full text-left text-sm whitespace-nowrap"
+                style={{ minWidth: "1500px" }} // Widened to fit the extra column neatly
               >
                 <thead className="bg-neutral-50 dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 sticky top-0 z-20 shadow-sm">
                   <tr>
-                    <th className="px-4 py-4 font-semibold w-56">Department</th>
-                    <th className="px-4 py-4 font-semibold w-72">Project</th>
-                    <th className="px-4 py-4 font-semibold w-56">Students</th>
-                    <th className="px-4 py-4 font-semibold w-48">Guide</th>
+                    <th className="px-4 py-4 font-semibold w-72">
+                      Project & Domain
+                    </th>
+                    <th className="px-4 py-4 font-semibold w-32">Group No</th>
+                    <th className="px-4 py-4 font-semibold w-32">Type</th>
+                    <th className="px-4 py-4 font-semibold w-40">Category</th>
+                    <th className="px-4 py-4 font-semibold w-40">
+                      Application
+                    </th>
+                    <th className="px-4 py-4 font-semibold w-32">Outcome</th>
+                    <th className="px-4 py-4 font-semibold w-48">
+                      PO/PSO Mapping
+                    </th>
+                    <th className="px-4 py-4 font-semibold w-64">Students</th>
+                    <th className="px-4 py-4 font-semibold w-40">Guide</th>
+                    <th className="px-4 py-4 font-semibold w-48">SDG</th>
                   </tr>
                 </thead>
 
@@ -218,18 +260,16 @@ export default function ProjectTable() {
                     {isLoading ? (
                       Array.from({ length: 5 }).map((_, i) => (
                         <tr key={i}>
-                          <td className="px-4 py-4">
-                            <Skeleton className="h-6 w-24" />
-                          </td>
-                          <td className="px-4 py-4">
-                            <Skeleton className="h-6 w-48" />
-                          </td>
-                          <td className="px-4 py-4">
-                            <Skeleton className="h-12 w-32" />
-                          </td>
-                          <td className="px-4 py-4">
-                            <Skeleton className="h-6 w-24" />
-                          </td>
+                          {Array.from({ length: 10 }).map(
+                            (
+                              _,
+                              colIdx, // 10 columns
+                            ) => (
+                              <td key={colIdx} className="px-4 py-4">
+                                <Skeleton className="h-6 w-full max-w-[120px]" />
+                              </td>
+                            ),
+                          )}
                         </tr>
                       ))
                     ) : filteredProjects.length > 0 ? (
@@ -242,45 +282,116 @@ export default function ProjectTable() {
                           transition={{ delay: Math.min(idx * 0.05, 0.5) }}
                           className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/20 transition-colors group/row"
                         >
-                          <td className="px-4 py-4 align-top">
-                            <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-medium text-xs whitespace-normal text-left">
+                          {/* Project & Domain */}
+                          <td className="px-4 py-4 align-top max-w-[300px] whitespace-normal">
+                            <p className="font-bold text-neutral-900 dark:text-neutral-100 leading-snug mb-2">
+                              {project.title}
+                            </p>
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-medium text-[10px] tracking-wider uppercase">
                               {project.department}
                             </span>
                           </td>
 
+                          {/* Group No */}
                           <td className="px-4 py-4 align-top">
-                            <p className="font-bold text-neutral-900 dark:text-neutral-100 leading-snug">
-                              {project.title}
-                            </p>
+                            {project.groupNo && project.groupNo !== "N/A" ? (
+                              <span className="font-mono text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded border border-neutral-200 dark:border-neutral-700 uppercase tracking-wider">
+                                {project.groupNo}
+                              </span>
+                            ) : (
+                              <span className="text-neutral-400">—</span>
+                            )}
                           </td>
 
+                          {/* Type Badge */}
+                          <td className="px-4 py-4 align-top">
+                            {project.type ? (
+                              <Badge
+                                variant="outline"
+                                className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800"
+                              >
+                                {project.type}
+                              </Badge>
+                            ) : (
+                              <span className="text-neutral-400">—</span>
+                            )}
+                          </td>
+
+                          {/* Category */}
+                          <td className="px-4 py-4 align-top font-medium text-neutral-700 dark:text-neutral-300">
+                            {formatEnum(project.category)}
+                          </td>
+
+                          {/* Application Focus */}
+                          <td className="px-4 py-4 align-top text-neutral-600 dark:text-neutral-400">
+                            {formatEnum(project.application)}
+                          </td>
+
+                          {/* Outcome */}
+                          <td className="px-4 py-4 align-top text-neutral-600 dark:text-neutral-400">
+                            {formatEnum(project.outcome)}
+                          </td>
+
+                          {/* PO/PSO Mapping */}
+                          <td className="px-4 py-4 align-top">
+                            <div className="flex flex-col gap-1 text-xs">
+                              <div className="text-neutral-600 dark:text-neutral-400">
+                                <span className="font-bold text-neutral-900 dark:text-neutral-200">
+                                  PO:
+                                </span>{" "}
+                                {project.poMapping || "—"}
+                              </div>
+                              <div className="text-neutral-600 dark:text-neutral-400">
+                                <span className="font-bold text-neutral-900 dark:text-neutral-200">
+                                  PSO:
+                                </span>{" "}
+                                {project.psoMapping || "—"}
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Students List */}
                           <td className="px-4 py-4 align-top">
                             <ul className="space-y-1">
-                              {project.students.map((student) => (
+                              {project.students.map((student, index) => (
                                 <li
-                                  key={`${project.id}-${student.rollNo}`}
+                                  key={`${project.id}-${student.rollNo}-${index}`}
                                   className="text-neutral-600 dark:text-neutral-400 flex items-center gap-2"
                                 >
-                                  {/* Changed w-12 to w-24 below */}
-                                  <span className="text-xs font-mono text-neutral-400 dark:text-neutral-600 w-24 shrink-0">
-                                    {student.rollNo}
-                                  </span>
-                                  <span className="font-medium group-hover/row:text-neutral-900 dark:group-hover/row:text-neutral-200 transition-colors">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+                                  <span className="font-medium">
                                     {student.name}
                                   </span>
+                                  {student.rollNo !== "N/A" && (
+                                    <span className="text-xs text-neutral-400 font-mono">
+                                      ({student.rollNo})
+                                    </span>
+                                  )}
                                 </li>
                               ))}
                             </ul>
                           </td>
 
-                          <td className="px-4 py-4 align-top text-neutral-600 dark:text-neutral-400 font-medium">
+                          {/* Guide */}
+                          <td className="px-4 py-4 align-top text-neutral-700 dark:text-neutral-300 font-medium">
                             {project.guide}
+                          </td>
+
+                          {/* SDG */}
+                          <td className="px-4 py-4 align-top max-w-[200px] whitespace-normal">
+                            {project.sdg ? (
+                              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-2 py-1 rounded-md border border-amber-200 dark:border-amber-800/50">
+                                {formatSDG(project.sdg)}
+                              </span>
+                            ) : (
+                              <span className="text-neutral-400">—</span>
+                            )}
                           </td>
                         </motion.tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={4} className="px-4 py-16 text-center">
+                        <td colSpan={10} className="px-4 py-16 text-center">
                           <div className="flex flex-col items-center justify-center space-y-3">
                             <span className="text-4xl">📭</span>
                             <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
