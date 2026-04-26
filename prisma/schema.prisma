@@ -208,7 +208,7 @@ model Project {
   title                String
   description          String              @db.Text
   domain               String
-  department           String
+  department           String?
   status               ProjectStatus       @default(DRAFT)
   startDate            DateTime
   endDate              DateTime

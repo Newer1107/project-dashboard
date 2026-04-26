@@ -906,6 +906,15 @@ Default password for seeded users:
 - Confirm register page handles action responses and renders `message` from `{ ok: false, message }`.
 - Validate with known cases: unauthorized email, invalid OTP, OTP resend cooldown.
 
+### Prisma drift on existing database (no reset allowed)
+
+- If `prisma migrate dev` reports drift and asks for reset on a real database, do not reset.
+- Baseline the current schema into migrations:
+  - `mkdir -p prisma/migrations/0001_baseline`
+  - `npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > prisma/migrations/0001_baseline/migration.sql`
+  - `npx prisma migrate resolve --applied 0001_baseline`
+- After baselining, future schema changes can use normal `prisma migrate dev` workflows.
+
 ### Standalone runtime warning
 
 - In standalone output mode, run with node .next/standalone/server.js in production instead of next start.
