@@ -923,3 +923,9 @@ Default password for seeded users:
 
 - If `MINIO_ENDPOINT` points to `localhost` or a private host, browsers cannot fetch presigned URLs directly.
 - Set `MINIO_USE_PROXY="true"` to stream assets through `/api/storage/[...path]` from the app domain.
+
+### Prevent MinIO URL exposure in downloads
+
+- File and showcase asset downloads are served through internal proxy routes (`/api/storage/[...path]`).
+- Direct MinIO presigned download URLs are not returned to the browser.
+- This keeps MinIO endpoints internal while Node streams file content to clients.

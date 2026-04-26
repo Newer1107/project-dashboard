@@ -129,11 +129,8 @@ export async function generateAssetAccessUrl(
   key: string,
   expiresIn: number = 900
 ): Promise<string> {
-  if (STORAGE_USE_PROXY) {
-    return buildStorageProxyUrl(key);
-  }
-
-  return generatePresignedDownloadUrl(key, expiresIn);
+  // Never expose MinIO endpoint URLs to the client for asset access.
+  return buildStorageProxyUrl(key);
 }
 
 export async function deleteS3Object(key: string): Promise<void> {

@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { generatePresignedUploadUrl, generatePresignedDownloadUrl, deleteS3Object, buildS3Key } from "@/lib/s3";
+import { generatePresignedUploadUrl, deleteS3Object, buildS3Key, buildStorageProxyUrl } from "@/lib/s3";
 import { revalidatePath } from "next/cache";
 
 export async function requestUploadUrl(
@@ -60,7 +60,7 @@ export async function getDownloadUrl(fileId: string) {
   const file = await prisma.projectFile.findUnique({ where: { id: fileId } });
   if (!file) throw new Error("File not found");
 
-  return generatePresignedDownloadUrl(file.s3Key);
+  return buildStorageProxyUrl(file.s3Key);
 }
 
 export async function deleteFile(fileId: string) {
