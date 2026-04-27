@@ -64,6 +64,10 @@ The app supports role-based dashboards:
   - request OTP
   - verify OTP
   - complete registration
+- Added forgot-password flow
+  - request reset link from `/forgot-password`
+  - complete reset on `/reset-password?token=...`
+  - reset token is hashed in DB and expires in 30 minutes
 - Added allowlist checks in login and middleware
 - Added admin exception for allowlist checks (admin recovery/ops)
 - Added `/admin/allowed-emails` management screen
@@ -248,6 +252,17 @@ This section captures full system behavior from onboarding to delivery and publi
 - OTP email delivery is required (SMTP misconfiguration surfaces explicit error)
 - Account is created only after successful OTP verification
 - Teacher registrations are created with `isActive = false` until admin approval
+
+### Forgot-password flow
+
+- User requests password reset from `/forgot-password`
+- Backend always returns a generic success message to reduce account enumeration
+- Reset token details:
+  - 32-byte cryptographic token
+  - stored as hash (never plain token)
+  - expires in 30 minutes
+  - previous active reset tokens are consumed when a new one is issued
+- Reset page (`/reset-password`) updates password after token validation and consumes all active reset tokens for the account
 
 ### Allowed email checks
 
@@ -742,6 +757,7 @@ DATABASE_URL="mysql://user:password@host:3306/project_dashboard"
 NEXTAUTH_SECRET="<strong-random-secret>"
 NEXTAUTH_URL="https://your-domain.com"
 OTP_HASH_SECRET="<strong-random-secret>"
+PASSWORD_RESET_TOKEN_SECRET="<strong-random-secret>"
 EMAIL_QUEUE_CRON_SECRET="<strong-random-secret>"
 ```
 
@@ -773,7 +789,7 @@ GOOGLE_REFRESH_TOKEN="your-google-refresh-token"
 SMTP_FROM="your-email@gmail.com"
 ```
 
-Note: SMTP is required for OTP registration email delivery.
+Note: SMTP is required for OTP registration and password reset emails.
 Note: bulk email processing route requires `EMAIL_QUEUE_CRON_SECRET`.
 
 ---

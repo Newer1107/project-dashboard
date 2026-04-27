@@ -125,6 +125,27 @@ export async function sendEmailVerificationOTP(userEmail: string, otp: string) {
   });
 }
 
+export async function sendPasswordResetEmail(userEmail: string, resetLink: string) {
+  return sendEmail({
+    to: userEmail,
+    subject: "Reset your password",
+    requireConfigured: true,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #111827;">
+        <h2 style="color: #4f46e5; margin-bottom: 12px;">Reset your password</h2>
+        <p style="margin: 0 0 12px;">We received a request to reset your password.</p>
+        <p style="margin: 0 0 16px;">
+          <a href="${resetLink}" style="display: inline-block; background: #4f46e5; color: #ffffff; text-decoration: none; padding: 10px 16px; border-radius: 8px; font-weight: 600;">
+            Reset Password
+          </a>
+        </p>
+        <p style="margin: 0 0 12px; color: #6b7280; font-size: 13px;">This link expires in 30 minutes.</p>
+        <p style="margin: 0; color: #6b7280; font-size: 13px;">If you did not request this reset, you can ignore this email.</p>
+      </div>
+    `,
+  });
+}
+
 export async function sendReviewScheduledEmail(
   studentEmail: string,
   projectTitle: string,

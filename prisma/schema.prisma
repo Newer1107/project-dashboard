@@ -203,6 +203,20 @@ model EmailVerificationOTP {
   @@map("email_verification_otps")
 }
 
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  consumedAt DateTime?
+
+  @@index([email])
+  @@index([expiresAt])
+  @@index([consumedAt])
+  @@map("password_reset_tokens")
+}
+
 model Project {
   id                   String              @id @default(cuid())
   title                String

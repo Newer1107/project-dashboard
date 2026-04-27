@@ -65,6 +65,7 @@ Update `.env` with production values.
 DATABASE_URL="mysql://username:password@host:3306/project_dashboard"
 NEXTAUTH_SECRET="generate-strong-random-secret"
 NEXTAUTH_URL="https://your-domain.com"
+PASSWORD_RESET_TOKEN_SECRET="generate-strong-random-secret"
 ```
 
 Generate a secure NextAuth secret:

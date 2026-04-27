@@ -1,12 +1,16 @@
 "use server";
 
 import { hash } from "bcryptjs";
-import { createHash, randomInt, timingSafeEqual } from "crypto";
+import { createHash, randomBytes, randomInt, timingSafeEqual } from "crypto";
 import { Role } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { isEmailAllowed } from "@/lib/allowed-email";
-import { sendEmailVerificationOTP, sendRegistrationEmail } from "@/lib/email";
+import {
+  sendEmailVerificationOTP,
+  sendPasswordResetEmail,
+  sendRegistrationEmail,
+} from "@/lib/email";
 
 const registrationSchema = z.object({
   name: z.string().min(2),
@@ -28,9 +32,26 @@ const completeRegistrationSchema = registrationSchema.extend({
   otp: z.string().regex(/^\d{6}$/),
 });
 
+const requestPasswordResetSchema = z.object({
+  email: z.string().email(),
+});
+
+const resetPasswordSchema = z
+  .object({
+    token: z.string().min(1, "Reset token is required."),
+    password: z.string().min(6, "Password must be at least 6 characters."),
+    confirmPassword: z.string().min(6, "Confirm your password."),
+  })
+  .refine((value) => value.password === value.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
+
 const OTP_TTL_MS = 5 * 60 * 1000;
 const OTP_COOLDOWN_MS = 60 * 1000;
 const MAX_OTP_ATTEMPTS = 5;
+const RESET_TOKEN_TTL_MS = 30 * 60 * 1000;
+const RESET_TOKEN_COOLDOWN_MS = 60 * 1000;
 
 function normalizeEmail(email: string): string {
   return email.toLowerCase().trim();
@@ -55,6 +76,26 @@ function otpMatches(email: string, otp: string, expectedHash: string): boolean {
     return false;
   }
   return timingSafeEqual(actual, expected);
+}
+
+function resetTokenSecret(): string {
+  return (
+    process.env.PASSWORD_RESET_TOKEN_SECRET ||
+    process.env.NEXTAUTH_SECRET ||
+    "password-reset-default-secret"
+  );
+}
+
+function hashResetToken(token: string): string {
+  return createHash("sha256").update(`${token}:${resetTokenSecret()}`).digest("hex");
+}
+
+function getAppBaseUrl(): string {
+  const raw =
+    process.env.NEXTAUTH_URL?.trim() ||
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    "http://localhost:3000";
+  return raw.replace(/\/$/, "");
 }
 
 type VerifyResult = {
@@ -82,6 +123,15 @@ type CompleteRegistrationResult =
         createdAt: Date;
       };
     }
+  | { ok: false; message: string };
+
+type PasswordResetRequestResult = {
+  ok: true;
+  message: string;
+};
+
+type ResetPasswordResult =
+  | { ok: true; message: string }
   | { ok: false; message: string };
 
 async function verifyOtpInternal(
@@ -297,6 +347,134 @@ export async function completeRegistration(
   }
 
   return { ok: true, user };
+}
+
+export async function requestPasswordReset(
+  data: z.infer<typeof requestPasswordResetSchema>
+): Promise<PasswordResetRequestResult> {
+  const genericSuccessMessage =
+    "If an account exists for this email, a password reset link has been sent.";
+
+  const parsed = requestPasswordResetSchema.safeParse(data);
+  if (!parsed.success) {
+    return { ok: true, message: genericSuccessMessage };
+  }
+
+  const email = normalizeEmail(parsed.data.email);
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true },
+  });
+
+  if (!user) {
+    return { ok: true, message: genericSuccessMessage };
+  }
+
+  const latestToken = await prisma.passwordResetToken.findFirst({
+    where: { email },
+    orderBy: { createdAt: "desc" },
+    select: { createdAt: true },
+  });
+
+  if (latestToken) {
+    const elapsed = Date.now() - latestToken.createdAt.getTime();
+    if (elapsed < RESET_TOKEN_COOLDOWN_MS) {
+      return { ok: true, message: genericSuccessMessage };
+    }
+  }
+
+  const token = randomBytes(32).toString("hex");
+  const tokenHash = hashResetToken(token);
+  const now = new Date();
+
+  await prisma.passwordResetToken.updateMany({
+    where: {
+      email,
+      consumedAt: null,
+    },
+    data: { consumedAt: now },
+  });
+
+  const record = await prisma.passwordResetToken.create({
+    data: {
+      email,
+      tokenHash,
+      expiresAt: new Date(now.getTime() + RESET_TOKEN_TTL_MS),
+    },
+    select: { id: true },
+  });
+
+  const resetUrl = `${getAppBaseUrl()}/reset-password?token=${encodeURIComponent(token)}`;
+
+  try {
+    await sendPasswordResetEmail(email, resetUrl);
+  } catch (error) {
+    console.error("[auth] Failed to send password reset email", error);
+    await prisma.passwordResetToken.delete({ where: { id: record.id } }).catch(() => {});
+  }
+
+  return { ok: true, message: genericSuccessMessage };
+}
+
+export async function resetPassword(
+  data: z.infer<typeof resetPasswordSchema>
+): Promise<ResetPasswordResult> {
+  const parsed = resetPasswordSchema.safeParse(data);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: parsed.error.issues[0]?.message || "Invalid reset payload.",
+    };
+  }
+
+  const tokenHash = hashResetToken(parsed.data.token);
+
+  const resetRecord = await prisma.passwordResetToken.findUnique({
+    where: { tokenHash },
+    select: {
+      id: true,
+      email: true,
+      expiresAt: true,
+      consumedAt: true,
+    },
+  });
+
+  if (!resetRecord || resetRecord.consumedAt || resetRecord.expiresAt < new Date()) {
+    return { ok: false, message: "Reset link is invalid or expired." };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: resetRecord.email },
+    select: { id: true },
+  });
+
+  if (!user) {
+    await prisma.passwordResetToken.update({
+      where: { id: resetRecord.id },
+      data: { consumedAt: new Date() },
+    });
+    return { ok: false, message: "Reset link is invalid or expired." };
+  }
+
+  const passwordHash = await hash(parsed.data.password, 12);
+  const now = new Date();
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: user.id },
+      data: { passwordHash },
+    });
+
+    await tx.passwordResetToken.updateMany({
+      where: {
+        email: resetRecord.email,
+        consumedAt: null,
+      },
+      data: { consumedAt: now },
+    });
+  });
+
+  return { ok: true, message: "Password reset successful. Please sign in." };
 }
 
 export async function registerUser(data: z.infer<typeof registrationSchema>) {

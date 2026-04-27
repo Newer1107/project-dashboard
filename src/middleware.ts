@@ -54,7 +54,11 @@ export default auth(async (req) => {
   
   const isApiRoute = pathname.startsWith("/api");
   const isAuthApi = pathname.startsWith("/api/auth");
-  const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register");
+  const isAuthPage =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password");
   const isShowcaseAuthorRoute = pathname.startsWith("/showcase/my-projects");
   const isPublicShowcase = pathname.startsWith("/showcase") && !isShowcaseAuthorRoute;
   

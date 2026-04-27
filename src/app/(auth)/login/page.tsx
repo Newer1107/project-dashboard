@@ -157,6 +157,12 @@ function LoginContent() {
                 </div>
               )}
 
+              {loginMessage === "password_reset_success" && (
+                <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-600">
+                  Password updated successfully. Please sign in with your new password.
+                </div>
+              )}
+
               {authError && (
                 <div className="flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
                   <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
@@ -202,6 +208,14 @@ function LoginContent() {
                 {errors.password && (
                   <p className="text-sm text-destructive">{errors.password.message}</p>
                 )}
+                <div className="pt-1 text-right">
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
               </div>
 
               <div className="flex items-center gap-2">
