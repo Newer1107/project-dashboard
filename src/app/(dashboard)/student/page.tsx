@@ -4,7 +4,7 @@ import { resolveUser } from "@/lib/resolve-user";
 import StudentDashboardClient from "./StudentDashboardClient";
 
 export default async function StudentDashboardPage() {
-  const requestHeaders = headers();
+  const requestHeaders = await headers();
   const email = requestHeaders.get("x-coe-email");
   const role = requestHeaders.get("x-coe-role");
   const status = requestHeaders.get("x-coe-status");

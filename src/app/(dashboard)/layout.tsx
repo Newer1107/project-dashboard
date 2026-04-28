@@ -10,7 +10,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const requestHeaders = headers();
+  const requestHeaders = await headers();
   const coeEmail = requestHeaders.get("x-coe-email");
   const coeRole = requestHeaders.get("x-coe-role");
   const coeStatus = requestHeaders.get("x-coe-status");
