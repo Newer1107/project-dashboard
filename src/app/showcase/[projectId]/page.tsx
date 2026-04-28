@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { auth } from "@/lib/auth";
 import FloatingPillNavbar from "@/components/ui/ShowCaseNavbar";
 import { getPublicShowcaseProjectById } from "@/server/actions/showcase";
 import Footer from "@/components/ui/Footer";
@@ -13,7 +12,6 @@ export default async function ShowcaseProjectDetailPage({
 }: {
   params: Promise<{ projectId: string }>;
 }) {
-  const session = await auth();
   const { projectId } = await params;
   const project = await getPublicShowcaseProjectById(projectId);
 

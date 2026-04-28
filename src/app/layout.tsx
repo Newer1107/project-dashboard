@@ -4,7 +4,6 @@ import { GeistMono } from "geist/font/mono";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import { QueryProvider } from "@/components/providers/QueryProvider";
-import { AuthProvider } from "@/components/providers/AuthProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -28,7 +27,6 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
           <QueryProvider>
             {children}
             <Toaster
@@ -42,7 +40,6 @@ export default function RootLayout({
               }}
             />
           </QueryProvider>
-          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

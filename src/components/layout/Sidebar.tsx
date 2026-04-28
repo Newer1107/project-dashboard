@@ -12,7 +12,6 @@ import {
   Users,
   UserCheck,
   Settings,
-  ShieldCheck,
   ChevronLeft,
   ChevronRight,
   BarChart3,
@@ -26,7 +25,6 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { signOut } from "next-auth/react";
 
 interface NavItem {
   title: string;
@@ -41,7 +39,6 @@ const adminNav: NavItem[] = [
   { title: "Teacher Approvals", href: "/admin/teacher-approvals", icon: UserCheck },
   { title: "Project Assignments", href: "/admin/project-assignments", icon: Upload },
   { title: "Email Logs", href: "/admin/email-logs", icon: Mail },
-  { title: "Allowed Emails", href: "/admin/allowed-emails", icon: ShieldCheck },
   { title: "Showcase", href: "/admin/showcase", icon: Sparkles },
   { title: "Settings", href: "/admin/settings", icon: Settings },
 ];
@@ -183,7 +180,10 @@ export function Sidebar({ role, userName }: SidebarProps) {
                 variant="ghost"
                 size={sidebarCollapsed ? "icon" : "default"}
                 className={cn("w-full", !sidebarCollapsed && "justify-start")}
-                onClick={() => signOut({ callbackUrl: "/login" })}
+                onClick={() => {
+                  const callbackUrl = encodeURIComponent(window.location.origin);
+                  window.location.href = `https://tcetcercd.in/logout?callbackUrl=${callbackUrl}`;
+                }}
               >
                 <LogOut className="h-4 w-4 shrink-0" />
                 {!sidebarCollapsed && <span className="ml-3">Sign Out</span>}

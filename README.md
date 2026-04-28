@@ -41,7 +41,7 @@ This repository now contains two systems that share authentication:
 
 The app supports role-based dashboards:
 
-- ADMIN: governance, users, allowed emails, full project control (mentor/member management), showcase review/publish
+- ADMIN: governance, users, full project control (mentor/member management), showcase review/publish
 - TEACHER: project management + showcase authoring
 - STUDENT: project participation + showcase authoring
 
@@ -58,32 +58,16 @@ The app supports role-based dashboards:
 
 ### Authentication and Access
 
-- Added allowed-email governance with `AllowedEmail` table
-- Added reusable backend validator `isEmailAllowed(email)`
-- Added CoE portal hybrid auth pilot for `/student` via shared JWT cookie (`coe_shared_token`)
-- Added OTP-based registration flow on `/register`
-  - request OTP
-  - verify OTP
-  - complete registration
-- Added forgot-password flow
-  - request reset link from `/forgot-password`
-  - complete reset on `/reset-password?token=...`
-  - reset token is hashed in DB and expires in 30 minutes
-- Added allowlist checks in login and middleware
-- Added admin exception for allowlist checks (admin recovery/ops)
-- Added `/admin/allowed-emails` management screen
-- Added teacher registration approval workflow
-  - teacher self-registrations are created inactive
-  - admin approves/rejects in `/admin/teacher-approvals`
+- Switched to CoE portal SSO via shared JWT cookie (`coe_shared_token`) across all protected routes
+- Middleware verifies the JWT with `COE_JWT_SECRET` and injects `x-coe-email`, `x-coe-role`, and `x-coe-status`
+- Users are auto-provisioned on first CoE login and pending assignments are resolved
+- Removed NextAuth, OTP registration, password reset, and allowlist flows
 
 ### Reliability and Error UX
 
 - Added App Router error boundaries to replace generic production Server Components crash message
   - route-level `error.tsx`
   - app-level `global-error.tsx`
-- Updated OTP registration server actions to return structured `{ ok, message }` results for expected user errors
-  - prevents production redaction from hiding actionable messages
-  - examples now visible in frontend: invalid OTP, unauthorized email, already registered, resend cooldown
 
 ### Public Project Explorer Pages
 
@@ -147,7 +131,7 @@ New notification types:
 - Keyboard shortcuts:
   - `Ctrl/Cmd + K` open command menu
   - `Ctrl/Cmd + B` open notifications
-- Sidebar links for showcase and allowed email management
+- Sidebar links for showcase management
 - Enhanced dashboard visual surface/background polish
 
 ---
@@ -157,7 +141,7 @@ New notification types:
 - Next.js 15 (App Router, standalone output)
 - React 19 + TypeScript
 - Prisma + MySQL
-- NextAuth v5 (Credentials + JWT)
+- CoE SSO (shared JWT cookie + middleware verification)
 - TanStack Query + Zustand
 - Tailwind CSS + shadcn/ui + Radix
 - Framer Motion
@@ -218,7 +202,7 @@ This section captures full system behavior from onboarding to delivery and publi
 ### Lifecycle summary
 
 - Auth lifecycle:
-  - request OTP -> verify OTP -> complete registration -> role activation checks
+  - CoE login -> JWT verified -> user resolved -> role access checks
 - Assignment lifecycle:
   - CSV row -> project and user resolution -> member or pending invite -> queued email
 - Outbox lifecycle:
@@ -232,65 +216,21 @@ This section captures full system behavior from onboarding to delivery and publi
 
 ## Authentication and Access Control
 
-### Login flow
+### CoE SSO flow
 
-- Credentials provider validates email/password
-- Password verified with bcrypt hash compare
-- JWT includes `id` and `role`
-- Session maps user role for client and middleware checks
-- Inactive users cannot log in (used for pending teacher approvals)
-
-### CoE portal hybrid pilot
-
-- `/student` accepts CoE JWT via middleware-injected headers
-- NextAuth remains the primary auth path for non-CoE routes
-
-### Registration flow (OTP)
-
-- Step 1: user submits name/email/password/role
-- Step 2: backend validates allowed email + duplicate email and issues OTP
-- OTP details:
-  - 6-digit cryptographically generated code
-  - stored as hash (never plain text)
-  - expires in 5 minutes
-  - max 5 verification attempts
-  - resend cooldown 60 seconds
-- OTP email delivery is required (SMTP misconfiguration surfaces explicit error)
-- Account is created only after successful OTP verification
-- Teacher registrations are created with `isActive = false` until admin approval
-
-### Forgot-password flow
-
-- User requests password reset from `/forgot-password`
-- Backend always returns a generic success message to reduce account enumeration
-- Reset token details:
-  - 32-byte cryptographic token
-  - stored as hash (never plain token)
-  - expires in 30 minutes
-  - previous active reset tokens are consumed when a new one is issued
-- Reset page (`/reset-password`) updates password after token validation and consumes all active reset tokens for the account
-
-### Allowed email checks
-
-Backend enforcement exists in both places:
-
-- `authorize()` in auth config
-- `middleware.ts` for route-level protection
-
-### Allowed rules
-
-- Any email ending with `@tcetmumbai.in` is allowed
-- Any email present in `AllowedEmail` and not expired is allowed
-- Admin users are exempt from allowlist checks for operational continuity
+- Users authenticate via the CoE portal, which sets a shared JWT cookie (`coe_shared_token`)
+- Middleware verifies the JWT with `COE_JWT_SECRET`, maps roles (ADMIN/FACULTY/STUDENT), and injects `x-coe-email`, `x-coe-role`, `x-coe-status`
+- Server guards (`requireCoeUser`, `requireRole`) resolve or auto-provision users and enforce role access
+- Non-ACTIVE status is rejected at guard time
 
 ### Public vs protected
 
 Public:
 
-- `/login`
-- `/register`
 - `/showcase`
-- `/api/auth/*`
+- `/showcase/[projectId]`
+- `/majorprojects`
+- `/rblprojects-te`
 
 Protected:
 
@@ -305,13 +245,6 @@ Protected:
 - Server actions enforce operation-level access.
 - Every privileged operation validates role server-side.
 - UI visibility is not treated as a security boundary.
-
-### Teacher activation workflow
-
-- Teacher completes OTP registration.
-- Account is created with inactive status.
-- Admin approves account from teacher approvals panel.
-- Teacher access is granted only after approval.
 
 ---
 
@@ -368,8 +301,8 @@ Protected:
 
 ### Invite-to-membership conversion
 
-- Invited users can register later via OTP.
-- Registration transaction checks pending assignments by email.
+- Invited users sign in via the CoE portal when ready.
+- First CoE login auto-provisions the account and checks pending assignments by email.
 - Matching entries are converted into ProjectMember rows.
 - Pending entries are marked ASSIGNED.
 - Projects become visible immediately in student project list.
@@ -499,8 +432,6 @@ Route: /admin/projects
 
 ### New models
 
-- `AllowedEmail`
-- `EmailVerificationOTP`
 - `EmailQueue`
 - `PendingProjectAssignment`
 - `ShowcaseProject`
@@ -521,10 +452,8 @@ Route: /admin/projects
 
 ## Routes
 
-### Auth/Public
+### Public
 
-- `/login`
-- `/register`
 - `/showcase`
 - `/showcase/[projectId]`
 - `/majorprojects`
@@ -538,7 +467,6 @@ Route: /admin/projects
 - `/admin/teacher-approvals`
 - `/admin/project-assignments`
 - `/admin/email-logs`
-- `/admin/allowed-emails`
 - `/admin/showcase`
 - `/admin/showcase/[projectId]`
 - `/admin/settings`
@@ -565,16 +493,6 @@ Route: /admin/projects
 ---
 
 ## Server Actions and APIs
-
-### New auth/access actions
-
-- `requestOTP()`
-- `verifyOTP()`
-- `completeRegistration()`
-- `addAllowedEmail()`
-- `removeAllowedEmail()`
-- `getAllowedEmails()`
-- `checkAllowedEmail()`
 
 ### New admin user moderation actions
 
@@ -636,7 +554,6 @@ Public:
 
 ### New API route
 
-- `GET /api/auth/allowed-email?email=...`
 - `POST /api/cron/process-emails`
 
 ---
@@ -663,17 +580,14 @@ Showcase events now emit notifications for:
 - Topbar command menu with quick actions
 - Improved shell visuals with subtle gradients and texture
 
-### Auth screens
+### Auth experience
 
-- Login now links to register
-- Register supports STUDENT/TEACHER role selection with OTP verification
-- Better inline error states
-- Teacher pending approval message on login after successful registration
+- CoE portal handles login; the app relies on the shared JWT cookie
+- Unauthenticated access redirects to the CoE login entry point
 
 ### Admin additions
 
-- Allowed email management UI
-- Teacher approvals panel for teacher self-registration moderation
+- Teacher approvals panel for admin activation workflows
 - Email logs panel for outbox status + retry failed
 - Projects management panel for editing project details, mentor, and members
 - Showcase command center and structured review view
@@ -685,7 +599,7 @@ Showcase events now emit notifications for:
 - CSV assignment import supports both existing users and new invitees
 - Existing users are assigned directly to `ProjectMember`
 - Non-existing users are stored as `PendingProjectAssignment`
-- When invited users register later, pending assignments are automatically linked and moved into `ProjectMember`
+- When invited users sign in via CoE, pending assignments are automatically linked and moved into `ProjectMember`
 - All assignment notifications are queued and processed asynchronously
 
 ### Showcase UI highlights
@@ -760,11 +674,7 @@ Includes:
 
 ```env
 DATABASE_URL="mysql://user:password@host:3306/project_dashboard"
-NEXTAUTH_SECRET="<strong-random-secret>"
-NEXTAUTH_URL="https://your-domain.com"
 COE_JWT_SECRET="<coe-jwt-secret>"
-OTP_HASH_SECRET="<strong-random-secret>"
-PASSWORD_RESET_TOKEN_SECRET="<strong-random-secret>"
 EMAIL_QUEUE_CRON_SECRET="<strong-random-secret>"
 ```
 
@@ -796,7 +706,7 @@ GOOGLE_REFRESH_TOKEN="your-google-refresh-token"
 SMTP_FROM="your-email@gmail.com"
 ```
 
-Note: SMTP is required for OTP registration and password reset emails.
+Note: SMTP is required for outbound email queue notifications.
 Note: bulk email processing route requires `EMAIL_QUEUE_CRON_SECRET`.
 
 ---
@@ -805,8 +715,7 @@ Note: bulk email processing route requires `EMAIL_QUEUE_CRON_SECRET`.
 
 ### Playbook A: Semester onboarding
 
-- Add allowed emails or confirm institutional domain access policy.
-- Approve pending teacher registrations.
+- Confirm `COE_JWT_SECRET` is configured and CoE portal issues `coe_shared_token`.
 - Import assignment CSV with email and projectName.
 - Review import summary:
   - matched rows
@@ -814,7 +723,7 @@ Note: bulk email processing route requires `EMAIL_QUEUE_CRON_SECRET`.
   - direct assignments
   - pending invites
 - Run Queue Now for immediate notification delivery.
-- Confirm invited users convert to memberships after OTP registration.
+- Confirm invited users convert to memberships after first CoE login.
 
 ### Playbook B: Mentor reassignment
 
@@ -845,9 +754,8 @@ Note: bulk email processing route requires `EMAIL_QUEUE_CRON_SECRET`.
 
 ### Auth and access tests
 
-- OTP request cooldown and expiry behavior.
-- Invalid OTP attempt caps and error responses.
-- Teacher inactive login rejection until approval.
+- CoE JWT verification failures and missing cookie handling.
+- Role mapping for ADMIN/FACULTY/STUDENT and non-ACTIVE status rejection.
 - Route guard checks across all role scopes.
 
 ### Assignment and outbox tests
@@ -883,9 +791,7 @@ Seed creates:
 - teacher and student users
 - sample projects, tasks, milestones, reviews, notifications
 
-Default password for seeded users:
-
-- `password123`
+Seeded users are created with placeholder password hashes (not used for CoE auth).
 
 ---
 
@@ -893,12 +799,11 @@ Default password for seeded users:
 
 - Keep `.env` out of git
 - Rotate AWS and SMTP credentials regularly
-- Use strong `NEXTAUTH_SECRET`
-- Use strong `OTP_HASH_SECRET` (separate from session secret recommended)
+- Use a strong `COE_JWT_SECRET` and rotate it with the CoE portal
 - Prefer `prisma migrate deploy` in production
 - Restrict DB exposure to private network
 - Use TLS/HTTPS in production
-- Teacher accounts are intentionally blocked from login until admin approval
+- Non-ACTIVE CoE statuses are blocked by server guards
 - Protect `/api/cron/process-emails` with a strong secret and never expose it client-side
 
 ---
@@ -907,7 +812,7 @@ Default password for seeded users:
 
 ### Projects not visible for invited users after registration
 
-- Verify registration completed via OTP flow.
+- Verify the invited user has completed CoE login at least once.
 - Verify pending assignment email matches registered email (normalized lowercase).
 - Verify PendingProjectAssignment status changes to ASSIGNED.
 - Verify ProjectMember entries were created for the new user.
@@ -922,12 +827,6 @@ Default password for seeded users:
 
 - Confirm selected mentor is active TEACHER.
 - Confirm action is performed by ADMIN session.
-
-### Generic production error shown instead of real auth error
-
-- If users see: "An error occurred in the Server Components render..." during registration, ensure auth server actions return structured results for expected failures instead of throwing.
-- Confirm register page handles action responses and renders `message` from `{ ok: false, message }`.
-- Validate with known cases: unauthorized email, invalid OTP, OTP resend cooldown.
 
 ### Prisma drift on existing database (no reset allowed)
 

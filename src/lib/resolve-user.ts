@@ -13,6 +13,7 @@ type ResolvedUser = {
   email: string;
   role: "ADMIN" | "TEACHER" | "STUDENT";
   isActive: boolean;
+  avatarUrl: string | null;
 };
 
 function normalizeEmail(email: string) {
@@ -35,7 +36,7 @@ export async function resolveUser(authUser: CoeAuthUser): Promise<ResolvedUser |
   return prisma.$transaction(async (tx) => {
     const existing = await tx.user.findUnique({
       where: { email },
-      select: { id: true, name: true, email: true, role: true, isActive: true },
+      select: { id: true, name: true, email: true, role: true, isActive: true, avatarUrl: true },
     });
 
     if (existing) {
@@ -45,6 +46,7 @@ export async function resolveUser(authUser: CoeAuthUser): Promise<ResolvedUser |
         email: existing.email,
         role: existing.role,
         isActive: existing.isActive,
+        avatarUrl: existing.avatarUrl,
       };
     }
 
@@ -56,7 +58,7 @@ export async function resolveUser(authUser: CoeAuthUser): Promise<ResolvedUser |
         isActive: true,
         passwordHash: "",
       },
-      select: { id: true, name: true, email: true, role: true, isActive: true },
+      select: { id: true, name: true, email: true, role: true, isActive: true, avatarUrl: true },
     });
 
     const pendingAssignments = await tx.pendingProjectAssignment.findMany({
@@ -93,4 +95,22 @@ export async function resolveUser(authUser: CoeAuthUser): Promise<ResolvedUser |
 
     return created;
   });
+}
+
+export function getCoeAuthFromHeaders(requestHeaders: Headers): CoeAuthUser | null {
+  const email = requestHeaders.get("x-coe-email");
+  const role = requestHeaders.get("x-coe-role");
+  const status = requestHeaders.get("x-coe-status");
+
+  if (!email || !role || !status) return null;
+
+  return { email, role, status };
+}
+
+export async function resolveUserFromHeaders(
+  requestHeaders: Headers
+): Promise<ResolvedUser | null> {
+  const authUser = getCoeAuthFromHeaders(requestHeaders);
+  if (!authUser) return null;
+  return resolveUser(authUser);
 }

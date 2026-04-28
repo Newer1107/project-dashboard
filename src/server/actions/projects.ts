@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { requireCoeUser, requireRole } from "@/lib/coe-guard";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createBulkNotifications } from "@/lib/notifications";
@@ -60,11 +60,16 @@ const adminRemoveMemberSchema = z.object({
 });
 
 async function requireAdminSession() {
-  const session = await auth();
-  if (!session?.user?.id || (session.user as { role?: string }).role !== "ADMIN") {
-    throw new Error("Unauthorized");
-  }
-  return session.user.id;
+  const user = await requireRole("ADMIN");
+  return user.id;
+}
+
+async function requireTeacherUser() {
+  return requireRole("TEACHER");
+}
+
+async function requireStudentUser() {
+  return requireRole("STUDENT");
 }
 
 type CsvAssignmentRow = {
@@ -168,11 +173,7 @@ function buildAssignmentEmailBody(projectTitle: string, loginOrRegisterUrl: stri
 }
 
 export async function adminUploadProjectAssignments(data: z.infer<typeof adminUploadAssignmentsSchema>) {
-  const session = await auth();
-  if (!session?.user?.id || (session.user as { role?: string }).role !== "ADMIN") {
-    throw new Error("Unauthorized");
-  }
-  const adminId = session.user.id;
+  const adminId = await requireAdminSession();
 
   const validated = adminUploadAssignmentsSchema.parse(data);
   const rows = parseAssignmentCsv(validated.csvContent);
@@ -564,10 +565,7 @@ export async function adminRemoveProjectMember(data: z.infer<typeof adminRemoveM
 }
 
 export async function createProject(data: z.infer<typeof createProjectSchema>) {
-  const session = await auth();
-  if (!session?.user?.id || (session.user as any).role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  const user = await requireTeacherUser();
 
   const validated = createProjectSchema.parse(data);
   const project = await prisma.project.create({
@@ -581,7 +579,7 @@ export async function createProject(data: z.infer<typeof createProjectSchema>) {
       startDate: new Date(validated.startDate),
       endDate: new Date(validated.endDate),
       maxGroupSize: validated.maxGroupSize,
-      teacherId: session.user.id,
+      teacherId: user.id,
       tags: validated.tagIds?.length
         ? { create: validated.tagIds.map((tagId) => ({ tagId })) }
         : undefined,
@@ -596,13 +594,10 @@ export async function updateProject(
   projectId: string,
   data: Partial<z.infer<typeof createProjectSchema>> & { status?: string }
 ) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  const user = await requireTeacherUser();
 
   const project = await prisma.project.findUnique({ where: { id: projectId } });
-  if (!project || project.teacherId !== session.user.id) {
+  if (!project || project.teacherId !== user.id) {
     throw new Error("Not found or unauthorized");
   }
 
@@ -645,13 +640,10 @@ export async function updateProject(
 }
 
 export async function deleteProject(projectId: string) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  const user = await requireTeacherUser();
 
   const project = await prisma.project.findUnique({ where: { id: projectId } });
-  if (!project || project.teacherId !== session.user.id) {
+  if (!project || project.teacherId !== user.id) {
     throw new Error("Not found or unauthorized");
   }
 
@@ -660,17 +652,14 @@ export async function deleteProject(projectId: string) {
 }
 
 export async function duplicateProject(projectId: string) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  const user = await requireTeacherUser();
 
   const original = await prisma.project.findUnique({
     where: { id: projectId },
     include: { tags: true, milestones: true },
   });
 
-  if (!original || original.teacherId !== session.user.id) {
+  if (!original || original.teacherId !== user.id) {
     throw new Error("Not found or unauthorized");
   }
 
@@ -685,7 +674,7 @@ export async function duplicateProject(projectId: string) {
       startDate: new Date(),
       endDate: new Date(Date.now() + 90 * 86400000),
       maxGroupSize: original.maxGroupSize,
-      teacherId: session.user.id,
+      teacherId: user.id,
       tags: {
         create: original.tags.map((t) => ({ tagId: t.tagId })),
       },
@@ -701,16 +690,13 @@ export async function addProjectMember(
   studentIdentifier: string,
   role: "LEAD" | "MEMBER" = "MEMBER"
 ) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  const user = await requireTeacherUser();
 
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: { members: true },
   });
-  if (!project || project.teacherId !== session.user.id) {
+  if (!project || project.teacherId !== user.id) {
     throw new Error("Not found or unauthorized");
   }
 
@@ -745,10 +731,7 @@ export async function addProjectMember(
 }
 
 export async function removeProjectMember(projectId: string, studentId: string) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  const user = await requireTeacherUser();
 
   await prisma.projectMember.deleteMany({
     where: { projectId, studentId },
@@ -758,10 +741,7 @@ export async function removeProjectMember(projectId: string, studentId: string) 
 }
 
 export async function setProjectLead(projectId: string, studentId: string) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  await requireTeacherUser();
 
   await prisma.$transaction([
     prisma.projectMember.updateMany({
@@ -902,10 +882,7 @@ export async function getAllTags() {
 }
 
 export async function createTag(name: string, color: string) {
-  const session = await auth();
-  if (!session?.user || !["ADMIN", "TEACHER"].includes((session.user as any).role)) {
-    throw new Error("Unauthorized");
-  }
+  await requireRole(["ADMIN", "TEACHER"]);
 
   return prisma.tag.create({ data: { name, color } });
 }
@@ -929,10 +906,7 @@ const leaderUpdateDetailsSchema = z.object({
 });
 
 export async function updateLeaderProjectDetails(data: z.infer<typeof leaderUpdateDetailsSchema>) {
-  const session = await auth();
-  if (!session?.user?.id || (session.user as any).role !== "STUDENT") {
-    throw new Error("Unauthorized: Only students can perform this action");
-  }
+  const user = await requireStudentUser();
 
   const validated = leaderUpdateDetailsSchema.parse(data);
 
@@ -941,7 +915,7 @@ export async function updateLeaderProjectDetails(data: z.infer<typeof leaderUpda
     where: {
       projectId_studentId: {
         projectId: validated.projectId,
-        studentId: session.user.id,
+        studentId: user.id,
       },
     },
   });

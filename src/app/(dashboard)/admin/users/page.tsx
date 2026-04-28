@@ -44,7 +44,6 @@ export default function AdminUsersPage() {
       await createUser({
         name: fd.get("name") as string,
         email: fd.get("email") as string,
-        password: fd.get("password") as string,
         role: fd.get("role") as any,
         department: (fd.get("department") as string) || undefined,
         rollNumber: (fd.get("rollNumber") as string) || undefined,
@@ -97,10 +96,6 @@ export default function AdminUsersPage() {
               <div className="space-y-2">
                 <Label>Email</Label>
                 <Input name="email" type="email" required />
-              </div>
-              <div className="space-y-2">
-                <Label>Password</Label>
-                <Input name="password" type="password" required minLength={6} />
               </div>
               <div className="space-y-2">
                 <Label>Role</Label>

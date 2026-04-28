@@ -1,36 +1,30 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { hash } from "bcryptjs";
+import { requireRole } from "@/lib/coe-guard";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
 const createUserSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
-  password: z.string().min(6),
   role: z.enum(["ADMIN", "TEACHER", "STUDENT"]),
   department: z.string().optional(),
   rollNumber: z.string().optional(),
 });
 
 export async function createUser(data: z.infer<typeof createUserSchema>) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
-    throw new Error("Unauthorized");
-  }
+  await requireRole("ADMIN");
 
   const validated = createUserSchema.parse(data);
   const existing = await prisma.user.findUnique({ where: { email: validated.email } });
   if (existing) throw new Error("Email already exists");
 
-  const passwordHash = await hash(validated.password, 12);
   const user = await prisma.user.create({
     data: {
       name: validated.name,
       email: validated.email,
-      passwordHash,
+      passwordHash: "",
       role: validated.role,
       department: validated.department,
       rollNumber: validated.rollNumber,
@@ -42,10 +36,7 @@ export async function createUser(data: z.infer<typeof createUserSchema>) {
 }
 
 export async function toggleUserActive(userId: string) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
-    throw new Error("Unauthorized");
-  }
+  await requireRole("ADMIN");
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User not found");
@@ -59,10 +50,7 @@ export async function toggleUserActive(userId: string) {
 }
 
 export async function getUsers(role?: string) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
-    throw new Error("Unauthorized");
-  }
+  await requireRole("ADMIN");
 
   return prisma.user.findMany({
     where: role ? { role: role as any } : undefined,
@@ -110,10 +98,7 @@ export async function getTeachers() {
 }
 
 export async function getPendingTeacherRegistrations() {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
-    throw new Error("Unauthorized");
-  }
+  await requireRole("ADMIN");
 
   return prisma.user.findMany({
     where: {
@@ -132,10 +117,7 @@ export async function getPendingTeacherRegistrations() {
 }
 
 export async function approveTeacherRegistration(userId: string) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
-    throw new Error("Unauthorized");
-  }
+  await requireRole("ADMIN");
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user || user.role !== "TEACHER") {
@@ -153,10 +135,7 @@ export async function approveTeacherRegistration(userId: string) {
 }
 
 export async function rejectTeacherRegistration(userId: string) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
-    throw new Error("Unauthorized");
-  }
+  await requireRole("ADMIN");
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user || user.role !== "TEACHER") {

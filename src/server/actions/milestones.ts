@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { requireRole } from "@/lib/coe-guard";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { updateProjectCompletion } from "@/lib/completion";
@@ -15,10 +15,7 @@ const createMilestoneSchema = z.object({
 });
 
 export async function createMilestone(data: z.infer<typeof createMilestoneSchema>) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  await requireRole("TEACHER");
 
   const validated = createMilestoneSchema.parse(data);
   const milestone = await prisma.milestone.create({
@@ -36,10 +33,7 @@ export async function createMilestone(data: z.infer<typeof createMilestoneSchema
 }
 
 export async function toggleMilestoneComplete(milestoneId: string) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  await requireRole("TEACHER");
 
   const milestone = await prisma.milestone.findUnique({ where: { id: milestoneId } });
   if (!milestone) throw new Error("Milestone not found");
@@ -57,10 +51,7 @@ export async function toggleMilestoneComplete(milestoneId: string) {
 }
 
 export async function deleteMilestone(milestoneId: string) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  await requireRole("TEACHER");
 
   const milestone = await prisma.milestone.findUnique({ where: { id: milestoneId } });
   if (!milestone) throw new Error("Milestone not found");
