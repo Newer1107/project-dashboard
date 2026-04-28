@@ -1,4 +1,4 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
+import { jwtVerify } from "jose";
 
 type CoeRole = "ADMIN" | "FACULTY" | "STUDENT" | "INDUSTRY";
 type CoeStatus = "ACTIVE" | "PENDING" | "REJECTED";
@@ -16,19 +16,22 @@ export function mapCoERoleToDashboard(role: string | null | undefined) {
   return null;
 }
 
-export function verifyCoEToken(token: string | null | undefined): CoeTokenPayload | null {
+export async function verifyCoEToken(
+  token: string | null | undefined
+): Promise<CoeTokenPayload | null> {
   if (!token) return null;
 
   const secret = process.env.COE_JWT_SECRET;
   if (!secret) return null;
 
   try {
-    const decoded = jwt.verify(token, secret) as JwtPayload | string;
-    if (!decoded || typeof decoded !== "object") return null;
+    const secretKey = new TextEncoder().encode(secret);
+    const { payload } = await jwtVerify(token, secretKey);
+    if (!payload || typeof payload !== "object") return null;
 
-    const email = decoded.email as string | undefined;
-    const role = decoded.role as CoeRole | undefined;
-    const status = decoded.status as CoeStatus | undefined;
+    const email = payload.email as string | undefined;
+    const role = payload.role as CoeRole | undefined;
+    const status = payload.status as CoeStatus | undefined;
 
     if (!email || !role || !status) return null;
     if (!mapCoERoleToDashboard(role)) return null;

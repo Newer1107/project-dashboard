@@ -59,7 +59,7 @@ export default auth(async (req) => {
       return NextResponse.redirect(loginUrl);
     }
 
-    const payload = verifyCoEToken(token);
+    const payload = await verifyCoEToken(token);
     if (!payload || payload.status !== "ACTIVE") {
       const loginUrl = new URL("https://tcetcercd.in/login");
       loginUrl.searchParams.set("reason", "session_expired");
