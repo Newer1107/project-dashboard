@@ -60,6 +60,7 @@ The app supports role-based dashboards:
 
 - Added allowed-email governance with `AllowedEmail` table
 - Added reusable backend validator `isEmailAllowed(email)`
+- Added CoE portal hybrid auth pilot for `/student` via shared JWT cookie (`coe_shared_token`)
 - Added OTP-based registration flow on `/register`
   - request OTP
   - verify OTP
@@ -238,6 +239,11 @@ This section captures full system behavior from onboarding to delivery and publi
 - JWT includes `id` and `role`
 - Session maps user role for client and middleware checks
 - Inactive users cannot log in (used for pending teacher approvals)
+
+### CoE portal hybrid pilot
+
+- `/student` accepts CoE JWT via middleware-injected headers
+- NextAuth remains the primary auth path for non-CoE routes
 
 ### Registration flow (OTP)
 
@@ -756,6 +762,7 @@ Includes:
 DATABASE_URL="mysql://user:password@host:3306/project_dashboard"
 NEXTAUTH_SECRET="<strong-random-secret>"
 NEXTAUTH_URL="https://your-domain.com"
+COE_JWT_SECRET="<coe-jwt-secret>"
 OTP_HASH_SECRET="<strong-random-secret>"
 PASSWORD_RESET_TOKEN_SECRET="<strong-random-secret>"
 EMAIL_QUEUE_CRON_SECRET="<strong-random-secret>"

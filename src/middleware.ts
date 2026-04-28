@@ -1,7 +1,9 @@
 import { auth } from "@/lib/auth";
+import { verifyCoEToken } from "@/lib/coe-auth";
 import { NextResponse } from "next/server";
 
 const VALID_ROLES = new Set(["ADMIN", "TEACHER", "STUDENT"]);
+const COE_AUTH_ROUTES = ["/student"];
 
 function buildLoginRedirect(req: any, callbackPath?: string) {
   const loginUrl = new URL("/login", req.url);
@@ -47,6 +49,34 @@ function roleHome(role: string | undefined): string {
 
 export default auth(async (req) => {
   const { pathname } = req.nextUrl;
+  const isCoeAuthRoute = COE_AUTH_ROUTES.includes(pathname);
+
+  if (isCoeAuthRoute) {
+    const token = req.cookies.get("coe_shared_token")?.value;
+    if (!token) {
+      const loginUrl = new URL("https://tcetcercd.in/login");
+      loginUrl.searchParams.set("callbackUrl", req.nextUrl.href);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    const payload = verifyCoEToken(token);
+    if (!payload || payload.status !== "ACTIVE") {
+      const loginUrl = new URL("https://tcetcercd.in/login");
+      loginUrl.searchParams.set("reason", "session_expired");
+      return NextResponse.redirect(loginUrl);
+    }
+
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set("x-coe-email", payload.email);
+    requestHeaders.set("x-coe-role", payload.role);
+    requestHeaders.set("x-coe-status", payload.status);
+
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+  }
   const isLoggedIn = !!req.auth;
   const role = (req.auth?.user as any)?.role as string | undefined;
   const hasValidRole = !!role && VALID_ROLES.has(role);

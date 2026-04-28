@@ -1,0 +1,96 @@
+import { prisma } from "@/lib/prisma";
+import { mapCoERoleToDashboard } from "@/lib/coe-auth";
+
+export type CoeAuthUser = {
+  email: string;
+  role: string;
+  status: string;
+};
+
+type ResolvedUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: "ADMIN" | "TEACHER" | "STUDENT";
+  isActive: boolean;
+};
+
+function normalizeEmail(email: string) {
+  return email.toLowerCase().trim();
+}
+
+function defaultName(email: string) {
+  const localPart = email.split("@")[0];
+  return localPart?.trim() || email;
+}
+
+export async function resolveUser(authUser: CoeAuthUser): Promise<ResolvedUser | null> {
+  if (authUser.status !== "ACTIVE") return null;
+
+  const mappedRole = mapCoERoleToDashboard(authUser.role);
+  if (!mappedRole) return null;
+
+  const email = normalizeEmail(authUser.email);
+
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.user.findUnique({
+      where: { email },
+      select: { id: true, name: true, email: true, role: true, isActive: true },
+    });
+
+    if (existing) {
+      return {
+        id: existing.id,
+        name: existing.name,
+        email: existing.email,
+        role: existing.role,
+        isActive: existing.isActive,
+      };
+    }
+
+    const created = await tx.user.create({
+      data: {
+        name: defaultName(email),
+        email,
+        role: mappedRole,
+        isActive: true,
+        passwordHash: "",
+      },
+      select: { id: true, name: true, email: true, role: true, isActive: true },
+    });
+
+    const pendingAssignments = await tx.pendingProjectAssignment.findMany({
+      where: {
+        email,
+        status: "PENDING",
+      },
+      select: {
+        projectId: true,
+        memberRole: true,
+      },
+    });
+
+    if (pendingAssignments.length > 0) {
+      await tx.projectMember.createMany({
+        data: pendingAssignments.map((assignment) => ({
+          projectId: assignment.projectId,
+          studentId: created.id,
+          role: assignment.memberRole,
+        })),
+        skipDuplicates: true,
+      });
+
+      await tx.pendingProjectAssignment.updateMany({
+        where: {
+          email,
+          status: "PENDING",
+        },
+        data: {
+          status: "ASSIGNED",
+        },
+      });
+    }
+
+    return created;
+  });
+}
