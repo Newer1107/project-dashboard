@@ -1387,7 +1387,87 @@ export default function AnalyticsDashboard() {
                   <Filter className="w-3.5 h-3.5" /> Filters (
                   {selectedFilterCount})
                 </button>
-                {/* ... Filter Popover Content Remains the Same structurally, just restyled ... */}
+                {/* Filter Popover */}
+                {showFilterPanel && (
+                  <div
+                    ref={filterPopoverRef}
+                    className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-lg shadow-xl z-50 p-4"
+                  >
+                    <div className="space-y-4">
+                      {(ALL_FILTER_TYPES as FilterType[]).map((type) => (
+                        <div key={type} className="border-b border-neutral-200 dark:border-neutral-800 pb-3 last:border-b-0">
+                          <button
+                            onClick={() => toggleSection(type)}
+                            className="flex items-center justify-between w-full text-sm font-semibold text-neutral-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                          >
+                            <span>{FILTER_LABELS[type]}</span>
+                            <ChevronDown
+                              className={`w-4 h-4 transition-transform ${
+                                expandedSections[type] ? "rotate-180" : ""
+                              }`}
+                            />
+                          </button>
+                          {expandedSections[type] && (
+                            <div className="mt-2 space-y-2">
+                              {filterOptions[type]?.map((option) => {
+                                const isSelected = draftFilters[type].includes(
+                                  option.value,
+                                );
+                                const hasGreyedOut =
+                                  selectedFilters[type].length > 0 &&
+                                  !selectedFilters[type].includes(option.value);
+
+                                return (
+                                  <label
+                                    key={option.value}
+                                    className={`flex items-center gap-2 cursor-pointer text-xs p-1 rounded transition-colors ${
+                                      hasGreyedOut
+                                        ? "opacity-40"
+                                        : "hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                                    }`}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() =>
+                                        toggleDraftFilter(type, option.value)
+                                      }
+                                      disabled={hasGreyedOut}
+                                      className="w-3 h-3 rounded cursor-pointer accent-indigo-500"
+                                    />
+                                    <span className="text-neutral-700 dark:text-neutral-300">
+                                      {option.value}
+                                    </span>
+                                    <span className="text-[10px] text-neutral-500 dark:text-neutral-400 ml-auto">
+                                      ({option.count})
+                                    </span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-4 flex gap-2 border-t border-neutral-200 dark:border-neutral-800 pt-3">
+                      <button
+                        onClick={() => {
+                          setDraftFilters(createEmptyFilters());
+                        }}
+                        className="flex-1 px-3 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded transition-colors"
+                      >
+                        Reset
+                      </button>
+                      <button
+                        onClick={applyDraftFilters}
+                        className="flex-1 px-3 py-2 text-xs font-semibold bg-indigo-500 hover:bg-indigo-600 text-white rounded transition-colors"
+                      >
+                        Apply Filters
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {hasActiveFilters && (
