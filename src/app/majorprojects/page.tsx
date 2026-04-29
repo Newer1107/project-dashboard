@@ -8,12 +8,20 @@ import Footer from "@/components/ui/Footer";
 
 // Parsed and categorized B.E. Project Data
 import beProjects from "./BE_NBA_groups.json";
+// Import your new IT research data (ensure this path is correct)
+import itResearchData from "./all-dep-data.json"; 
 
 export default function CapstoneProjectTable() {
   const [scrollY, setScrollY] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [selectedSdg, setSelectedSdg] = useState<number | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
+  const [selectedResearchDomain, setSelectedResearchDomain] = useState<string | null>(null);
+
+  function getBranchFromGroupId(groupId: string) {
+    return groupId.split("-")[0]?.trim() || groupId;
+  }
 
   // Scroll listener for table effect
   useEffect(() => {
@@ -55,7 +63,7 @@ export default function CapstoneProjectTable() {
       .sort((a, b) => b.count - a.count); // Sort by most popular
   }, []);
 
-  // Filtering Logic
+  // Filtering Logic for Table 1
   const filteredGroups = useMemo(() => {
     const searchLower = searchTerm.toLowerCase();
 
@@ -74,6 +82,37 @@ export default function CapstoneProjectTable() {
       return matchesSearch && matchesClass && matchesSdg;
     });
   }, [searchTerm, selectedClass, selectedSdg]);
+
+  // Filtering Logic for Table 2 (Research Table)
+  const filteredResearch = useMemo(() => {
+    const searchLower = searchTerm.toLowerCase();
+
+    return itResearchData.filter((group) => {
+      const matchesSearch =
+        group.title.toLowerCase().includes(searchLower) ||
+        group.guide.toLowerCase().includes(searchLower) ||
+        group.domain.toLowerCase().includes(searchLower) ||
+        group.students.some((name) => name.toLowerCase().includes(searchLower));
+
+      const matchesBranch =
+        !selectedBranch || getBranchFromGroupId(group.groupId) === selectedBranch;
+
+      const matchesDomain =
+        !selectedResearchDomain || group.domain === selectedResearchDomain;
+
+      return matchesSearch && matchesBranch && matchesDomain;
+    });
+  }, [searchTerm, selectedBranch, selectedResearchDomain]);
+
+  const researchBranches = useMemo(() => {
+    return Array.from(
+      new Set(itResearchData.map((group) => getBranchFromGroupId(group.groupId)))
+    ).sort();
+  }, []);
+
+  const researchDomains = useMemo(() => {
+    return Array.from(new Set(itResearchData.map((group) => group.domain))).sort();
+  }, []);
 
   return (
     <div className="relative w-full min-h-screen bg-neutral-50 dark:bg-neutral-950 overflow-hidden font-sans">
@@ -235,7 +274,7 @@ export default function CapstoneProjectTable() {
           </select>
         </motion.div>
 
-        {/* ===== DATA TABLE ===== */}
+        {/* ===== DATA TABLE 1 (NBA Mapping) ===== */}
         <motion.div
           style={{
             scale: Math.min(1, 0.95 + scrollY / 3000),
@@ -282,25 +321,19 @@ export default function CapstoneProjectTable() {
                           transition={{ delay: Math.min(idx * 0.05, 0.5) }}
                           className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/20 transition-colors group/row"
                         >
-                          {/* Group ID */}
                           <td className="px-4 py-4 align-top">
                             <span className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-bold">
                               {group.groupId}
                             </span>
                           </td>
-
-                          {/* Title & Domain */}
                           <td className="px-4 py-4 align-top space-y-2">
                             <p className="font-bold text-neutral-900 dark:text-neutral-100 leading-snug">
                               {group.title}
                             </p>
-
                             <span className="inline-block px-2 py-1 rounded text-[10px] font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 uppercase tracking-wider">
                               {group.domain}
                             </span>
                           </td>
-
-                          {/* New Fields */}
                           <td className="px-4 py-4 align-top">
                             <span className="inline-block px-2 py-1 rounded text-[10px] font-semibold bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
                               {group.type}
@@ -317,57 +350,25 @@ export default function CapstoneProjectTable() {
                           </td>
                           <td className="px-4 py-4 align-top">
                             <div className="text-xs text-neutral-600 dark:text-neutral-400 space-y-1">
-                              <p>
-                                <strong className="text-neutral-900 dark:text-neutral-200">
-                                  PO:
-                                </strong>{" "}
-                                {group.poMapped}
-                              </p>
-                              <p>
-                                <strong className="text-neutral-900 dark:text-neutral-200">
-                                  PSO:
-                                </strong>{" "}
-                                {group.psoMapped}
-                              </p>
+                              <p><strong className="text-neutral-900 dark:text-neutral-200">PO:</strong> {group.poMapped}</p>
+                              <p><strong className="text-neutral-900 dark:text-neutral-200">PSO:</strong> {group.psoMapped}</p>
                             </div>
                           </td>
-
-                          {/* Students List */}
                           <td className="px-4 py-4 align-top">
                             <ul className="space-y-1">
                               {group.students.map((student) => (
-                                <li
-                                  key={student.rollNo}
-                                  className="text-neutral-600 dark:text-neutral-400 flex items-center gap-2"
-                                >
-                                  <span className="text-xs font-mono text-neutral-400 dark:text-neutral-600">
-                                    {student.rollNo}
-                                  </span>
-                                  <span className="font-medium group-hover/row:text-neutral-900 dark:group-hover/row:text-neutral-200 transition-colors">
-                                    {student.name}
-                                  </span>
+                                <li key={student.rollNo} className="text-neutral-600 dark:text-neutral-400 flex items-center gap-2">
+                                  <span className="text-xs font-mono text-neutral-400 dark:text-neutral-600">{student.rollNo}</span>
+                                  <span className="font-medium group-hover/row:text-neutral-900 dark:group-hover/row:text-neutral-200 transition-colors">{student.name}</span>
                                 </li>
                               ))}
                             </ul>
                           </td>
-
-                          {/* Guide */}
-                          <td className="px-4 py-4 align-top text-neutral-600 dark:text-neutral-400 font-medium">
-                            {group.guide}
-                          </td>
-
-                          {/* SDG Impact Badge */}
+                          <td className="px-4 py-4 align-top text-neutral-600 dark:text-neutral-400 font-medium">{group.guide}</td>
                           <td className="px-4 py-4 align-top">
-                            <div
-                              className="flex items-center gap-2 group cursor-help"
-                              title={group.sdgTitle}
-                            >
-                              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-black text-xs ring-2 ring-transparent group-hover:ring-emerald-400 transition-all">
-                                {group.sdg}
-                              </span>
-                              <span className="text-xs font-semibold text-neutral-500 line-clamp-2">
-                                {group.sdgTitle}
-                              </span>
+                            <div className="flex items-center gap-2 group cursor-help" title={group.sdgTitle}>
+                              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-black text-xs ring-2 ring-transparent group-hover:ring-emerald-400 transition-all">{group.sdg}</span>
+                              <span className="text-xs font-semibold text-neutral-500 line-clamp-2">{group.sdgTitle}</span>
                             </div>
                           </td>
                         </motion.tr>
@@ -377,29 +378,157 @@ export default function CapstoneProjectTable() {
                         <td colSpan={10} className="px-4 py-16 text-center">
                           <div className="flex flex-col items-center justify-center space-y-3">
                             <span className="text-4xl">📭</span>
-                            <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
-                              No matches found
-                            </h3>
-                            <p className="text-sm text-neutral-500">
-                              Try adjusting your search criteria or clearing the
-                              SDG filter.
-                            </p>
-                            <button
-                              onClick={() => {
-                                setSearchTerm("");
-                                setSelectedClass(null);
-                                setSelectedSdg(null);
-                              }}
-                              className="mt-2 px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-black rounded-lg text-sm font-semibold hover:opacity-80 transition"
-                            >
-                              Reset Filters
-                            </button>
+                            <h3 className="text-lg font-bold text-neutral-900 dark:text-white">No matches found</h3>
+                            <p className="text-sm text-neutral-500">Try adjusting your search criteria.</p>
+                            <button onClick={() => { setSearchTerm(""); setSelectedClass(null); setSelectedSdg(null); }} className="mt-2 px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-black rounded-lg text-sm font-semibold hover:opacity-80 transition">Reset Filters</button>
                           </div>
                         </td>
                       </tr>
                     )}
                   </tbody>
                 </AnimatePresence>
+              </table>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ===== NEW RESEARCH & IMPACT TABLE ===== */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="space-y-4 pt-12"
+        >
+          <div className="px-2">
+            <h2 className="text-2xl font-bold flex items-center gap-3">
+              <span className="w-2 h-8 bg-blue-600 rounded-full"></span>
+              Research & Publication Track
+            </h2>
+            <p className="text-neutral-500 text-sm">Detailed publication status, TRL levels, and technical innovation.</p>
+          </div>
+
+          <div className="flex flex-col md:flex-row gap-4 px-2">
+            <select
+              value={selectedBranch || ""}
+              onChange={(e) => setSelectedBranch(e.target.value || null)}
+              className="px-4 py-3 w-full md:w-56 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-900/80 text-neutral-900 dark:text-white font-medium outline-none cursor-pointer focus:border-blue-500 transition-colors"
+            >
+              <option value="">All Branches</option>
+              {researchBranches.map((branch) => (
+                <option key={branch} value={branch}>
+                  {branch}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={selectedResearchDomain || ""}
+              onChange={(e) => setSelectedResearchDomain(e.target.value || null)}
+              className="px-4 py-3 w-full md:w-64 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-900/80 text-neutral-900 dark:text-white font-medium outline-none cursor-pointer focus:border-blue-500 transition-colors"
+            >
+              <option value="">All Domains</option>
+              {researchDomains.map((domain) => (
+                <option key={domain} value={domain}>
+                  {domain}
+                </option>
+              ))}
+            </select>
+
+            {(selectedBranch || selectedResearchDomain) && (
+              <button
+                onClick={() => {
+                  setSelectedBranch(null);
+                  setSelectedResearchDomain(null);
+                }}
+                className="px-4 py-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-900/80 text-sm font-semibold text-neutral-700 dark:text-neutral-300 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              >
+                Clear Research Filters
+              </button>
+            )}
+          </div>
+
+          <div className="w-full overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl">
+            <div className="w-full overflow-x-auto max-h-[70vh]">
+              <table className="w-full text-left text-sm" style={{ minWidth: "1800px" }}>
+                <thead className="bg-neutral-50 dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 sticky top-0 z-20 shadow-sm whitespace-nowrap">
+                  <tr>
+                    <th className="px-4 py-4 font-semibold w-40">Group Name</th>
+                    <th className="px-4 py-4 font-semibold w-64">Student Names</th>
+                    <th className="px-4 py-4 font-semibold min-w-[300px]">Project Title</th>
+                    <th className="px-4 py-4 font-semibold w-40">Name of Guide</th>
+                    <th className="px-4 py-4 font-semibold w-48">Domains / Sectors</th>
+                    <th className="px-4 py-4 font-semibold w-44">Multicon-W 2026</th>
+                    <th className="px-4 py-4 font-semibold w-40">Outside Conference</th>
+                    <th className="px-4 py-4 font-semibold w-40">Peer Review Journal</th>
+                    <th className="px-4 py-4 font-semibold w-24 text-center">TRL</th>
+                    <th className="px-4 py-4 font-semibold w-64">Achievements / Impact</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/50">
+                  {filteredResearch.length > 0 ? (
+                    filteredResearch.map((group) => (
+                    <tr key={`research-${group.groupId}`} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/20 transition-colors group/row">
+                      {/* Dynamic Dept Prefix based on JSON */}
+                      <td className="px-4 py-4 align-top font-mono font-bold text-blue-600 dark:text-blue-400">
+                        {`${group.groupId}`}
+                      </td>
+                      <td className="px-4 py-4 align-top">
+                        <div className="flex flex-col gap-1">
+                          {group.students.map((name, i) => (
+                            <span key={i} className="text-xs font-medium text-neutral-700 dark:text-neutral-300">{name}</span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 align-top font-bold text-neutral-900 dark:text-neutral-100 leading-tight">
+                        {group.title}
+                      </td>
+                      <td className="px-4 py-4 align-top text-neutral-600 dark:text-neutral-400">{group.guide}</td>
+                      <td className="px-4 py-4 align-top">
+                        <span className="text-xs bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded">{group.domain}</span>
+                      </td>
+                      <td className="px-4 py-4 align-top text-xs italic text-neutral-500">{group.multiconW}</td>
+                      <td className="px-4 py-4 align-top text-xs">
+                        {group.outsideConf !== "-" ? (
+                          <span className="text-indigo-600 dark:text-indigo-400 font-medium">{group.outsideConf}</span>
+                        ) : "—"}
+                      </td>
+                      <td className="px-4 py-4 align-top">
+                        <span className={`text-[10px] font-bold px-2 py-1 rounded ${group.journal !== "-" ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700" : "text-neutral-400"}`}>
+                          {group.journal}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 align-top text-center">
+                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 font-bold border border-orange-200 dark:border-orange-800">
+                          {group.trl}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 align-top">
+                        <p className="text-xs text-neutral-600 dark:text-neutral-400 line-clamp-3 hover:line-clamp-none transition-all">{group.impact}</p>
+                      </td>
+                    </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={10} className="px-4 py-16 text-center">
+                        <div className="flex flex-col items-center justify-center space-y-3">
+                          <span className="text-4xl">📭</span>
+                          <h3 className="text-lg font-bold text-neutral-900 dark:text-white">No matches found</h3>
+                          <p className="text-sm text-neutral-500">Try adjusting your search, branch, or domain filters.</p>
+                          <button
+                            onClick={() => {
+                              setSearchTerm("");
+                              setSelectedBranch(null);
+                              setSelectedResearchDomain(null);
+                            }}
+                            className="mt-2 px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-black rounded-lg text-sm font-semibold hover:opacity-80 transition"
+                          >
+                            Reset Filters
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
               </table>
             </div>
           </div>
