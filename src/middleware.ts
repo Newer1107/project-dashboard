@@ -7,6 +7,7 @@ export default async function middleware(req: NextRequest) {
   const isPublicShowcase = pathname.startsWith("/showcase") && !isShowcaseAuthorRoute;
   const isPublicRoute =
     isPublicShowcase ||
+    pathname.startsWith("/analytics") ||
     pathname.startsWith("/majorprojects") ||
     pathname.startsWith("/rblprojects-te") ||
     pathname.startsWith("/api/cron") ||
