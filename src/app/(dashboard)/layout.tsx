@@ -1,6 +1,7 @@
 import React from "react";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { resolveUserFromHeaders } from "@/lib/resolve-user";
 import { DashboardShell } from "./DashboardShell";
 
 export default async function DashboardLayout({
@@ -8,16 +9,11 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-  if (!session?.user) redirect("/login");
-
-  const user = session.user as {
-    id: string;
-    name: string;
-    email: string;
-    role: "ADMIN" | "TEACHER" | "STUDENT";
-    image?: string | null;
-  };
+  const requestHeaders = await headers();
+  const user = await resolveUserFromHeaders(requestHeaders);
+  if (!user) {
+    redirect("https://tcetcercd.in/login?reason=session_expired");
+  }
 
   // Redirect to role-based home
   return (
@@ -25,7 +21,7 @@ export default async function DashboardLayout({
       userId={user.id}
       userName={user.name ?? "User"}
       userRole={user.role}
-      userImage={user.image}
+      userImage={user.avatarUrl}
     >
       {children}
     </DashboardShell>

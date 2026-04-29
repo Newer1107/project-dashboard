@@ -1,22 +1,12 @@
 "use server";
 
-import { auth } from "@/lib/auth";
+import { requireRole } from "@/lib/coe-guard";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { processEmailQueue } from "@/lib/email-queue";
 
-function assertAdmin(session: unknown) {
-  const role =
-    (session as { user?: { role?: unknown } } | null)?.user?.role;
-
-  if (role !== "ADMIN") {
-    throw new Error("Unauthorized");
-  }
-}
-
 export async function getEmailQueueLogs(limit = 200) {
-  const session = await auth();
-  assertAdmin(session);
+  await requireRole("ADMIN");
 
   return prisma.emailQueue.findMany({
     orderBy: { createdAt: "desc" },
@@ -35,8 +25,7 @@ export async function getEmailQueueLogs(limit = 200) {
 }
 
 export async function retryFailedEmails() {
-  const session = await auth();
-  assertAdmin(session);
+  await requireRole("ADMIN");
 
   const result = await prisma.emailQueue.updateMany({
     where: { status: "FAILED" },
@@ -52,8 +41,7 @@ export async function retryFailedEmails() {
 }
 
 export async function runEmailQueueNow(batchSize = 50) {
-  const session = await auth();
-  assertAdmin(session);
+  await requireRole("ADMIN");
 
   const result = await processEmailQueue(Math.min(Math.max(batchSize, 1), 200));
   revalidatePath("/admin/email-logs");

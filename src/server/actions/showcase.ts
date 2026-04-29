@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth";
+import { requireCoeUser, requireRole } from "@/lib/coe-guard";
 import { prisma } from "@/lib/prisma";
 import { generateAssetAccessUrl } from "@/lib/s3";
 import { createBulkNotifications, createNotification } from "@/lib/notifications";
@@ -70,24 +70,29 @@ function canTransition(from: ShowcaseProjectStatus, to: ShowcaseProjectStatus): 
   return statusTransition[from].includes(to);
 }
 
-function assertSignedIn(session: any) {
-  if (!session?.user?.id) throw new Error("Unauthorized");
+type CoeUser = {
+  id: string;
+  role: "ADMIN" | "TEACHER" | "STUDENT";
+};
+
+function assertSignedIn(user: CoeUser | null) {
+  if (!user?.id) throw new Error("Unauthorized");
 }
 
-function assertAdmin(session: any) {
-  if ((session?.user as any)?.role !== "ADMIN") throw new Error("Unauthorized");
+function assertAdmin(user: CoeUser) {
+  if (user.role !== "ADMIN") throw new Error("Unauthorized");
 }
 
-function requireUserId(session: any): string {
-  const userId = session?.user?.id;
+function requireUserId(user: CoeUser): string {
+  const userId = user?.id;
   if (!userId) {
     throw new Error("Unauthorized");
   }
   return userId;
 }
 
-function assertCreatorRole(session: any) {
-  const role = (session?.user as any)?.role;
+function assertCreatorRole(user: CoeUser) {
+  const role = user.role;
   if (role !== "STUDENT" && role !== "TEACHER") {
     throw new Error("Only students and teachers can create showcase projects");
   }
@@ -256,10 +261,10 @@ async function mapAssetsWithAccessUrl<T extends { fileUrl: string }>(assets: T[]
 }
 
 export async function createProject(data: z.infer<typeof showcasePayloadSchema>) {
-  const session = await auth();
-  assertSignedIn(session);
-  assertCreatorRole(session);
-  const userId = requireUserId(session);
+  const user = await requireCoeUser();
+  assertSignedIn(user);
+  assertCreatorRole(user);
+  const userId = requireUserId(user);
 
   const validated = showcasePayloadSchema.parse(data);
 
@@ -328,10 +333,10 @@ export async function createProject(data: z.infer<typeof showcasePayloadSchema>)
 }
 
 export async function updateProject(projectId: string, data: z.infer<typeof updateSchema>) {
-  const session = await auth();
-  assertSignedIn(session);
-  assertCreatorRole(session);
-  const userId = requireUserId(session);
+  const user = await requireCoeUser();
+  assertSignedIn(user);
+  assertCreatorRole(user);
+  const userId = requireUserId(user);
 
   const validated = updateSchema.parse(data);
 
@@ -451,10 +456,10 @@ export async function updateProject(projectId: string, data: z.infer<typeof upda
 }
 
 export async function submitProject(projectId: string) {
-  const session = await auth();
-  assertSignedIn(session);
-  assertCreatorRole(session);
-  const userId = requireUserId(session);
+  const user = await requireCoeUser();
+  assertSignedIn(user);
+  assertCreatorRole(user);
+  const userId = requireUserId(user);
 
   const project = await prisma.showcaseProject.findUnique({
     where: { id: projectId },
@@ -497,10 +502,10 @@ export async function submitProject(projectId: string) {
 }
 
 export async function resubmitProject(projectId: string) {
-  const session = await auth();
-  assertSignedIn(session);
-  assertCreatorRole(session);
-  const userId = requireUserId(session);
+  const user = await requireCoeUser();
+  assertSignedIn(user);
+  assertCreatorRole(user);
+  const userId = requireUserId(user);
 
   const project = await prisma.showcaseProject.findUnique({
     where: { id: projectId },
@@ -543,9 +548,9 @@ export async function resubmitProject(projectId: string) {
 }
 
 export async function getMyProjects() {
-  const session = await auth();
-  assertSignedIn(session);
-  const userId = requireUserId(session);
+  const user = await requireCoeUser();
+  assertSignedIn(user);
+  const userId = requireUserId(user);
 
   return prisma.showcaseProject.findMany({
     where: { ownerId: userId },
@@ -571,10 +576,10 @@ export async function getMyProjects() {
 }
 
 export async function getProjectVersions(projectId: string) {
-  const session = await auth();
-  assertSignedIn(session);
-  const userId = requireUserId(session);
-  const role = (session?.user as any)?.role;
+  const user = await requireCoeUser();
+  assertSignedIn(user);
+  const userId = requireUserId(user);
+  const role = user.role;
 
   const project = await prisma.showcaseProject.findUnique({ where: { id: projectId } });
   if (!project || (project.ownerId !== userId && role !== "ADMIN")) {
@@ -597,8 +602,8 @@ export async function getProjectVersions(projectId: string) {
 }
 
 export async function getAllSubmissions(status?: ShowcaseProjectStatus | "ALL") {
-  const session = await auth();
-  assertAdmin(session);
+  const user = await requireRole("ADMIN");
+  assertAdmin(user);
 
   return prisma.showcaseProject.findMany({
     where: status && status !== "ALL" ? { status } : undefined,
@@ -624,8 +629,8 @@ export async function getAllSubmissions(status?: ShowcaseProjectStatus | "ALL") 
 }
 
 export async function startReview(projectId: string) {
-  const session = await auth();
-  assertAdmin(session);
+  const user = await requireRole("ADMIN");
+  assertAdmin(user);
 
   const project = await prisma.showcaseProject.findUnique({ where: { id: projectId } });
   if (!project) throw new Error("Project not found");
@@ -645,9 +650,9 @@ export async function startReview(projectId: string) {
 }
 
 export async function addFeedback(projectId: string, versionId: string, data: z.infer<typeof feedbackSchema>) {
-  const session = await auth();
-  assertAdmin(session);
-  const userId = requireUserId(session);
+  const user = await requireRole("ADMIN");
+  assertAdmin(user);
+  const userId = requireUserId(user);
 
   const validated = feedbackSchema.parse(data);
   const project = await prisma.showcaseProject.findUnique({ where: { id: projectId } });
@@ -676,8 +681,8 @@ export async function addFeedback(projectId: string, versionId: string, data: z.
 }
 
 export async function resolveFeedback(feedbackId: string) {
-  const session = await auth();
-  assertAdmin(session);
+  const user = await requireRole("ADMIN");
+  assertAdmin(user);
 
   const updated = await prisma.reviewFeedback.update({
     where: { id: feedbackId },
@@ -722,8 +727,8 @@ export async function rejectProject(projectId: string) {
 }
 
 export async function getSubmissionById(projectId: string) {
-  const session = await auth();
-  assertAdmin(session);
+  const user = await requireRole("ADMIN");
+  assertAdmin(user);
 
   const project = await prisma.showcaseProject.findUnique({
     where: { id: projectId },
@@ -833,8 +838,8 @@ async function changeStatus(
   targetStatus: ShowcaseProjectStatus,
   options: { title: string; message: string; notificationType: any }
 ) {
-  const session = await auth();
-  assertAdmin(session);
+  const user = await requireRole("ADMIN");
+  assertAdmin(user);
 
   const project = await prisma.showcaseProject.findUnique({ where: { id: projectId } });
   if (!project) throw new Error("Project not found");

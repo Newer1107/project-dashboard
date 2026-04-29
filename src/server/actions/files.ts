@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { requireCoeUser } from "@/lib/coe-guard";
 import { generatePresignedUploadUrl, deleteS3Object, buildS3Key, buildStorageProxyUrl } from "@/lib/s3";
 import { revalidatePath } from "next/cache";
 
@@ -12,8 +12,7 @@ export async function requestUploadUrl(
   category: string,
   taskId?: string
 ) {
-  const session = await auth();
-  if (!session?.user) throw new Error("Unauthorized");
+  await requireCoeUser();
 
   const s3Key = buildS3Key(projectId, category, fileName);
   const uploadUrl = await generatePresignedUploadUrl(s3Key, fileType);
@@ -30,9 +29,8 @@ export async function confirmUpload(data: {
   s3Key: string;
   category: string;
 }) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
-  const userId = session.user.id;
+  const user = await requireCoeUser();
+  const userId = user.id;
 
   const file = await prisma.projectFile.create({
     data: {
@@ -54,8 +52,7 @@ export async function confirmUpload(data: {
 }
 
 export async function getDownloadUrl(fileId: string) {
-  const session = await auth();
-  if (!session?.user) throw new Error("Unauthorized");
+  await requireCoeUser();
 
   const file = await prisma.projectFile.findUnique({ where: { id: fileId } });
   if (!file) throw new Error("File not found");
@@ -64,14 +61,13 @@ export async function getDownloadUrl(fileId: string) {
 }
 
 export async function deleteFile(fileId: string) {
-  const session = await auth();
-  if (!session?.user) throw new Error("Unauthorized");
+  const user = await requireCoeUser();
 
   const file = await prisma.projectFile.findUnique({ where: { id: fileId } });
   if (!file) throw new Error("File not found");
 
-  const role = (session.user as any).role;
-  if (role === "STUDENT" && file.uploadedBy !== session.user.id) {
+  const role = user.role;
+  if (role === "STUDENT" && file.uploadedBy !== user.id) {
     throw new Error("Cannot delete other members' files");
   }
 

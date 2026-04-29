@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { resolveUserFromHeaders } from "@/lib/resolve-user";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { BUCKET, buildS3Key, s3Client } from "@/lib/s3";
 
@@ -9,9 +9,12 @@ const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await resolveUserFromHeaders(req.headers);
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (user.role !== "STUDENT" && user.role !== "TEACHER") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
     const formData = await req.formData();

@@ -5,8 +5,7 @@ services:
       - "3000:3000"
     environment:
       - DATABASE_URL=mysql://dashboard:dashboard@db:3306/project_dashboard
-      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-super-secret-change-me}
-      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      - COE_JWT_SECRET=${COE_JWT_SECRET:-change-me}
       - S3_BUCKET_NAME=${S3_BUCKET_NAME:-}
       - MINIO_ENDPOINT=${MINIO_ENDPOINT:-}
       - MINIO_REGION=${MINIO_REGION:-}

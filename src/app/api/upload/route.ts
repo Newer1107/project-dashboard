@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { resolveUserFromHeaders } from "@/lib/resolve-user";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { BUCKET, buildS3Key, s3Client } from "@/lib/s3";
 import { prisma } from "@/lib/prisma";
@@ -8,11 +8,11 @@ export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await resolveUserFromHeaders(req.headers);
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const userId = session.user.id;
+    const userId = user.id;
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;

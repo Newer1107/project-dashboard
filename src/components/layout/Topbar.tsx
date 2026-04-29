@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { Bell, Search, Moon, Sun, Command as CommandIcon, User, LogOut, Settings } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
 import { Command } from "cmdk";
 import { useUIStore } from "@/store/ui.store";
 import { Button } from "@/components/ui/button";
@@ -48,7 +47,6 @@ export function Topbar({ userId, userName, userRole, userImage }: TopbarProps) {
       ? [
           { label: "Admin Overview", href: "/admin" },
           { label: "Manage Users", href: "/admin/users" },
-          { label: "Allowed Emails", href: "/admin/allowed-emails" },
           { label: "Showcase Reviews", href: "/admin/showcase" },
           { label: "Admin Settings", href: "/admin/settings" },
         ]
@@ -88,6 +86,11 @@ export function Topbar({ userId, userName, userRole, userImage }: TopbarProps) {
   function navigateTo(href: string) {
     setCommandOpen(false);
     router.push(href);
+  }
+
+  function handleSignOut() {
+    const callbackUrl = encodeURIComponent(window.location.origin);
+    window.location.href = `https://tcetcercd.in/logout?callbackUrl=${callbackUrl}`;
   }
 
   return (
@@ -227,7 +230,7 @@ export function Topbar({ userId, userName, userRole, userImage }: TopbarProps) {
                 <Command.Item
                   onSelect={() => {
                     setCommandOpen(false);
-                    signOut({ callbackUrl: "/login" });
+                    handleSignOut();
                   }}
                   className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm text-destructive data-[selected=true]:bg-destructive/10"
                 >

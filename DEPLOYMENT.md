@@ -63,16 +63,10 @@ Update `.env` with production values.
 
 ```env
 DATABASE_URL="mysql://username:password@host:3306/project_dashboard"
-NEXTAUTH_SECRET="generate-strong-random-secret"
-NEXTAUTH_URL="https://your-domain.com"
-PASSWORD_RESET_TOKEN_SECRET="generate-strong-random-secret"
+COE_JWT_SECRET="set-coe-jwt-secret"
+EMAIL_QUEUE_CRON_SECRET="generate-strong-random-secret"
 ```
-
-Generate a secure NextAuth secret:
-
-```bash
-openssl rand -base64 32
-```
+Ensure `COE_JWT_SECRET` matches the shared secret used to sign CoE JWTs.
 
 ## MinIO Object Storage (if file uploads are enabled)
 
@@ -270,9 +264,7 @@ sudo certbot --nginx -d your-domain.com
 ## 9. Post-Deploy Checklist
 
 - App opens at `https://your-domain.com`
-- Login works
-- Registration works for allowed domain / allowed list
-- `/admin/allowed-emails` works
+- CoE login/redirect flow works
 - `/admin/showcase` and `/showcase/my-projects` load correctly
 - Public showcase page `/showcase` loads
 - File uploads to MinIO work
@@ -353,7 +345,7 @@ mysql -u <user> -p project_dashboard < backup.sql
 
 ## 13. Security Minimums
 
-- Use strong `NEXTAUTH_SECRET`
+- Protect `COE_JWT_SECRET` and rotate in sync with the CoE portal
 - Do not commit `.env`
 - Restrict DB access to private network
 - Enable firewall (`ufw`) and allow only required ports

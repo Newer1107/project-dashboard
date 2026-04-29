@@ -1,16 +1,16 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { resolveUserFromHeaders } from "@/lib/resolve-user";
 
 export default async function HomePage() {
-  const session = await auth();
+  const requestHeaders = await headers();
+  const user = await resolveUserFromHeaders(requestHeaders);
 
-  if (!session?.user) {
-    redirect("/login");
+  if (!user) {
+    redirect("https://tcetcercd.in/login?callbackUrl=https://showcase.tcetcercd.in/");
   }
 
-  const role = (session.user as any).role;
-
-  if (role === "ADMIN") redirect("/admin");
-  if (role === "TEACHER") redirect("/teacher");
+  if (user.role === "ADMIN") redirect("/admin");
+  if (user.role === "TEACHER") redirect("/teacher");
   redirect("/student");
 }

@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { requireRole } from "@/lib/coe-guard";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createBulkNotifications } from "@/lib/notifications";
@@ -28,11 +28,8 @@ const conductReviewSchema = z.object({
 });
 
 export async function scheduleReview(data: z.infer<typeof scheduleReviewSchema>) {
-  const session = await auth();
-  if (!session?.user?.id || (session.user as any).role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
-  const userId = session.user.id;
+  const user = await requireRole("TEACHER");
+  const userId = user.id;
 
   const validated = scheduleReviewSchema.parse(data);
   const review = await prisma.review.create({
@@ -82,10 +79,7 @@ export async function scheduleReview(data: z.infer<typeof scheduleReviewSchema>)
 }
 
 export async function conductReview(data: z.infer<typeof conductReviewSchema>) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  await requireRole("TEACHER");
 
   const validated = conductReviewSchema.parse(data);
 
@@ -150,10 +144,7 @@ export async function updateReviewStatus(
   status: "SCHEDULED" | "MISSED" | "RESCHEDULED",
   newDate?: string
 ) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  await requireRole("TEACHER");
 
   const review = await prisma.review.update({
     where: { id: reviewId },

@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { requireCoeUser, requireRole } from "@/lib/coe-guard";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notifications";
@@ -18,10 +18,7 @@ const createTaskSchema = z.object({
 });
 
 export async function createTask(data: z.infer<typeof createTaskSchema>) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  await requireRole("TEACHER");
 
   const validated = createTaskSchema.parse(data);
 
@@ -73,10 +70,8 @@ export async function updateTask(
     dueDate?: string | null;
   }
 ) {
-  const session = await auth();
-  if (!session?.user) throw new Error("Unauthorized");
-
-  const role = (session.user as any).role;
+  const user = await requireCoeUser();
+  const role = user.role;
   const task = await prisma.task.findUnique({
     where: { id: taskId },
     include: { project: { select: { teacherId: true, title: true } } },
@@ -86,7 +81,7 @@ export async function updateTask(
 
   // Students can only update status of tasks assigned to them
   if (role === "STUDENT") {
-    if (task.assignedToId !== session.user.id) {
+    if (task.assignedToId !== user.id) {
       throw new Error("You can only modify tasks that are assigned to you.");
     }
     const allowedStatuses = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"];
@@ -96,7 +91,7 @@ export async function updateTask(
     // Only allow status update for students
     data = { status: data.status };
   } else if (role === "TEACHER") {
-    if (task.project.teacherId !== session.user.id) {
+    if (task.project.teacherId !== user.id) {
       throw new Error("You can only modify tasks for projects you manage.");
     }
   }
@@ -126,10 +121,7 @@ export async function updateTask(
 }
 
 export async function deleteTask(taskId: string) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  await requireRole("TEACHER");
 
   const task = await prisma.task.findUnique({
     where: { id: taskId },
@@ -145,10 +137,7 @@ export async function reorderTasks(
   projectId: string,
   orderedIds: { id: string; orderIndex: number; status: string }[]
 ) {
-  const session = await auth();
-  if (!session?.user || (session.user as any).role !== "TEACHER") {
-    throw new Error("Unauthorized");
-  }
+  await requireRole("TEACHER");
 
   await prisma.$transaction(
     orderedIds.map((item) =>
@@ -187,9 +176,8 @@ export async function getStudentTasks(studentId: string) {
 }
 
 export async function addComment(taskId: string, content: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
-  const userId = session.user.id;
+  const user = await requireCoeUser();
+  const userId = user.id;
 
   const comment = await prisma.comment.create({
     data: {
