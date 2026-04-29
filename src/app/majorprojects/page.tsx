@@ -555,7 +555,9 @@ export default function CapstoneProjectTable() {
 
       const matchesSdg = !selectedSdg || group.sdg === selectedSdg;
       const matchesDepartment =
-        !selectedDepartment || group.department === selectedDepartment;
+        !selectedDepartment ||
+        group.department === selectedDepartment ||
+        (selectedDepartment === "COMP" && !group.department);
 
       return matchesSearch && matchesClass && matchesSdg && matchesDepartment;
     });
