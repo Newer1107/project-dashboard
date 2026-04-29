@@ -3,6 +3,7 @@ import { mapCoERoleToDashboard } from "@/lib/coe-auth";
 
 export type CoeAuthUser = {
   email: string;
+  name?: string;
   role: string;
   status: string;
 };
@@ -40,9 +41,16 @@ export async function resolveUser(authUser: CoeAuthUser): Promise<ResolvedUser |
     });
 
     if (existing) {
+      // Sync name if provided and changed
+      if (authUser.name && existing.name !== authUser.name) {
+        await tx.user.update({
+          where: { id: existing.id },
+          data: { name: authUser.name },
+        });
+      }
       return {
         id: existing.id,
-        name: existing.name,
+        name: authUser.name || existing.name,
         email: existing.email,
         role: existing.role,
         isActive: existing.isActive,
@@ -52,7 +60,7 @@ export async function resolveUser(authUser: CoeAuthUser): Promise<ResolvedUser |
 
     const created = await tx.user.create({
       data: {
-        name: defaultName(email),
+        name: authUser.name || defaultName(email),
         email,
         role: mappedRole,
         isActive: true,
@@ -99,12 +107,13 @@ export async function resolveUser(authUser: CoeAuthUser): Promise<ResolvedUser |
 
 export function getCoeAuthFromHeaders(requestHeaders: Headers): CoeAuthUser | null {
   const email = requestHeaders.get("x-coe-email");
+  const name = requestHeaders.get("x-coe-name") || undefined;
   const role = requestHeaders.get("x-coe-role");
   const status = requestHeaders.get("x-coe-status");
 
   if (!email || !role || !status) return null;
 
-  return { email, role, status };
+  return { email, name, role, status };
 }
 
 export async function resolveUserFromHeaders(

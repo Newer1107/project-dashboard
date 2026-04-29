@@ -3,11 +3,12 @@ import { jwtVerify } from "jose";
 type CoeRole = "ADMIN" | "FACULTY" | "STUDENT" | "INDUSTRY";
 type CoeStatus = "ACTIVE" | "PENDING" | "REJECTED";
 
-type CoeTokenPayload = {
+export interface CoeTokenPayload {
   email: string;
+  name?: string;
   role: CoeRole;
   status: CoeStatus;
-};
+}
 
 export function mapCoERoleToDashboard(role: string | null | undefined) {
   if (role === "ADMIN") return "ADMIN";
@@ -30,13 +31,14 @@ export async function verifyCoEToken(
     if (!payload || typeof payload !== "object") return null;
 
     const email = payload.email as string | undefined;
+    const name = payload.name as string | undefined;
     const role = payload.role as CoeRole | undefined;
     const status = payload.status as CoeStatus | undefined;
 
     if (!email || !role || !status) return null;
     if (!mapCoERoleToDashboard(role)) return null;
 
-    return { email, role, status };
+    return { email, name, role, status };
   } catch {
     return null;
   }

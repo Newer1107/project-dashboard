@@ -32,6 +32,7 @@ export default async function middleware(req: NextRequest) {
 
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-coe-email", payload.email);
+  requestHeaders.set("x-coe-name", payload.name || "");
   requestHeaders.set("x-coe-role", payload.role);
   requestHeaders.set("x-coe-status", payload.status);
 
