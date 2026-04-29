@@ -497,6 +497,7 @@ export default function CapstoneProjectTable() {
       .filter((dept) => typeof dept === "string") as string[];
 
     const depts = new Set(validDepts);
+    depts.add("COMP"); // Always include COMP as it's used as fallback
     return Array.from(depts).sort();
   }, []);
 

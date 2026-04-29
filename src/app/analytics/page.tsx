@@ -867,48 +867,34 @@ const getTopNData = (dataMap: Record<string, number>, n: number = 7) => {
   return top;
 };
 
-type FilterType =
-  | "domain"
-  | "sdg"
-  | "class"
-  | "category"
-  | "application"
-  | "techFocus";
+type FilterType = | "sdg" | "class" | "category" | "techFocus";
 type SelectedFilters = Record<FilterType, string[]>;
 type FilterOption = { value: string; count: number };
 type FilterOptionMap = Record<FilterType, FilterOption[]>;
 
 const FILTER_LABELS: Record<FilterType, string> = {
-  domain: "Domain",
   sdg: "SDG",
   class: "Class",
   category: "Category",
-  application: "Application",
   techFocus: "Tech Focus",
 };
 const ALL_FILTER_TYPES: FilterType[] = [
-  "domain",
   "sdg",
   "class",
   "category",
-  "application",
   "techFocus",
 ];
 
 const createEmptyFilters = (): SelectedFilters => ({
-  domain: [],
   sdg: [],
   class: [],
   category: [],
-  application: [],
   techFocus: [],
 });
 const cloneFilters = (filters: SelectedFilters): SelectedFilters => ({
-  domain: [...filters.domain],
   sdg: [...filters.sdg],
   class: [...filters.class],
   category: [...filters.category],
-  application: [...filters.application],
   techFocus: [...filters.techFocus],
 });
 
@@ -941,11 +927,9 @@ export default function AnalyticsDashboard() {
   const [expandedSections, setExpandedSections] = useState<
     Record<FilterType, boolean>
   >({
-    domain: false,
     sdg: false,
     class: false,
     category: false,
-    application: false,
     techFocus: false,
   });
 
@@ -1060,7 +1044,6 @@ export default function AnalyticsDashboard() {
         .sort((a, b) => a.value.localeCompare(b.value));
     };
 
-    const domains = buildCountOptions(beBase.map((p) => p.domain));
     const sdgs = buildCountOptions(
       beBase.map((p) => {
         const num = parseInt(p.sdg);
@@ -1090,28 +1073,20 @@ export default function AnalyticsDashboard() {
     }));
 
     const categories = buildCountOptions(beBase.map((p) => p.category));
-    const applications = buildCountOptions(
-      beBase.map((p) => p.projectApplication),
-    );
     const techFocus = buildCountOptions(
       combined.map((p) => getTechFocusCategory(p)),
     );
 
     return {
-      domain: domains,
       sdg: sdgs,
       class: classes,
       category: categories,
-      application: applications,
       techFocus,
     };
   }, [activeTab]);
 
   const { filteredBE, filteredRBL, displayProjects } = useMemo(() => {
     const isMatch = (p: any, stream: "BE" | "TE") => {
-      const matchesDomain =
-        selectedFilters.domain.length === 0 ||
-        selectedFilters.domain.includes(p.domain);
       const matchesSdg =
         selectedFilters.sdg.length === 0 ||
         selectedFilters.sdg.includes(String(p.sdg));
@@ -1124,9 +1099,6 @@ export default function AnalyticsDashboard() {
       const matchesCategory =
         selectedFilters.category.length === 0 ||
         selectedFilters.category.includes(p.category);
-      const matchesApplication =
-        selectedFilters.application.length === 0 ||
-        selectedFilters.application.includes(p.projectApplication);
       const matchesTechFocus =
         selectedFilters.techFocus.length === 0 ||
         selectedFilters.techFocus.includes(getTechFocusCategory(p));
@@ -1141,11 +1113,9 @@ export default function AnalyticsDashboard() {
           p.students?.some((s: any) => s.name.toLowerCase().includes(q));
       }
       return (
-        matchesDomain &&
         matchesSdg &&
         matchesClass &&
         matchesCategory &&
-        matchesApplication &&
         matchesTechFocus &&
         passesSearch
       );
@@ -1391,7 +1361,7 @@ export default function AnalyticsDashboard() {
                 {showFilterPanel && (
                   <div
                     ref={filterPopoverRef}
-                    className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-lg shadow-xl z-50 p-4"
+                    className="absolute top-full mt-2 left-0 md:right-0 md:left-auto w-full md:w-80 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-lg shadow-xl z-50 p-4"
                   >
                     <div className="space-y-4">
                       {(ALL_FILTER_TYPES as FilterType[]).map((type) => (
@@ -1559,17 +1529,12 @@ export default function AnalyticsDashboard() {
                       paddingAngle={2}
                       dataKey="count"
                       stroke="none"
-                      onClick={(d) =>
-                        d.name !== "Others" &&
-                        toggleFilter("domain", d.fullName)
-                      }
-                      className="cursor-pointer"
                     >
                       {metrics.domainData.map((d, i) => (
                         <Cell
                           key={i}
                           fill={DONUT_COLORS[i % DONUT_COLORS.length]}
-                          opacity={isDimmed("domain", d.fullName) ? 0.2 : 1}
+                          opacity={1}
                         />
                       ))}
                     </Pie>
@@ -1964,16 +1929,12 @@ export default function AnalyticsDashboard() {
                   <Bar
                     dataKey="count"
                     radius={[0, 4, 4, 0]}
-                    onClick={(d) =>
-                      d.name !== "Others" && toggleFilter("application", d.name)
-                    }
-                    className="cursor-pointer"
                   >
                     {metrics.applicationData.map((d, i) => (
                       <Cell
                         key={i}
                         fill={DONUT_COLORS[i % DONUT_COLORS.length]}
-                        opacity={isDimmed("application", d.name) ? 0.3 : 1}
+                        opacity={1}
                       />
                     ))}
                   </Bar>
