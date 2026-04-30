@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { requireCoeUser, requireRole } from "@/lib/coe-guard";
+import { deleteS3Object } from "@/lib/s3";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createBulkNotifications } from "@/lib/notifications";
@@ -738,6 +739,40 @@ export async function removeProjectMember(projectId: string, studentId: string) 
   });
 
   revalidatePath(`/teacher/projects/${projectId}/members`);
+}
+
+export async function adminDeleteProject(projectId: string) {
+  await requireAdminSession();
+
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: { files: true },
+  });
+
+  if (!project) throw new Error("Project not found");
+
+  // Attempt to delete S3 objects referenced by project files.
+  for (const f of project.files ?? []) {
+    if (f.s3Key) {
+      try {
+        await deleteS3Object(f.s3Key);
+      } catch (err) {
+        // Log and continue; DB deletion will still remove records.
+        // eslint-disable-next-line no-console
+        console.warn("Failed to delete S3 object:", f.s3Key, err);
+      }
+    }
+  }
+
+  // Delete project (cascades to related records via Prisma schema onDelete: Cascade)
+  await prisma.project.delete({ where: { id: projectId } });
+
+  revalidatePath("/admin/projects");
+  revalidatePath("/admin");
+  revalidatePath(`/teacher/projects/${projectId}`);
+  revalidatePath(`/student/projects/${projectId}`);
+
+  return { ok: true };
 }
 
 export async function setProjectLead(projectId: string, studentId: string) {

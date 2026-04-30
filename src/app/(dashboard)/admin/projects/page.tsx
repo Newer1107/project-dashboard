@@ -9,7 +9,9 @@ import {
   adminAddProjectMember,
   adminUpdateProjectMemberRole,
   adminRemoveProjectMember,
+  adminDeleteProject,
 } from "@/server/actions/projects";
+import { Trash } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -135,6 +137,22 @@ export default function AdminProjectsPage() {
     }
   }
 
+  async function onDeleteProject(projectId: string) {
+    const ok = window.confirm("Delete this project and all associated data? This cannot be undone.");
+    if (!ok) return;
+
+    setSavingProjectId(projectId);
+    try {
+      await adminDeleteProject(projectId);
+      toast.success("Project deleted");
+      await refreshData();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to delete project");
+    } finally {
+      setSavingProjectId(null);
+    }
+  }
+
   async function onSaveProject(formData: FormData) {
     if (!editingProject) return;
 
@@ -214,6 +232,9 @@ export default function AdminProjectsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline">{project.status}</Badge>
+                      <Button variant="destructive" size="sm" onClick={() => onDeleteProject(project.id)} disabled={isSaving}>
+                        <Trash className="mr-2 h-4 w-4" /> Delete
+                      </Button>
                       <Dialog
                         open={editingProject?.id === project.id}
                         onOpenChange={(open) => setEditingProject(open ? project : null)}
