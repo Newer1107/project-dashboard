@@ -426,6 +426,7 @@ import {
 // Parsed and categorized Project Data
 import beProjects from "./BE_NBA_groups.json";
 import itResearchData from "./all-dep-data.json";
+import statisticsData from "./statistics.json";
 
 // Fallback mapping since new JSON only contains SDG numbers
 const SDG_MAP: Record<number, string> = {
@@ -461,6 +462,11 @@ export default function CapstoneProjectTable() {
   const [selectedResearchBranch, setSelectedResearchBranch] = useState<string | null>(null);
   const [selectedResearchDomain, setSelectedResearchDomain] = useState<string | null>(null);
   const [researchSearchQuery, setResearchSearchQuery] = useState("");
+
+  // Statistics states
+  const [selectedStatsClass, setSelectedStatsClass] = useState<string | null>(null);
+  const [selectedStatsDomain, setSelectedStatsDomain] = useState<string | null>(null);
+  const [statsSearchQuery, setStatsSearchQuery] = useState("");
 
   function getBranchFromGroupId(groupId: string) {
     return groupId.split("-")[0]?.trim() || groupId;
@@ -593,6 +599,43 @@ export default function CapstoneProjectTable() {
     return Array.from(new Set(itResearchData.map((group) => group.domain))).sort();
   }, []);
 
+  // Statistics memos
+  function getStatsClass(classDiv: string): string {
+    return classDiv.charAt(0) || '';
+  }
+
+  const statsClasses = useMemo(() => {
+    const classes = new Set<string>();
+    statisticsData.forEach((group) => {
+      group.students.forEach((student: any) => {
+        if (student.classDiv) classes.add(getStatsClass(student.classDiv));
+      });
+    });
+    return Array.from(classes).sort();
+  }, []);
+
+  const statsDomains = useMemo(() => {
+    return Array.from(new Set(statisticsData.map((group: any) => group.domain))).sort();
+  }, []);
+
+  const filteredStatistics = useMemo(() => {
+    const searchLower = statsSearchQuery.toLowerCase();
+    return statisticsData.filter((group: any) => {
+      const matchesSearch =
+        group.projectTitle.toLowerCase().includes(searchLower) ||
+        group.guide.toLowerCase().includes(searchLower) ||
+        group.domain.toLowerCase().includes(searchLower) ||
+        group.students.some((s: any) => s.name.toLowerCase().includes(searchLower));
+
+      const matchesClass =
+        !selectedStatsClass || group.students.some((s: any) => getStatsClass(s.classDiv) === selectedStatsClass);
+
+      const matchesDomain = !selectedStatsDomain || group.domain === selectedStatsDomain;
+
+      return matchesSearch && matchesClass && matchesDomain;
+    });
+  }, [statsSearchQuery, selectedStatsClass, selectedStatsDomain]);
+
   return (
     <div className="relative w-full min-h-screen bg-neutral-50 dark:bg-neutral-950 overflow-hidden font-sans">
       {/* ===== AMBIENT BACKGROUND ===== */}
@@ -625,9 +668,7 @@ export default function CapstoneProjectTable() {
             </h1>
 
             <p className="text-neutral-600 dark:text-neutral-400 max-w-2xl text-lg leading-relaxed">
-              Explore the major projects from final year students across all
-              departments. Discover how these multidomain applications map
-              directly to the United Nations Sustainable Development Goals.
+              Explore the major projects, research, and statistics from final year students across all departments. Discover how these multidomain applications map directly to the United Nations Sustainable Development Goals.
             </p>
           </div>
         </motion.div>
@@ -1091,6 +1132,147 @@ export default function CapstoneProjectTable() {
                           </button>
                         </div>
                       </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Statistics & Publications Table */}
+        <motion.div
+  initial={{ opacity: 0, y: 30 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true }}
+  className="space-y-4 pt-12"
+>
+  <div className="px-2">
+    <h2 className="text-2xl font-bold flex items-center gap-3">
+      <span className="w-2 h-8 bg-indigo-600 rounded-full"></span>
+      Statistics & Publications
+    </h2>
+    <p className="text-neutral-500 text-sm">Publication achievements, TRL levels, conferences, journals, and awards.</p>
+  </div>
+
+  <div className="w-full overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl">
+    <div className="w-full overflow-x-auto max-h-[70vh]">
+      <table className="w-full text-left text-sm" style={{ minWidth: "1600px" }}>
+        <thead className="bg-neutral-50 dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 sticky top-0 z-20 shadow-sm whitespace-nowrap">
+          <tr>
+            <th className="px-4 py-4 font-semibold w-32 text-center">Class</th>
+            <th className="px-4 py-4 font-semibold w-64">Students Name</th>
+            <th className="px-4 py-4 font-semibold min-w-[350px]">Project Title</th>
+            <th className="px-4 py-4 font-semibold w-48">Guide</th>
+            <th className="px-4 py-4 font-semibold w-48">Domain</th>
+            <th className="px-4 py-4 font-semibold w-48">Conference</th>
+            <th className="px-4 py-4 font-semibold w-44">Journal/Scopus</th>
+            <th className="px-4 py-4 font-semibold w-24 text-center">TRL</th>
+            <th className="px-4 py-4 font-semibold w-64">Achievements/Other</th>
+          </tr>
+        </thead>
+
+        <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/50">
+          {filteredStatistics.length > 0 ? (
+            filteredStatistics.map((group: any, idx: number) => (
+              <motion.tr
+                key={`stats-${group.projectTitle}-${idx}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/20 transition-colors group/row"
+              >
+
+                {/* CLASS */}
+                <td className="px-4 py-4 align-top text-center font-bold text-indigo-600 dark:text-indigo-400">
+                  {group.students?.[0]?.classDiv || '-'}
+                </td>
+
+                {/* STUDENTS NAME*/}
+                <td className="px-4 py-4 align-top">
+                  <div className="flex flex-col gap-1 text-xs">
+                    {group.students.map((s: any, i: number) => (
+                      <span key={i} className="font-medium text-neutral-700 dark:text-neutral-300">
+                        {s.name}
+                      </span>
+                    ))}
+                  </div>
+                </td>
+
+                {/* PROJECT TITLE */}
+                <td className="px-4 py-4 align-top font-bold text-neutral-900 dark:text-neutral-100 leading-tight line-clamp-2">
+                  {group.projectTitle}
+                </td>
+
+                {/* GUIDE */}
+                <td className="px-4 py-4 align-top text-neutral-600 dark:text-neutral-400 font-medium">
+                  {group.guide}
+                </td>
+
+                {/* DOMAIN */}
+                <td className="px-4 py-4 align-top">
+                  <span className="text-indigo-600 dark:text-indigo-400 font-semibold text-xs">
+                    {group.domain}
+                  </span>
+                </td>
+
+                {/* CONFERENCE */}
+                <td className="px-4 py-4 align-top text-xs">
+                  {group.conference && group.conference !== '-' ? (
+                    <span className="text-blue-600 dark:text-blue-400 font-medium">
+                      {group.conference}
+                    </span>
+                  ) : group.presentation === 'Presented' ? (
+                    <span className="text-emerald-600 dark:text-emerald-400">Presented</span>
+                  ) : '—'}
+                </td>
+
+                {/* JOURNAL / SCOPUS */}
+                <td className="px-4 py-4 align-top text-xs">
+                  {group.journal && group.journal !== '-' ? (
+                    <span className="text-amber-600 dark:text-amber-400 font-medium">
+                      {group.journal}
+                    </span>
+                  ) : group.scopus ? (
+                    <span className="text-green-600 dark:text-green-400 font-medium">
+                      {group.scopus}
+                    </span>
+                  ) : '—'}
+                </td>
+
+                {/* TRL */}
+                <td className="px-4 py-4 align-top text-center">
+                  {group.trl ? (
+                    <span className="text-orange-600 dark:text-orange-400 font-bold">
+                      T{group.trl}
+                    </span>
+                  ) : (
+                    <span className="text-neutral-400 text-xs">—</span>
+                  )}
+                </td>
+
+                {/* ACHIEVEMENTS */}
+                <td className="px-4 py-4 align-top">
+                  <div className="text-xs text-neutral-600 dark:text-neutral-400 space-y-1 line-clamp-3">
+                    {group.achievement && <p><strong>Achievement:</strong> {group.achievement}</p>}
+                    {group.other && <p><strong>Other:</strong> {group.other}</p>}
+                  </div>
+                </td>
+
+              </motion.tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={9} className="px-4 py-16 text-center">
+                <div className="flex flex-col items-center justify-center space-y-3">
+                  <span className="text-4xl">📊</span>
+                  <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
+                    No statistics matches found
+                  </h3>
+                  <p className="text-sm text-neutral-500">
+                    Try adjusting your search, class, or domain filters.
+                  </p>
+                    </div>
+                    </td>
                     </tr>
                   )}
                 </tbody>
