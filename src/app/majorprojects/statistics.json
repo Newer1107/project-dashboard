@@ -1,761 +1,123 @@
 [
   {
-    "projectTitle": "Early Detection of Pancreatic Cancer using AI",
-    "guide": "Dr. Loukik S",
-    "domain": "Intelligent System Design and Development",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "Early Detection of Pancreatuc cancer using ML and Deep Learning - Scopus indexed(ICAMEE)",
-    "journal": "-",
-    "scopus": "-",
-    "achievement": "Participated in Report writing Competetion at L.H Raheja Hospital",
-    "other": "Copyright under scrutiny D.NO: LD-48521/2025-CO",
-    "students": [
-      { "name": "Vishal Gupta", "rollNo": 34, "classDiv": "A1" }
-    ]
+    "SN": 1,
+    "Dept": "COMP",
+    "No_of_Projects": 48,
+    "Multicon_W_Papers": 41,
+    "Outside_Conference_Papers": 4,
+    "Peer_Reviewed_Journals": 15,
+    "Scopus_WoS_SCIE": 1,
+    "Patents": 0,
+    "Remark": "4 copyrights under scrutiny, 5 papers submitted in peer review journal, 6 Scopus book chapters submitted, 1st Rank in Vichar – SDGthon Competition organized by TCET Computer Engineering Department"
   },
   {
-    "projectTitle": "AI-Based Skill Gap Analyzer",
-    "guide": "Mrs.Veena Kulkarni",
-    "domain": "Intelligent System Design and Development",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "-",
-    "journal": "Paper Published in IJEDR",
-    "scopus": "-",
-    "achievement": "-",
-    "other": "-",
-    "students": [
-      { "name": "Sachinandan Dash", "rollNo": 18, "classDiv": "A3" }
-    ]
+    "SN": 2,
+    "Dept": "IT",
+    "No_of_Projects": 68,
+    "Multicon_W_Papers": 62,
+    "Outside_Conference_Papers": 1,
+    "Peer_Reviewed_Journals": 4,
+    "Scopus_WoS_SCIE": 0,
+    "Patents": 2,
+    "Remark": "1 Scopus journal paper in process, 2 MindsEye institute level winners"
   },
   {
-    "projectTitle": "Lung Disease Detection Using Deep Learning on Medical Imaging Data",
-    "guide": "Mrs. Foram S",
-    "domain": "Intelligent System Design and Development",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "-",
-    "journal": "-",
-    "scopus": "Springer-Scopus LNNS book series book chapter submitted",
-    "achievement": "-",
-    "other": "-",
-    "students": [
-      { "name": "Latika Karkera", "rollNo": 44, "classDiv": "A5" },
-      { "name": "Kavita Kulkarni", "rollNo": 53, "classDiv": "A5" }
-    ]
+    "SN": 3,
+    "Dept": "E&TC",
+    "No_of_Projects": 46,
+    "Multicon_W_Papers": 19,
+    "Outside_Conference_Papers": 1,
+    "Peer_Reviewed_Journals": 8,
+    "Scopus_WoS_SCIE": 0,
+    "Patents": 0,
+    "Remark": "1 winner in Mind's Eye"
   },
   {
-    "projectTitle": "Development of scalable job portal with modern UI & Secure APIs using react & JWT",
-    "guide": "Dr. R. R. Sedamkar / Co guide: Ms. Siddhi Ambre",
-    "domain": "Software Development & Information System Management",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "-",
-    "journal": "-",
-    "scopus": "SSRN paper published",
-    "achievement": "-",
-    "other": null,
-    "students": [
-      { "name": "Jha Prashant Anil", "rollNo": 40, "classDiv": "A6" },
-      { "name": "Krishnachandra Jha", "rollNo": 39, "classDiv": "A6" },
-      { "name": "Rajan Jha", "rollNo": 41, "classDiv": "A6" }
-    ]
+    "SN": 4,
+    "Dept": "E&CS",
+    "No_of_Projects": 22,
+    "Multicon_W_Papers": 13,
+    "Outside_Conference_Papers": 0,
+    "Peer_Reviewed_Journals": 0,
+    "Scopus_WoS_SCIE": 0,
+    "Patents": 0,
+    "Remark": "5 copyrights submitted, 2 Scopus indexed journal papers submitted, 2 MindsEye winners at institute level, 3 groups selected for Zonal level Aavishkar 2026"
   },
   {
-    "projectTitle": "Smart Farming Assistant: Fertilizer Prediction Based on Soil and Crop Data",
-    "guide": "Ms. Pratiksha D",
-    "domain": "Intelligent System Design and Development",
-    "trl": 5,
-    "presentation": "Presented",
-    "conference": "Paper presented in ICAISDGs - 2025",
-    "journal": "Paper published in IJSDIP https://doi.org/10.64971/j.cph.ijsdip.v13.i4.1.2025",
-    "scopus": "Submitted in Springer Book chapter",
-    "achievement": "Reached Aavishkar Zonal Level",
-    "other": "-",
-    "students": [
-      { "name": "Sanjog Karan", "rollNo": 43, "classDiv": "A7" },
-      { "name": "Vinay Jayswal", "rollNo": 37, "classDiv": "A7" },
-      { "name": "Aman Maurya", "rollNo": 60, "classDiv": "A7" }
-    ]
+    "SN": 5,
+    "Dept": "MECH",
+    "No_of_Projects": 21,
+    "Multicon_W_Papers": 6,
+    "Outside_Conference_Papers": 0,
+    "Peer_Reviewed_Journals": 0,
+    "Scopus_WoS_SCIE": 0,
+    "Patents": 0,
+    "Remark": "1 Scopus journal paper in process, 1 MindsEye institute level winner"
   },
   {
-    "projectTitle": "Online Exam Integrity : ML-Based Cheating Detection",
-    "guide": "Ms. Foram S",
-    "domain": "Intelligent System Design and Development",
-    "trl": 4,
-    "presentation": "Not Presented",
-    "conference": "",
-    "journal": "Paper accepted in IJERT",
-    "scopus": "",
-    "achievement": "-",
-    "other": "-",
-    "students": [
-      { "name": "Harsh Chaurasia", "rollNo": 13, "classDiv": "A14" },
-      { "name": "Aryan Chahar", "rollNo": 11, "classDiv": "A14" }
-    ]
+    "SN": 6,
+    "Dept": "CIVIL",
+    "No_of_Projects": 18,
+    "Multicon_W_Papers": 9,
+    "Outside_Conference_Papers": 0,
+    "Peer_Reviewed_Journals": 0,
+    "Scopus_WoS_SCIE": 0,
+    "Patents": 0,
+    "Remark": "1 peer review journal paper in process"
   },
   {
-    "projectTitle": "FinEdu: A practical financial literacy website",
-    "guide": "Ms. Tarunima M.",
-    "domain": "Software Development & Information System Management",
-    "trl": 6,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "Paper published in IJSRA",
-    "scopus": "Paper submitted in IAFOR journal of education",
-    "achievement": "",
-    "other": "-",
-    "students": [
-      { "name": "Anushka Mahajan", "rollNo": 57, "classDiv": "A16" }
-    ]
+    "SN": 7,
+    "Dept": "CSE(CS)",
+    "No_of_Projects": 23,
+    "Multicon_W_Papers": 17,
+    "Outside_Conference_Papers": 2,
+    "Peer_Reviewed_Journals": 0,
+    "Scopus_WoS_SCIE": 0,
+    "Patents": 0,
+    "Remark": "1 group won Best Project Award MindsEye 2026, 1 group won Best Paper Award MULTICON 2026, 2 research papers accepted in outside international conference (Scopus), 1 research paper under review in Scopus journal"
   },
   {
-    "projectTitle": "Inclusive Connect: Bridging Accessibility for person with a disability",
-    "guide": "Mrs. Siddhi Ambre",
-    "domain": "Software Development & Information System Management",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "Published In IJVRA",
-    "scopus": "",
-    "achievement": "",
-    "other": "-",
-    "students": [
-      { "name": "Kush Intwala", "rollNo": 66, "classDiv": "A17" }
-    ]
+    "SN": 8,
+    "Dept": "MME",
+    "No_of_Projects": 23,
+    "Multicon_W_Papers": 12,
+    "Outside_Conference_Papers": 1,
+    "Peer_Reviewed_Journals": 0,
+    "Scopus_WoS_SCIE": 0,
+    "Patents": 2,
+    "Remark": "4 groups in PLI/AEDP/OJT, 2 groups won Best Project Award MindsEye 2026, 1 group won Best Paper Award MULTICON 2026, 1 research paper accepted in IEEE international conference (Scopus) IGNITE 2026, 2 groups filed design patent"
   },
   {
-    "projectTitle": "Smart Wholesale Inventory Control and Stock Demand Forecasting using ML",
-    "guide": "Ms. Abhilasha Patil",
-    "domain": "Intelligent System Design and Development",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "-",
-    "students": [
-      { "name": "Aayush Kumar", "rollNo": 54, "classDiv": "A18" },
-      { "name": "Rohit Mandan", "rollNo": 59, "classDiv": "A18" },
-      { "name": "Ankit Kumar", "rollNo": 55, "classDiv": "A18" }
-    ]
+    "SN": 9,
+    "Dept": "AI&DS",
+    "No_of_Projects": 47,
+    "Multicon_W_Papers": 46,
+    "Outside_Conference_Papers": 3,
+    "Peer_Reviewed_Journals": 10,
+    "Scopus_WoS_SCIE": 2,
+    "Patents": 0,
+    "Remark": "8 papers under process for Springer Nature, 4 under process for Scopus, 8 groups submitted for CrossRef, 2 groups won Best Paper Award Avinya 2026, 1 group won Best Paper Award MulticonW 2026, 1 group won 1st prize Mind's Eye 2026"
   },
   {
-    "projectTitle": "AgroLens: A Novel Vision-Based System for Crop Monitoring and Weed Detection",
-    "guide": "Dr.Vaishali Nirgude",
-    "domain": "Intelligent System Design and Development",
-    "trl": 6,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "1 Paper submitted in Scopus and 1 Paper in Scopus Under review",
-    "scopus": "",
-    "achievement": "Reached Aavishkar Zonal Level",
-    "other": "Best Paper Presented award in Multicon-W 2026",
-    "students": [
-      { "name": "Nisarg Kasturiwale", "rollNo": 45, "classDiv": "A21" }
-    ]
+    "SN": 10,
+    "Dept": "AI&ML",
+    "No_of_Projects": 22,
+    "Multicon_W_Papers": 13,
+    "Outside_Conference_Papers": 7,
+    "Peer_Reviewed_Journals": 8,
+    "Scopus_WoS_SCIE": 0,
+    "Patents": 1,
+    "Remark": "1 group selected for Zonal Aavishkar 2026, 1 copyright under scrutiny, 1 paper submitted for CrossRef, 1 patent filing in process, consultancy worth 100000, Best Paper Award AVINYA 2026 (MIT Pune), 7 groups presented outside, 8 peer-reviewed papers"
   },
   {
-    "projectTitle": "KissanSanjivani : An explainable AI powered mobile app for disease Management",
-    "guide": "Dr. Sheetal Rathi / Co guide: Dr.Vaishali Nirgude",
-    "domain": "Intelligent System Design and Development",
-    "trl": 6,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "1 Paper submitted in Scopus and 1 Paper in Scopus Under review",
-    "scopus": "",
-    "achievement": "Reached Aavishkar Zonal Level",
-    "other": "-",
-    "students": [
-      { "name": "Aditya Kotian", "rollNo": 50, "classDiv": "A22" }
-    ]
-  },
-  {
-    "projectTitle": "Machine and Deep Learning-Based Predictive Modeling of Climate Effects on Crop Yield and Health",
-    "guide": "Dr. Shailesh Sangle",
-    "domain": "Intelligent System Design and Development",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "-",
-    "students": [
-      { "name": "Gupta Sujeet", "rollNo": 33, "classDiv": "A23" },
-      { "name": "Bohra Daksh Sushil", "rollNo": 10, "classDiv": "A23" },
-      { "name": "Mayank Anil Bahuguna", "rollNo": 5, "classDiv": "A23" }
-    ]
-  },
-  {
-    "projectTitle": "AI-Driven Adaptive Training Platform with Digital Twin-Based Skill Gap Analysis and Future Readiness Insights",
-    "guide": "Ms. Drashti S",
-    "domain": "Software Development & Information System Management",
-    "trl": 5,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "Published in Journal of Collective Sciences and Sustainability https://doi.org/10.64189/css.25410",
-    "scopus": "",
-    "achievement": "",
-    "other": "-",
-    "students": [
-      { "name": "Pranali Pahurkar", "rollNo": 15, "classDiv": "B2" }
-    ]
-  },
-  {
-    "projectTitle": "Design Smart Alert-Based Inventory System for Reducing Supermarket Food Surplus using ML",
-    "guide": "Ms. Tanmayi N",
-    "domain": "Computing and System Design",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "Paper published in International journal of Versatile Research and Analysis (IJVRA) https://ijpub.org/ijvra/track.php?r_id=704951",
-    "scopus": "",
-    "achievement": "",
-    "other": "-",
-    "students": [
-      { "name": "Snehi Mehta", "rollNo": 1, "classDiv": "B3" },
-      { "name": "Nimesh Nakhwa", "rollNo": 11, "classDiv": "B3" },
-      { "name": "Aman Prajapati", "rollNo": 30, "classDiv": "B3" }
-    ]
-  },
-  {
-    "projectTitle": "AI Powered Vehicle Diagnostics System",
-    "guide": "Dr. Sheetal Rathi / Co guide: Mrs. Sonali Gandhi",
-    "domain": "Software Development & Information System Management",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "Paper published in IJIRT https://ijirt.org/Article?manuscript=197641",
-    "scopus": "",
-    "achievement": "",
-    "other": "-",
-    "students": [
-      { "name": "Dipal Pimple", "rollNo": 28, "classDiv": "B4" },
-      { "name": "Priyanshu Mishra", "rollNo": 7, "classDiv": "B4" }
-    ]
-  },
-  {
-    "projectTitle": "Design and development of AI driven Assessment Platform for Soft Skill Enhancement",
-    "guide": "Dr. R. R. Sedamkar / Co guide: Ms. Siddhi Ambre",
-    "domain": "Software Development & Information System Management",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "Paper acceptance in International journal of Versatile Research and Analysis (IJVRA)",
-    "scopus": "",
-    "achievement": "",
-    "other": "-",
-    "students": [
-      { "name": "Pawankumar Mudaliar", "rollNo": 10, "classDiv": "B5" }
-    ]
-  },
-  {
-    "projectTitle": "AuthenticityNet: Deep Learning Model for Face Image Forgery Detection",
-    "guide": "Mr. Swapnil Bhagat",
-    "domain": "Intelligent System Design and Development",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "-",
-    "students": [
-      { "name": "Shivam Sati", "rollNo": 44, "classDiv": "B6" },
-      { "name": "Meet Shah", "rollNo": 46, "classDiv": "B6" }
-    ]
-  },
-  {
-    "projectTitle": "EmoCare+:AI-Powered Mobile App for Mental Health Monitoring",
-    "guide": "Dr.Vaishali Nirgude",
-    "domain": "Intelligent System Design and Development",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "-",
-    "students": [
-      { "name": "Shivam Prajapati", "rollNo": 31, "classDiv": "B7" },
-      { "name": "Anubhav Ray Kumar", "rollNo": 40, "classDiv": "B7" }
-    ]
-  },
-  {
-    "projectTitle": "AI-Powered Cyber Threat Response System using Firewall",
-    "guide": "Mr. Swapnil Bhagat",
-    "domain": "Communication Networking and Web Engineering",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "Paper submitted in IPSJ",
-    "scopus": "",
-    "achievement": "",
-    "other": "-",
-    "students": [
-      { "name": "Anoop Patel", "rollNo": 25, "classDiv": "B8" }
-    ]
-  },
-  {
-    "projectTitle": "CareerQuestAI : Your Smart Guide to a better Future",
-    "guide": "Ms. Sonali Gandhi",
-    "domain": "Software Development & Information System Management",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "2 papers published in International Journal of Research and Analytical Reviews (IJRAR)",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Mayank Sharma", "rollNo": 51, "classDiv": "B9" },
-      { "name": "Chirag Yadav", "rollNo": 67, "classDiv": "B9" },
-      { "name": "Harish Pandey", "rollNo": 68, "classDiv": "B9" }
-    ]
-  },
-  {
-    "projectTitle": "FaceTrack: Intelligent Attendance System using Facial Recognition",
-    "guide": "Mr. Ashish Dwivedi",
-    "domain": "Software Development & Information System Management",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "-",
-    "students": [
-      { "name": "Orlando Raposo", "rollNo": 71, "classDiv": "B10" },
-      { "name": "Shaikh Shoukat Ali", "rollNo": 49, "classDiv": "B10" },
-      { "name": "Aftab Shaikh", "rollNo": 48, "classDiv": "B10" }
-    ]
-  },
-  {
-    "projectTitle": "AI-Powered Real-Time Collaborative Coding Platform",
-    "guide": "Ms. Abhilasha Patil",
-    "domain": "Communication Networking and Web Engineering",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "Paper published in IJRPR",
-    "scopus": "",
-    "achievement": "",
-    "other": "-",
-    "students": [
-      { "name": "Sachin Jaiswal", "rollNo": 69, "classDiv": "B12" },
-      { "name": "Arya Dubey", "rollNo": 66, "classDiv": "B12" }
-    ]
-  },
-  {
-    "projectTitle": "Magic Learn - DrawInAir: Redefining Creativity, Problem Solving, Building Worlds with AI-Powered Gesture Learning",
-    "guide": "Ms. Drashti S",
-    "domain": "Multimedia Design and Development",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "Published in Journal of Information and Communications Technology",
-    "scopus": "",
-    "achievement": "",
-    "other": "-",
-    "students": [
-      { "name": "Deval Saliya", "rollNo": 41, "classDiv": "B13" },
-      { "name": "Hiya Patel", "rollNo": 26, "classDiv": "B13" }
-    ]
-  },
-  {
-    "projectTitle": "EmpathAI – An AI-Powered Mental Health Support Chatbot/Assistant",
-    "guide": "Mr. Swapnil Bhagat",
-    "domain": "Intelligent System Design and Development",
-    "trl": 4,
-    "presentation": "Not Presented",
-    "conference": "",
-    "journal": "Paper published in International Journal for Research in Applied Science and Engineering Technology (IJRASET)",
-    "scopus": "",
-    "achievement": "",
-    "other": "-",
-    "students": [
-      { "name": "Aryan Mhatre", "rollNo": 3, "classDiv": "B14" },
-      { "name": "Ronak Rai", "rollNo": 33, "classDiv": "B14" }
-    ]
-  },
-  {
-    "projectTitle": "Biometric-Secured AI Platform for Virtual Try-On and Design Preview",
-    "guide": "Ms. Tanmayi N",
-    "domain": "Multimedia Design and Development",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "Paper published in IJCAI",
-    "scopus": "",
-    "achievement": "Reached Zonal Level in Aavishkar",
-    "other": "",
-    "students": [
-      { "name": "Sujit Shukla", "rollNo": 58, "classDiv": "B15" },
-      { "name": "Nirved Shukla", "rollNo": 57, "classDiv": "B15" },
-      { "name": "Atulya Sawant", "rollNo": 45, "classDiv": "B15" }
-    ]
-  },
-  {
-    "projectTitle": "AI-Powered Real-Time Finance Tracker with Smart Budgeting Recommendation System",
-    "guide": "Dr. Megharani Patil",
-    "domain": "Software Development & Information System Management",
-    "trl": null,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Tishika Raj", "rollNo": 34, "classDiv": "B17" },
-      { "name": "Anushka Singh", "rollNo": 64, "classDiv": "B17" }
-    ]
-  },
-  {
-    "projectTitle": "Department Data Management System using Dashboard based Data Analytics",
-    "guide": "Mrs.Veena Kulkarni",
-    "domain": "Software Development & Information System Management",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Vedant Shelar", "rollNo": 53, "classDiv": "B19" },
-      { "name": "Soham Shinde", "rollNo": 55, "classDiv": "B19" }
-    ]
-  },
-  {
-    "projectTitle": "LegalEase - A Digital Platform for Basic Legal Guidance on issues like Domestic Violence and Land Disputes, Advancing UN SDG's",
-    "guide": "Mrs. Vinitta Sunish",
-    "domain": "Communication Networking and Web Engineering",
-    "trl": 6,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "Paper accepted in International Journal of Engineering Development and Research (IJEDR)",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Adarsh Singh", "rollNo": 60, "classDiv": "B20" },
-      { "name": "Aditya Singh", "rollNo": 61, "classDiv": "B20" }
-    ]
-  },
-  {
-    "projectTitle": "Design of Ethical decision making system for Autonomous Vehicles",
-    "guide": "Mrs.Lydia Suganya",
-    "domain": "Intelligent System Design and Development",
-    "trl": 5,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Shlok Mishra", "rollNo": 8, "classDiv": "B21" }
-    ]
-  },
-  {
-    "projectTitle": "CivicTrack – Community Reporting & Corruption Watch Portal",
-    "guide": "Ms. Tarunima Mukherji",
-    "domain": "Communication Networking and Web Engineering",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Janvi Pathak", "rollNo": 65, "classDiv": "B22" }
-    ]
-  },
-  {
-    "projectTitle": "NutriMind: AI-Powered Personalized Diet and Health Planner",
-    "guide": "Mr.Vikas Singh",
-    "domain": "Intelligent System Design and Development",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "Paper Published in IJIRT",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Krunal Parab", "rollNo": 23, "classDiv": "B23" },
-      { "name": "Aman Pandey", "rollNo": 20, "classDiv": "B23" }
-    ]
-  },
-  {
-    "projectTitle": "Nayay: A Multilingual AI Framework for Scalable Legal Assistance, Professional Collaboration, and Document Intelligence",
-    "guide": "Dr. Megharani Patil",
-    "domain": "Intelligent System Design and Development",
-    "trl": 7,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "1st Rank in Vichar – A SDGthon Competition",
-    "other": "",
-    "students": [
-      { "name": "Shashank Singh", "rollNo": 9, "classDiv": "C1" },
-      { "name": "Shivanshu Singh", "rollNo": 10, "classDiv": "C1" },
-      { "name": "Pranay Tiwari", "rollNo": 28, "classDiv": "C1" }
-    ]
-  },
-  {
-    "projectTitle": "CyberGuardX: Intelligent Threat Detection with Explainable AI and Real time Threat Response",
-    "guide": "Ms. Tarunima Mukherji",
-    "domain": "Intelligent System Design and Development",
-    "trl": 6,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "Paper published in IJIRT",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Utkarsh Tiwari", "rollNo": 31, "classDiv": "C2" },
-      { "name": "Raj V Singh", "rollNo": 6, "classDiv": "C2" },
-      { "name": "Manjesh Tiwari", "rollNo": 27, "classDiv": "C2" }
-    ]
-  },
-  {
-    "projectTitle": "Preptor: Skill-Based Personalized Placement Assistant Using AI for Engineering Graduates",
-    "guide": "Dr. Megharani Patil",
-    "domain": "Intelligent System Design and Development",
-    "trl": null,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Suraj Thakur", "rollNo": 21, "classDiv": "C4" },
-      { "name": "Devansh Trivedi", "rollNo": 33, "classDiv": "C4" },
-      { "name": "Udhay Singh", "rollNo": 35, "classDiv": "C4" }
-    ]
-  },
-  {
-    "projectTitle": "Smart Education Metrics : Using AI to access and improve student engagement via digital content.",
-    "guide": "Dr. Shailesh Sangle",
-    "domain": "Intelligent System Design and Development",
-    "trl": 5,
-    "presentation": "Not Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Singh Vishal Birendrakumar", "rollNo": 14, "classDiv": "C5" },
-      { "name": "Singh Vikrant", "rollNo": 13, "classDiv": "C5" },
-      { "name": "Alston Soares", "rollNo": 15, "classDiv": "C5" }
-    ]
-  },
-  {
-    "projectTitle": "Smart Management and Construction",
-    "guide": "Dr. Rashmi Thakur",
-    "domain": "Intelligent System Design and Development",
-    "trl": 4,
-    "presentation": "Not Presented",
-    "conference": "",
-    "journal": "Accepted in IJIRT and IJSR",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Utsavraj Singh", "rollNo": 12, "classDiv": "C7" }
-    ]
-  },
-  {
-    "projectTitle": "Development of a web application for simulating real time mock interviews using AI",
-    "guide": "Mrs.Lydia Suganya",
-    "domain": "Communication Networking and Web Engineering",
-    "trl": 4,
-    "presentation": "Not Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Dipti Singh", "rollNo": 3, "classDiv": "C8" },
-      { "name": "Kashish Singh", "rollNo": 4, "classDiv": "C8" },
-      { "name": "Samruddhi Kamble", "rollNo": 70, "classDiv": "C8" }
-    ]
-  },
-  {
-    "projectTitle": "AI-enabled drone detection system",
-    "guide": "Dr.Preksha Pareek",
-    "domain": "Computing and System Design",
-    "trl": 4,
-    "presentation": "Not Presented",
-    "conference": "",
-    "journal": "1 Paper submitted",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Shivam Yadav", "rollNo": 60, "classDiv": "C9" }
-    ]
-  },
-  {
-    "projectTitle": "Animal Rescue and Adoption platform",
-    "guide": "Dr. Sheetal Rathi / Co guide: Mrs. Sonali Gandhi",
-    "domain": "Communication Networking and Web Engineering",
-    "trl": 5,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "Peer Review Paper submitted in IJCA",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Sonam Yadav", "rollNo": 61, "classDiv": "C10" },
-      { "name": "Swathi Harish", "rollNo": 17, "classDiv": "C10" },
-      { "name": "Madhu Yadav", "rollNo": 54, "classDiv": "C10" }
-    ]
-  },
-  {
-    "projectTitle": "Design and development of block chain based carbon foot print tracker",
-    "guide": "Dr. Shailesh Sangle",
-    "domain": "Intelligent System Design and Development",
-    "trl": 5,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Rohit Yadav", "rollNo": 58, "classDiv": "C12" },
-      { "name": "Saurabh Yadav", "rollNo": 59, "classDiv": "C12" },
-      { "name": "Vishal Yadav", "rollNo": 62, "classDiv": "C12" }
-    ]
-  },
-  {
-    "projectTitle": "Autonomous Generator: Producing structured and Category-Controlled Outputs using weighted inputs Through Intelligent Randomization",
-    "guide": "Dr. Loukik S",
-    "domain": "Intelligent System Design and Development",
-    "trl": null,
-    "presentation": "Presented",
-    "conference": "Scopus Indexed (ICAMEE)",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "Copyright under scrutiny",
-    "students": [
-      { "name": "Vrushank Mukesh Vyas", "rollNo": 43, "classDiv": "C13" },
-      { "name": "Shubham Vinod Virani", "rollNo": 40, "classDiv": "C13" },
-      { "name": "Smit Jayant Warang", "rollNo": 47, "classDiv": "C13" }
-    ]
-  },
-  {
-    "projectTitle": "Analyzing Instagram Data for Student Anxiety Detection Using Machine Learning",
-    "guide": "Ms. Pratiksha D",
-    "domain": "Intelligent System Design and Development",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "Paper presented in ICAISDGs - 2025",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Aditi Yadav", "rollNo": 48, "classDiv": "C15" },
-      { "name": "Raj Yadav", "rollNo": 57, "classDiv": "C15" },
-      { "name": "Neeraj Yadav", "rollNo": 56, "classDiv": "C15" }
-    ]
-  },
-  {
-    "projectTitle": "Development of Robust and Efficient Face Recognition Based Attendance System using Machine Learning",
-    "guide": "Mrs. Vinitta Sunish",
-    "domain": "Computing and System Design",
-    "trl": 4,
-    "presentation": "Not Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Devang Sonawane", "rollNo": 16, "classDiv": "C19" },
-      { "name": "Visunu Sharma", "rollNo": 41, "classDiv": "C19" }
-    ]
-  },
-  {
-    "projectTitle": "AI-Integrated Real-Time Developer Platform for Code Enhancement and Team Sync",
-    "guide": "Mr. Ashish Dwivedi",
-    "domain": "Computing and System Design",
-    "trl": null,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Utsav Singh", "rollNo": 11, "classDiv": "C20" },
-      { "name": "Krutik Singh Yadav", "rollNo": 53, "classDiv": "C20" }
-    ]
-  },
-  {
-    "projectTitle": "AI Based- Health Monitoring System Using Full Body Shape Analysis and Report Generation",
-    "guide": "Mr.Vikas Singh",
-    "domain": "Communication Networking and Web Engineering",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Pratik Wagh", "rollNo": 45, "classDiv": "C21" },
-      { "name": "Krishna Srivastava", "rollNo": 64, "classDiv": "C21" },
-      { "name": "Rudrapratap Singh", "rollNo": 7, "classDiv": "C21" }
-    ]
-  },
-  {
-    "projectTitle": "UETP: Smart Equity Trading with AI and Predictive Analytics",
-    "guide": "Dr.Vaishali Nirgude",
-    "domain": "Computing and System Design",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "Springer-Scopus LNNS book series book chapter submitted",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Damodar Yadav", "rollNo": 50, "classDiv": "C22" },
-      { "name": "Akash Yadav", "rollNo": 49, "classDiv": "C22" },
-      { "name": "Kaushal Yadav", "rollNo": 52, "classDiv": "C22" }
-    ]
-  },
-  {
-    "projectTitle": "Building a custom fuzzer to improve security of open source projects",
-    "guide": "Dr. R. R. Sedamkar / Co guide: Ms. Siddhi Ambre",
-    "domain": "Software Development & Information System Management",
-    "trl": 4,
-    "presentation": "Presented",
-    "conference": "",
-    "journal": "",
-    "scopus": "",
-    "achievement": "",
-    "other": "",
-    "students": [
-      { "name": "Atharva Vartak", "rollNo": 38, "classDiv": "C23" },
-      { "name": "Hiral Tibrewal", "rollNo": 22, "classDiv": "C23" },
-      { "name": "Vishal Yadav", "rollNo": 63, "classDiv": "C23" }
-    ]
+    "SN": 11,
+    "Dept": "IOT",
+    "No_of_Projects": 11,
+    "Multicon_W_Papers": 10,
+    "Outside_Conference_Papers": 1,
+    "Peer_Reviewed_Journals": 1,
+    "Scopus_WoS_SCIE": 0,
+    "Patents": 0,
+    "Remark": "Submitted papers to Springer, ASEAN journals, published in IJSET, preparing for Scopus journals, design & utility patents in process, won Avishkar and MindsEye 2026, participated in Anveshna and Multicon-W 2026"
   }
 ]
