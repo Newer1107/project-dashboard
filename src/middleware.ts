@@ -17,9 +17,42 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  if (process.env.NODE_ENV === "development") {
+    const headers = new Headers(req.headers);
+    const allowedRoles = ["ADMIN", "TEACHER", "STUDENT"] as const;
+    type Role = (typeof allowedRoles)[number];
+    const roleParam = req.nextUrl.searchParams.get("role");
+    const role: Role =
+      roleParam && allowedRoles.includes(roleParam as Role)
+        ? (roleParam as Role)
+        : "ADMIN";
+
+    const emailMap: Record<Role, string | undefined> = {
+      ADMIN: process.env.DEV_AUTH_ADMIN_EMAIL,
+      TEACHER: process.env.DEV_AUTH_TEACHER_EMAIL,
+      STUDENT: process.env.DEV_AUTH_STUDENT_EMAIL,
+    };
+
+    const email = emailMap[role];
+    if (!email) {
+      throw new Error(`DEV_AUTH: Missing email for role ${role}`);
+    }
+
+    headers.set("x-coe-email", email);
+    headers.set("x-coe-name", "Dev User");
+    headers.set("x-coe-role", role);
+    headers.set("x-coe-status", "ACTIVE");
+
+    return NextResponse.next({
+      request: {
+        headers,
+      },
+    });
+  }
+
   const token = req.cookies.get("coe_shared_token")?.value;
   if (!token) {
-    const loginUrl = new URL("https://tcetcercd.in/login");
+    const loginUrl = new URL("http://localhost:3000//login");
     loginUrl.searchParams.set("callbackUrl", req.nextUrl.href);
     return NextResponse.redirect(loginUrl);
   }
