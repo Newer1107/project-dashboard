@@ -12,7 +12,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TaskKanban } from "@/components/dashboard/TaskKanban";
 import { MilestoneTimeline } from "@/components/dashboard/MilestoneTimeline";
 import { FileUploader } from "@/components/dashboard/FileUploader";
-import { Calendar, Users, FileText, ListTodo, Download } from "lucide-react";
+import { StudentPublicationsTab } from "./_tabs/StudentPublicationsTab";
+import {
+  Calendar,
+  Users,
+  FileText,
+  ListTodo,
+  Download,
+  BookOpen,
+} from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getProjectFiles } from "@/server/actions/files";
 import { getDownloadUrl } from "@/server/actions/files";
@@ -144,6 +152,13 @@ export default function StudentProjectDetailClient({
             Milestones
           </TabsTrigger>
           <TabsTrigger
+            value="publications"
+            className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+          >
+            <BookOpen className="mr-2 h-4 w-4" />
+            Publications
+          </TabsTrigger>
+          <TabsTrigger
             value="files"
             className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
           >
@@ -160,6 +175,10 @@ export default function StudentProjectDetailClient({
           <div className="rounded-xl border bg-card p-6">
             <MilestoneTimeline milestones={milestones ?? []} />
           </div>
+        </TabsContent>
+
+        <TabsContent value="publications" className="mt-6">
+          <StudentPublicationsTab projectId={projectId} />
         </TabsContent>
 
         <TabsContent value="files" className="mt-6 space-y-6">

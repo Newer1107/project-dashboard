@@ -1,5 +1,6 @@
-import { PrismaClient, Role, ProjectStatus, TaskStatus, TaskPriority, MemberRole, ReviewStatus, FileCategory, NotificationType } from "@prisma/client";
+import { PrismaClient, Role, ProjectStatus, TaskStatus, TaskPriority, MemberRole, ReviewStatus, FileCategory, NotificationType, PublicationType } from "@prisma/client";
 import { hash } from "bcryptjs";
+
 
 const prisma = new PrismaClient();
 
@@ -312,10 +313,36 @@ async function main() {
 
   await prisma.notification.createMany({ data: notificationData });
 
+  // === Publication Score Configs ===
+  const scoreConfigs = [
+    { publicationType: PublicationType.PAPER, subType: "Indexed", score: 10 },
+    { publicationType: PublicationType.PAPER, subType: "Non-Indexed", score: 6 },
+    { publicationType: PublicationType.REVIEW, subType: "", score: 5 },
+    { publicationType: PublicationType.BOOK_CHAPTER, subType: "", score: 8 },
+    { publicationType: PublicationType.PATENT, subType: "Filed", score: 10 },
+    { publicationType: PublicationType.PATENT, subType: "Published", score: 15 },
+    { publicationType: PublicationType.PATENT, subType: "Granted", score: 25 },
+    { publicationType: PublicationType.COPYRIGHT, subType: "", score: 4 },
+  ];
+
+  for (const config of scoreConfigs) {
+    await prisma.publicationScoreConfig.upsert({
+      where: {
+        publicationType_subType: {
+          publicationType: config.publicationType, // Removed 'as any'
+          subType: config.subType,
+        },
+      },
+      update: { score: config.score },
+      create: config,
+    });
+  }
+
   console.log("✅ Seed completed!");
   console.log(`   Created: 1 admin, 3 teachers, 10 students`);
   console.log(`   Created: 5 projects, 16 tasks, 9 milestones, 4 reviews`);
   console.log(`   Created: 10 notifications, 4 tags`);
+  console.log(`   Created: 8 publication score configs`);
   console.log(`\n   Login credentials (all users): password123`);
   console.log(`   Admin: admin@university.edu`);
   console.log(`   Teacher: priya.sharma@university.edu`);

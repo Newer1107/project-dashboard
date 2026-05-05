@@ -7,7 +7,7 @@ export default async function HomePage() {
   const user = await resolveUserFromHeaders(requestHeaders);
 
   if (!user) {
-    redirect("https://tcetcercd.in/login?callbackUrl=https://showcase.tcetcercd.in/");
+    redirect("http://localhost:3000/login?callbackUrl=http://localhost:3000/");
   }
 
   if (user.role === "ADMIN") redirect("/admin");
