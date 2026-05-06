@@ -41,18 +41,27 @@ export async function resolveUser(authUser: CoeAuthUser): Promise<ResolvedUser |
     });
 
     if (existing) {
-      // Sync name if provided and changed
+      const updates: { name?: string; role?: "ADMIN" | "TEACHER" | "STUDENT" } = {};
+
       if (authUser.name && existing.name !== authUser.name) {
+        updates.name = authUser.name;
+      }
+
+      if (existing.role !== mappedRole) {
+        updates.role = mappedRole;
+      }
+
+      if (Object.keys(updates).length > 0) {
         await tx.user.update({
           where: { id: existing.id },
-          data: { name: authUser.name },
+          data: updates,
         });
       }
       return {
         id: existing.id,
         name: authUser.name || existing.name,
         email: existing.email,
-        role: existing.role,
+        role: updates.role ?? existing.role,
         isActive: existing.isActive,
         avatarUrl: existing.avatarUrl,
       };
@@ -120,6 +129,19 @@ export async function resolveUserFromHeaders(
   requestHeaders: Headers
 ): Promise<ResolvedUser | null> {
   const authUser = getCoeAuthFromHeaders(requestHeaders);
-  if (!authUser) return null;
-  return resolveUser(authUser);
+  if (!authUser) {
+    if (process.env.NODE_ENV === "development") {
+      console.log("[RESOLVE USER] No auth headers found");
+    }
+    return null;
+  }
+  const resolved = await resolveUser(authUser);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[RESOLVE USER] Resolved:", {
+      email: authUser.email,
+      coeRole: authUser.role,
+      resolvedRole: resolved?.role,
+    });
+  }
+  return resolved;
 }

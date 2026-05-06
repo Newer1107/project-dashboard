@@ -39,6 +39,19 @@ interface PublicationListProps {
   userId?: string;
 }
 
+// Define the shape of your detailsJson to make TypeScript happy
+interface PublicationDetails {
+  journalName?: string;
+  conferenceName?: string;
+  bookTitle?: string;
+  publisher?: string;
+  volume?: string;
+  issue?: string;
+  pages?: string;
+  proofUrl?: string;
+  remarks?: string;
+}
+
 const STATUS_CONFIG = {
   PENDING: {
     label: "Pending",
@@ -115,6 +128,10 @@ export function PublicationList({
         const statusConfig = STATUS_CONFIG[publication.status];
         const StatusIcon = statusConfig.icon;
 
+        // Extract and cast detailsJson to fix TS errors safely
+        const details =
+          (publication.detailsJson as unknown as PublicationDetails) || {};
+
         return (
           <Card key={publication.id} className="relative">
             <CardHeader className="pb-3">
@@ -124,7 +141,7 @@ export function PublicationList({
                     {publication.title}
                   </CardTitle>
                   <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <span>By: {publication.authors.join(", ")}</span>
+                    <span>By: {publication.authors}</span>
                     <span>
                       Type: {publication.publicationType.replace("_", " ")}
                     </span>
@@ -142,6 +159,7 @@ export function PublicationList({
                     {statusConfig.label}
                   </Badge>
                   {publication.status === "APPROVED" &&
+                    publication.score !== null &&
                     publication.score > 0 && (
                       <Badge
                         variant="outline"
@@ -157,40 +175,41 @@ export function PublicationList({
             <CardContent className="space-y-3">
               {/* Publication Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                {publication.journalName && (
+                {details.journalName && (
                   <div>
                     <span className="font-medium">Journal:</span>{" "}
-                    {publication.journalName}
+                    {details.journalName}
                   </div>
                 )}
-                {publication.conferenceName && (
+                {details.conferenceName && (
                   <div>
                     <span className="font-medium">Conference:</span>{" "}
-                    {publication.conferenceName}
+                    {details.conferenceName}
                   </div>
                 )}
-                {publication.bookTitle && (
+                {details.bookTitle && (
                   <div>
                     <span className="font-medium">Book:</span>{" "}
-                    {publication.bookTitle}
+                    {details.bookTitle}
                   </div>
                 )}
-                {publication.publisher && (
+                {details.publisher && (
                   <div>
                     <span className="font-medium">Publisher:</span>{" "}
-                    {publication.publisher}
+                    {details.publisher}
                   </div>
                 )}
-                {publication.doi && (
+                {/* Note: uniqueIdentifier is correctly pulled directly from the publication root! */}
+                {publication.uniqueIdentifier && (
                   <div>
                     <span className="font-medium">DOI:</span>{" "}
                     <a
-                      href={`https://doi.org/${publication.doi}`}
+                      href={`https://doi.org/${publication.uniqueIdentifier}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline"
                     >
-                      {publication.doi}
+                      {publication.uniqueIdentifier}
                     </a>
                   </div>
                 )}
@@ -201,14 +220,12 @@ export function PublicationList({
                       {publication.indexingType.replace("_", " ")}
                     </div>
                   )}
-                {(publication.volume ||
-                  publication.issue ||
-                  publication.pages) && (
+                {(details.volume || details.issue || details.pages) && (
                   <div>
                     <span className="font-medium">Citation:</span>{" "}
-                    {publication.volume && `Vol. ${publication.volume}`}
-                    {publication.issue && `, Issue ${publication.issue}`}
-                    {publication.pages && `, pp. ${publication.pages}`}
+                    {details.volume && `Vol. ${details.volume}`}
+                    {details.issue && `, Issue ${details.issue}`}
+                    {details.pages && `, pp. ${details.pages}`}
                   </div>
                 )}
                 <div>
@@ -217,15 +234,15 @@ export function PublicationList({
                 </div>
                 <div>
                   <span className="font-medium">Submitted by:</span>{" "}
-                  {publication.submittedBy.name}
+                  {publication.enteredBy?.name}
                 </div>
               </div>
 
               {/* Proof URL */}
-              {publication.proofUrl && (
+              {details.proofUrl && (
                 <div>
                   <a
-                    href={publication.proofUrl}
+                    href={details.proofUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm"
@@ -237,10 +254,10 @@ export function PublicationList({
               )}
 
               {/* Remarks */}
-              {publication.remarks && (
+              {details.remarks && (
                 <div className="text-sm text-gray-600">
                   <span className="font-medium">Remarks:</span>{" "}
-                  {publication.remarks}
+                  {details.remarks}
                 </div>
               )}
 
@@ -254,7 +271,7 @@ export function PublicationList({
                   {/* Edit button for students (only if pending) */}
                   {userRole === "STUDENT" &&
                     publication.status === "PENDING" &&
-                    publication.submittedById === userId && (
+                    publication.enteredById === userId && (
                       <PublicationForm
                         projectId={projectId}
                         publication={publication}
@@ -267,76 +284,74 @@ export function PublicationList({
                       />
                     )}
 
-                  {/* Approve/Reject buttons for teachers */}
-                  {userRole === "TEACHER" &&
-                    publication.status === "PENDING" && (
-                      <>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-green-600 border-green-600"
+                  {/* Approve/Reject buttons for admins */}
+                  {userRole === "ADMIN" && publication.status === "PENDING" && (
+                    <>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-green-600 border-green-600"
+                          >
+                            <CheckCircleIcon className="w-4 h-4 mr-1" />
+                            Approve
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Approve Publication
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to approve this publication?
+                              This will assign points to the project.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleApprove(publication.id)}
                             >
-                              <CheckCircleIcon className="w-4 h-4 mr-1" />
                               Approve
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Approve Publication
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to approve this
-                                publication? This will assign points to the
-                                project.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleApprove(publication.id)}
-                              >
-                                Approve
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
 
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-red-600 border-red-600"
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 border-red-600"
+                          >
+                            <XCircleIcon className="w-4 h-4 mr-1" />
+                            Reject
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Reject Publication
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to reject this publication?
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleReject(publication.id)}
                             >
-                              <XCircleIcon className="w-4 h-4 mr-1" />
                               Reject
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Reject Publication
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to reject this
-                                publication? This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleReject(publication.id)}
-                              >
-                                Reject
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </>
-                    )}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </>
+                  )}
                 </div>
               </div>
             </CardContent>

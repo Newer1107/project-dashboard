@@ -57,31 +57,29 @@ const approveRejectSchema = z.object({
 
 // Actions
 export async function createPublication(data: z.infer<typeof createPublicationSchema>) {
-  const user = await requireRole(["STUDENT"]); // Fixed import
 
-  const membership = await prisma.projectMember.findUnique({
-    where: {
-      projectId_studentId: {
-        projectId: data.projectId,
-        studentId: user.id,
-      },
-    },
+  const user = await requireRole(["TEACHER"]); 
+
+  // 2. Check if the teacher owns the project instead of checking student membership
+  const project = await prisma.project.findUnique({
+    where: { id: data.projectId },
+    select: { teacherId: true }
   });
 
-  if (!membership) {
-    throw new Error("You are not a member of this project");
+  if (!project || project.teacherId !== user.id) {
+    throw new Error("You are not the teacher for this project");
   }
 
   const publication = await prisma.publication.create({
     data: {
       projectId: data.projectId,
       title: data.title,
-      authors: data.authors.join(", "), // Fixed: Array to string
+      authors: data.authors.join(", "), 
       publicationType: data.publicationType,
       subType: data.subType,
       indexingType: data.indexingType || "NONE",
-      uniqueIdentifier: data.doi, // Map DOI to unique identifier
-      detailsJson: {              // Pack extra fields into JSON
+      uniqueIdentifier: data.doi, 
+      detailsJson: {              
         journalName: data.journalName,
         conferenceName: data.conferenceName,
         bookTitle: data.bookTitle,
@@ -93,14 +91,12 @@ export async function createPublication(data: z.infer<typeof createPublicationSc
         remarks: data.remarks,
       },
       publicationDate: data.publicationDate,
-      enteredById: user.id,       // Fixed: submittedById -> enteredById
+      enteredById: user.id,       
       status: PublicationStatus.PENDING,
     },
   });
 
   revalidatePath(`/teacher/projects/${data.projectId}`);
-  revalidatePath(`/student/projects/${data.projectId}`);
-
   return publication;
 }
 
@@ -166,24 +162,20 @@ export async function submitPublication(publicationId: string) {
 
   return publication;
 }
-
 export async function approvePublication(data: z.infer<typeof approveRejectSchema>) {
-  const user = await requireRole(["TEACHER"]); // Fixed import
+
+  const user = await requireRole(["ADMIN"]); 
 
   const publication = await prisma.publication.findUnique({
-    where: { id: data.publicationId },
-    include: { project: true },
+    where: { id: data.publicationId }
   });
 
   if (!publication) {
     throw new Error("Publication not found");
   }
 
-  if (publication.project.teacherId !== user.id) {
-    throw new Error("Access denied");
-  }
+  // 2. Removed the teacherId check since Admins have global approval rights
 
-  // Fixed: handle null subType by coalescing to undefined
   const score = await calculatePublicationScore(publication.publicationType, publication.subType ?? undefined);
 
   const updated = await prisma.publication.update({
@@ -192,7 +184,7 @@ export async function approvePublication(data: z.infer<typeof approveRejectSchem
       status: PublicationStatus.APPROVED,
       approvedById: user.id,
       approvedAt: new Date(),
-      score, // Requires the schema update applied in Step 1
+      score, 
     },
   });
 
@@ -203,20 +195,18 @@ export async function approvePublication(data: z.infer<typeof approveRejectSchem
 }
 
 export async function rejectPublication(data: z.infer<typeof approveRejectSchema>) {
-  const user = await requireRole(["TEACHER"]);
+  // 1. Change role to ADMIN
+  const user = await requireRole(["ADMIN"]);
 
   const publication = await prisma.publication.findUnique({
-    where: { id: data.publicationId },
-    include: { project: true },
+    where: { id: data.publicationId }
   });
 
   if (!publication) {
     throw new Error("Publication not found");
   }
 
-  if (publication.project.teacherId !== user.id) {
-    throw new Error("Access denied");
-  }
+  // 2. Removed the teacherId check
 
   const updated = await prisma.publication.update({
     where: { id: data.publicationId },

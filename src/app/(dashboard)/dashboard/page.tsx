@@ -1,0 +1,27 @@
+import { redirect } from "next/navigation";
+
+type Role = "ADMIN" | "TEACHER" | "STUDENT";
+
+export default async function DashboardEntry({
+  searchParams,
+}: {
+  searchParams: Promise<{ role?: string }>;
+}) {
+  const params = await searchParams;
+  const roleParam = (params.role || "").toUpperCase();
+
+  const role: Role =
+    roleParam === "TEACHER" || roleParam === "STUDENT" || roleParam === "ADMIN"
+      ? (roleParam as Role)
+      : "ADMIN";
+
+  if (role === "TEACHER") {
+    redirect("/teacher?role=TEACHER");
+  }
+
+  if (role === "STUDENT") {
+    redirect("/student?role=STUDENT");
+  }
+
+  redirect("/admin?role=ADMIN");
+}
