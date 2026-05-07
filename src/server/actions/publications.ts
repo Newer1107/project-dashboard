@@ -27,7 +27,7 @@ const createPublicationSchema = z.object({
   volume: z.string().optional(),
   issue: z.string().optional(),
   pages: z.string().optional(),
-  publicationDate: z.string().transform((str) => new Date(str)),
+  publicationDate:z.coerce.date(),
   proofUrl: z.string().optional(),
   remarks: z.string().optional(),
 });
@@ -47,7 +47,7 @@ const updatePublicationSchema = z.object({
   volume: z.string().optional(),
   issue: z.string().optional(),
   pages: z.string().optional(),
-  publicationDate: z.string().transform((str) => new Date(str)).optional(),
+  publicationDate: z.coerce.date().optional(),
   proofUrl: z.string().optional(),
   remarks: z.string().optional(),
 });
@@ -58,12 +58,11 @@ const approveRejectSchema = z.object({
 
 // Actions
 export async function createPublication(data: z.infer<typeof createPublicationSchema>) {
-
+  const parsedData = createPublicationSchema.parse(data);
   const user = await requireRole(["TEACHER"]); 
 
-  // 2. Check if the teacher owns the project instead of checking student membership
   const project = await prisma.project.findUnique({
-    where: { id: data.projectId },
+    where: { id: parsedData.projectId },
     select: { teacherId: true, title: true }
   });
 
@@ -73,25 +72,25 @@ export async function createPublication(data: z.infer<typeof createPublicationSc
 
   const publication = await prisma.publication.create({
     data: {
-      projectId: data.projectId,
-      title: data.title,
-      authors: data.authors.join(", "), 
-      publicationType: data.publicationType,
-      subType: data.subType,
-      indexingType: data.indexingType || "NONE",
-      uniqueIdentifier: data.doi, 
+      projectId: parsedData.projectId,
+      title: parsedData.title,
+      authors: parsedData.authors.join(", "), 
+      publicationType: parsedData.publicationType,
+      subType: parsedData.subType,
+      indexingType: parsedData.indexingType || "NONE",
+      uniqueIdentifier: parsedData.doi?.trim() || null, 
       detailsJson: {              
-        journalName: data.journalName,
-        conferenceName: data.conferenceName,
-        bookTitle: data.bookTitle,
-        publisher: data.publisher,
-        volume: data.volume,
-        issue: data.issue,
-        pages: data.pages,
-        proofUrl: data.proofUrl,
-        remarks: data.remarks,
+        journalName: parsedData.journalName,
+        conferenceName: parsedData.conferenceName,
+        bookTitle: parsedData.bookTitle,
+        publisher: parsedData.publisher,
+        volume: parsedData.volume,
+        issue: parsedData.issue,
+        pages: parsedData.pages,
+        proofUrl: parsedData.proofUrl,
+        remarks: parsedData.remarks,
       },
-      publicationDate: data.publicationDate,
+      publicationDate: parsedData.publicationDate,
       enteredById: user.id,       
       status: PublicationStatus.PENDING,
     },
@@ -114,15 +113,16 @@ export async function createPublication(data: z.infer<typeof createPublicationSc
     );
   }
 
-  revalidatePath(`/teacher/projects/${data.projectId}`);
+  revalidatePath(`/teacher/projects/${parsedData.projectId}`);
   return publication;
 }
 
 export async function updatePublication(data: z.infer<typeof updatePublicationSchema>) {
-  const user = await requireRole(["STUDENT"]);
+  const parsedData = updatePublicationSchema.parse(data);
+  const user = await requireRole(["TEACHER"]);
 
   const publication = await prisma.publication.findUnique({
-    where: { id: data.id },
+    where: { id: parsedData.id },
   });
 
   if (!publication) {
@@ -133,27 +133,39 @@ export async function updatePublication(data: z.infer<typeof updatePublicationSc
     throw new Error("Cannot update this publication");
   }
 
+  const newDetails = {
+    journalName: parsedData.journalName,
+    conferenceName: parsedData.conferenceName,
+    bookTitle: parsedData.bookTitle,
+    publisher: parsedData.publisher,
+    volume: parsedData.volume,
+    issue: parsedData.issue,
+    pages: parsedData.pages,
+    proofUrl: parsedData.proofUrl,
+    remarks: parsedData.remarks,
+  };
+
+  // Strip undefined values to prevent overwriting existing valid properties
+  const providedDetails = Object.fromEntries(
+    Object.entries(newDetails).filter(([_, v]) => v !== undefined)
+  );
+
+  const updatedDetailsJson = {
+    ...(publication.detailsJson as object || {}),
+    ...providedDetails,
+  };
+
   const updated = await prisma.publication.update({
-    where: { id: data.id },
+    where: { id: parsedData.id },
     data: {
-      title: data.title,
-      authors: data.authors ? data.authors.join(", ") : undefined,
-      publicationType: data.publicationType,
-      subType: data.subType,
-      indexingType: data.indexingType,
-      uniqueIdentifier: data.doi,
-      detailsJson: {
-        journalName: data.journalName,
-        conferenceName: data.conferenceName,
-        bookTitle: data.bookTitle,
-        publisher: data.publisher,
-        volume: data.volume,
-        issue: data.issue,
-        pages: data.pages,
-        proofUrl: data.proofUrl,
-        remarks: data.remarks,
-      },
-      publicationDate: data.publicationDate,
+      title: parsedData.title,
+      authors: parsedData.authors ? parsedData.authors.join(", ") : undefined,
+      publicationType: parsedData.publicationType,
+      subType: parsedData.subType,
+      indexingType: parsedData.indexingType,
+      uniqueIdentifier: parsedData.doi?.trim() || null,
+      detailsJson: updatedDetailsJson,
+      publicationDate: parsedData.publicationDate,
     },
   });
 
@@ -163,41 +175,22 @@ export async function updatePublication(data: z.infer<typeof updatePublicationSc
   return updated;
 }
 
-export async function submitPublication(publicationId: string) {
-  const user = await requireRole(["STUDENT"]);
-
-  const publication = await prisma.publication.findUnique({
-    where: { id: publicationId },
-  });
-
-  if (!publication || publication.enteredById !== user.id) {
-    throw new Error("Publication not found or access denied");
-  }
-
-  if (publication.status !== PublicationStatus.PENDING) {
-    return publication;
-  }
-
-  return publication;
-}
 export async function approvePublication(data: z.infer<typeof approveRejectSchema>) {
-
+  const parsedData = approveRejectSchema.parse(data);
   const user = await requireRole(["ADMIN"]); 
 
   const publication = await prisma.publication.findUnique({
-    where: { id: data.publicationId }
+    where: { id: parsedData.publicationId }
   });
 
   if (!publication) {
     throw new Error("Publication not found");
   }
 
-  // 2. Removed the teacherId check since Admins have global approval rights
-
   const score = await calculatePublicationScore(publication.publicationType, publication.subType ?? undefined);
 
   const updated = await prisma.publication.update({
-    where: { id: data.publicationId },
+    where: { id: parsedData.publicationId },
     data: {
       status: PublicationStatus.APPROVED,
       approvedById: user.id,
@@ -245,21 +238,19 @@ export async function approvePublication(data: z.infer<typeof approveRejectSchem
 }
 
 export async function rejectPublication(data: z.infer<typeof approveRejectSchema>) {
-  // 1. Change role to ADMIN
+  const parsedData = approveRejectSchema.parse(data);
   const user = await requireRole(["ADMIN"]);
 
   const publication = await prisma.publication.findUnique({
-    where: { id: data.publicationId }
+    where: { id: parsedData.publicationId }
   });
 
   if (!publication) {
     throw new Error("Publication not found");
   }
 
-  // 2. Removed the teacherId check
-
   const updated = await prisma.publication.update({
-    where: { id: data.publicationId },
+    where: { id: parsedData.publicationId },
     data: {
       status: PublicationStatus.REJECTED,
       approvedById: user.id,
@@ -302,7 +293,7 @@ export async function getProjectPublications(projectId: string) {
   return prisma.publication.findMany({
     where: { projectId },
     include: {
-      enteredBy: { select: { id: true, name: true } }, // Fixed: submittedBy -> enteredBy
+      enteredBy: { select: { id: true, name: true } },
       approvedBy: { select: { id: true, name: true } },
     },
     orderBy: { createdAt: "desc" },
@@ -312,7 +303,6 @@ export async function getProjectPublications(projectId: string) {
 export async function getAllPublications(status?: "APPROVED" | "ALL") {
   await requireRole(["ADMIN", "TEACHER", "STUDENT"]);
 
-  // Fixed: strict typing for status
   const where = status === "APPROVED" ? { status: PublicationStatus.APPROVED } : {};
 
   return prisma.publication.findMany({
@@ -330,7 +320,7 @@ export async function getAllPublications(status?: "APPROVED" | "ALL") {
           },
         },
       },
-      enteredBy: { select: { id: true, name: true } }, // Fixed: submittedBy -> enteredBy
+      enteredBy: { select: { id: true, name: true } },
     },
     orderBy: { publicationDate: "desc" },
   });
@@ -352,7 +342,7 @@ export async function getUserPublications(userId: string) {
   }
 
   return prisma.publication.findMany({
-    where: { enteredById: userId }, // Fixed: submittedById -> enteredById
+    where: { enteredById: userId }, 
     include: {
       project: { select: { id: true, title: true } },
     },
@@ -394,7 +384,7 @@ export async function getProjectPublicationSummary(projectId: string) {
 
   return {
     totalPublications: publications.length,
-    approvedPublications: publications.length, // Added this field to fix ts(2339) in UI
+    approvedPublications: publications.length,
     totalScore,
     studentScore: memberCount > 0 ? totalScore / memberCount : 0,
   };

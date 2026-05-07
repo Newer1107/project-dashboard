@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createPublication,
   updatePublication,
-  submitPublication,
+
   approvePublication,
   rejectPublication,
   getProjectPublications,
@@ -85,19 +85,7 @@ export function useUpdatePublication() {
   });
 }
 
-export function useSubmitPublication() {
-  const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: submitPublication,
-    onSuccess: () => {
-      toast.success("Publication submitted for approval");
-    },
-    onError: (error: any) => {
-      toast.error(error.message || "Failed to submit publication");
-    },
-  });
-}
 
 export function useApprovePublication() {
   const queryClient = useQueryClient();
