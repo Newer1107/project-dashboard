@@ -275,7 +275,7 @@ export async function adminUploadProjectAssignments(data: z.infer<typeof adminUp
     });
   }
 
-  const appUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const appUrl = process.env.NEXTAUTH_URL;
   const emailJobs = resolvedRows.map((row) => {
     const project = projectsByLowerTitle.get(row.projectName.toLowerCase().trim())!;
     const existingUser = existingByEmail.has(row.email);

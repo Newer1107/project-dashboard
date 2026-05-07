@@ -78,7 +78,7 @@ export default async function middleware(req: NextRequest) {
 
   const token = req.cookies.get("coe_shared_token")?.value;
   if (!token) {
-    const loginUrl = new URL("http://localhost:3000/login");
+    const loginUrl = new URL("http://tcetcercd.in/login");
     loginUrl.searchParams.set("callbackUrl", req.nextUrl.href);
     return NextResponse.redirect(loginUrl);
   }

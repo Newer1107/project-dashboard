@@ -7,7 +7,7 @@ export default async function HomePage() {
   const user = await resolveUserFromHeaders(requestHeaders);
 
   if (!user) {
-    redirect("http://localhost:3000/login?callbackUrl=http://localhost:3000/");
+    redirect("http://tcetcercd.in/login");
     const forwardedProto = requestHeaders.get("x-forwarded-proto");
     const forwardedHost = requestHeaders.get("x-forwarded-host");
     const host = forwardedHost ?? requestHeaders.get("host");
