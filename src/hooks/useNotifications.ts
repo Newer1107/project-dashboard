@@ -37,7 +37,7 @@ export function useNotifications(userId: string) {
     await fetch("/api/notifications", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, markAll: true }),
+      body: JSON.stringify({ markAllRead: true }),
     });
     queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
     queryClient.invalidateQueries({ queryKey: ["notifications", "count", userId] });

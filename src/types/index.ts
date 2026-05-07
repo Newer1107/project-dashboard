@@ -1,6 +1,6 @@
-import { Role, ProjectStatus, TaskStatus, TaskPriority, MemberRole, ReviewStatus, FileCategory, NotificationType } from "@prisma/client";
+import { Role, ProjectStatus, TaskStatus, TaskPriority, MemberRole, ReviewStatus, FileCategory, NotificationType, PublicationType, PublicationStatus, IndexingType } from "@prisma/client";
 
-export type { Role, ProjectStatus, TaskStatus, TaskPriority, MemberRole, ReviewStatus, FileCategory, NotificationType };
+export type { Role, ProjectStatus, TaskStatus, TaskPriority, MemberRole, ReviewStatus, FileCategory, NotificationType, PublicationType, PublicationStatus, IndexingType };
 
 export interface SessionUser {
   id: string;
@@ -93,4 +93,47 @@ export interface StudentDashboardStats {
   tasksDueToday: number;
   completedTasks: number;
   overallProgress: number;
+}
+
+export interface PublicationWithRelations {
+  id: string;
+  projectId: string;
+  title: string;
+  authors: string[];
+  publicationType: PublicationType;
+  subType?: string;
+  journalName?: string;
+  conferenceName?: string;
+  bookTitle?: string;
+  publisher?: string;
+  doi?: string;
+  indexingType?: IndexingType;
+  volume?: string;
+  issue?: string;
+  pages?: string;
+  publicationDate: Date;
+  status: PublicationStatus;
+  score: number;
+  proofUrl?: string;
+  remarks?: string;
+  submittedById: string;
+  approvedById?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  project: { id: string; title: string };
+  submittedBy: { id: string; name: string };
+  approvedBy?: { id: string; name: string };
+}
+
+export interface PublicationScoreConfig {
+  publicationType: PublicationType;
+  subType: string;
+  score: number;
+}
+
+export interface PublicationSummary {
+  totalPublications: number;
+  approvedPublications: number;
+  totalScore: number;
+  publicationsByType: Record<string, number>;
 }

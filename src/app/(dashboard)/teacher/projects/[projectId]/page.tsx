@@ -1,17 +1,26 @@
 "use client";
 
 import React from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useProject } from "@/hooks/useProjects";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, Users, FileText, ClipboardCheck, ListTodo, BarChart3 } from "lucide-react";
+import {
+  Calendar,
+  Users,
+  FileText,
+  ClipboardCheck,
+  ListTodo,
+  BarChart3,
+  BookOpen,
+} from "lucide-react";
 import { OverviewTab } from "./_tabs/OverviewTab";
 import { TasksTab } from "./_tabs/TasksTab";
 import { MilestonesTab } from "./_tabs/MilestonesTab";
 import { ReviewsTab } from "./_tabs/ReviewsTab";
+import { PublicationsTab } from "./_tabs/PublicationsTab";
 import { FilesTab } from "./_tabs/FilesTab";
 import { MembersTab } from "./_tabs/MembersTab";
 
@@ -25,7 +34,23 @@ const statusColors: Record<string, string> = {
 
 export default function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
   const { data: project, isLoading } = useProject(projectId);
+  const [activeTab, setActiveTab] = React.useState("overview");
+
+  React.useEffect(() => {
+    const allowedTabs = new Set([
+      "overview",
+      "tasks",
+      "milestones",
+      "reviews",
+      "publications",
+      "files",
+      "members",
+    ]);
+    setActiveTab(allowedTabs.has(tabParam || "") ? (tabParam as string) : "overview");
+  }, [tabParam]);
 
   if (isLoading) {
     return (
@@ -63,7 +88,9 @@ export default function ProjectDetailPage() {
               {p.department && (
                 <>
                   <span className="text-muted-foreground text-xs">•</span>
-                  <p className="text-muted-foreground text-sm font-medium">{p.department}</p>
+                  <p className="text-muted-foreground text-sm font-medium">
+                    {p.department}
+                  </p>
                 </>
               )}
             </div>
@@ -75,7 +102,8 @@ export default function ProjectDetailPage() {
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <span className="flex items-center gap-1">
             <Calendar className="h-4 w-4" />
-            {new Date(p.startDate).toLocaleDateString()} - {new Date(p.endDate).toLocaleDateString()}
+            {new Date(p.startDate).toLocaleDateString()} -{" "}
+            {new Date(p.endDate).toLocaleDateString()}
           </span>
           <span className="flex items-center gap-1">
             <Users className="h-4 w-4" />
@@ -85,29 +113,54 @@ export default function ProjectDetailPage() {
       </motion.div>
 
       {/* Tabs */}
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full justify-start gap-1 bg-transparent border-b rounded-none px-0 pb-0">
-          <TabsTrigger value="overview" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
+          <TabsTrigger
+            value="overview"
+            className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+          >
             <BarChart3 className="mr-2 h-4 w-4" />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="tasks" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
+          <TabsTrigger
+            value="tasks"
+            className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+          >
             <ListTodo className="mr-2 h-4 w-4" />
             Tasks
           </TabsTrigger>
-          <TabsTrigger value="milestones" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
+          <TabsTrigger
+            value="milestones"
+            className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+          >
             <Calendar className="mr-2 h-4 w-4" />
             Milestones
           </TabsTrigger>
-          <TabsTrigger value="reviews" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
+          <TabsTrigger
+            value="reviews"
+            className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+          >
             <ClipboardCheck className="mr-2 h-4 w-4" />
             Reviews
           </TabsTrigger>
-          <TabsTrigger value="files" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
+          <TabsTrigger
+            value="publications"
+            className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+          >
+            <BookOpen className="mr-2 h-4 w-4" />
+            Publications
+          </TabsTrigger>
+          <TabsTrigger
+            value="files"
+            className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+          >
             <FileText className="mr-2 h-4 w-4" />
             Files
           </TabsTrigger>
-          <TabsTrigger value="members" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
+          <TabsTrigger
+            value="members"
+            className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+          >
             <Users className="mr-2 h-4 w-4" />
             Members
           </TabsTrigger>
@@ -124,6 +177,9 @@ export default function ProjectDetailPage() {
         </TabsContent>
         <TabsContent value="reviews" className="mt-6">
           <ReviewsTab projectId={projectId} />
+        </TabsContent>
+        <TabsContent value="publications" className="mt-6">
+          <PublicationsTab projectId={projectId} />
         </TabsContent>
         <TabsContent value="files" className="mt-6">
           <FilesTab projectId={projectId} />

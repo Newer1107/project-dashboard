@@ -40,6 +40,8 @@ export default function StudentNotificationsClient({ userId }: StudentNotificati
   const [filter, setFilter] = useState("ALL");
 
   const notifications = data ?? [];
+  const unreadCount = notifications.filter((n: any) => !n.isRead).length;
+  const unreadLabel = unreadCount > 99 ? "99+" : String(unreadCount);
   const filtered =
     filter === "ALL"
       ? notifications
@@ -56,10 +58,13 @@ export default function StudentNotificationsClient({ userId }: StudentNotificati
             Stay updated on project activity
           </p>
         </div>
-        {notifications.some((n: any) => !n.isRead) && (
-          <Button variant="outline" size="sm" onClick={() => markAllRead()}>
+        {unreadCount > 0 && (
+          <Button variant="outline" size="sm" onClick={() => markAllRead()} className="relative">
             <Check className="mr-2 h-4 w-4" />
             Mark All Read
+            <span className="absolute -top-1 -right-1 inline-flex min-w-[18px] items-center justify-center rounded-full bg-amber-400 px-1 text-[10px] font-semibold text-black">
+              {unreadLabel}
+            </span>
           </Button>
         )}
       </div>

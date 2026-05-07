@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { LeaderDetailsForm } from "@/components/dashboard/LeaderDetailsForm";
 import { useProject } from "@/hooks/useProjects";
@@ -12,7 +12,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TaskKanban } from "@/components/dashboard/TaskKanban";
 import { MilestoneTimeline } from "@/components/dashboard/MilestoneTimeline";
 import { FileUploader } from "@/components/dashboard/FileUploader";
-import { Calendar, Users, FileText, ListTodo, Download } from "lucide-react";
+import { StudentPublicationsTab } from "./_tabs/StudentPublicationsTab";
+import {
+  Calendar,
+  Users,
+  FileText,
+  ListTodo,
+  Download,
+  BookOpen,
+} from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getProjectFiles } from "@/server/actions/files";
 import { getDownloadUrl } from "@/server/actions/files";
@@ -37,7 +45,19 @@ export default function StudentProjectDetailClient({
   userId,
 }: StudentProjectDetailClientProps) {
   const { projectId } = useParams<{ projectId: string }>();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
   const { data: project, isLoading } = useProject(projectId);
+    const [activeTab, setActiveTab] = React.useState("tasks");
+    React.useEffect(() => {
+      const allowedTabs = new Set([
+        "tasks",
+        "milestones",
+        "publications",
+        "files",
+      ]);
+      setActiveTab(allowedTabs.has(tabParam || "") ? (tabParam as string) : "tasks");
+    }, [tabParam]);
   const { data: tasks } = useProjectTasks(projectId);
   const updateTask = useUpdateTask();
   const queryClient = useQueryClient();
@@ -127,7 +147,7 @@ export default function StudentProjectDetailClient({
         </div>
       </motion.div>
 
-      <Tabs defaultValue="tasks" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full justify-start gap-1 bg-transparent border-b rounded-none px-0 pb-0">
           <TabsTrigger
             value="tasks"
@@ -142,6 +162,13 @@ export default function StudentProjectDetailClient({
           >
             <Calendar className="mr-2 h-4 w-4" />
             Milestones
+          </TabsTrigger>
+          <TabsTrigger
+            value="publications"
+            className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+          >
+            <BookOpen className="mr-2 h-4 w-4" />
+            Publications
           </TabsTrigger>
           <TabsTrigger
             value="files"
@@ -160,6 +187,10 @@ export default function StudentProjectDetailClient({
           <div className="rounded-xl border bg-card p-6">
             <MilestoneTimeline milestones={milestones ?? []} />
           </div>
+        </TabsContent>
+
+        <TabsContent value="publications" className="mt-6">
+          <StudentPublicationsTab projectId={projectId} />
         </TabsContent>
 
         <TabsContent value="files" className="mt-6 space-y-6">

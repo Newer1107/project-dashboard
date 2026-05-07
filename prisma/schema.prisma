@@ -152,6 +152,28 @@ enum SDG {
   GOAL_17_PARTNERSHIPS
 }
 
+enum PublicationType {
+  PAPER
+  PATENT
+  BOOK_CHAPTER
+  COPYRIGHT
+  REVIEW
+}
+
+enum PublicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum IndexingType {
+  SCOPUS
+  SCI
+  WEB_OF_SCIENCE
+  UGC_CARE
+  NONE
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
@@ -176,6 +198,8 @@ model User {
   showcaseProjects      ShowcaseProject[]
   showcaseFeedback      ReviewFeedback[]
   pendingProjectInvites PendingProjectAssignment[] @relation("PendingAssignmentInviter")
+  publicationsEntered   Publication[]              @relation("PublicationEnteredBy")
+  publicationsApproved  Publication[]              @relation("PublicationApprovedBy")
 
   @@map("users")
 }
@@ -213,6 +237,7 @@ model Project {
   files              ProjectFile[]
   tags               ProjectTag[]
   pendingAssignments PendingProjectAssignment[]
+  publications       Publication[]
 
   @@index([teacherId])
   @@index([status])
@@ -531,4 +556,47 @@ model ShowcaseTeamMember {
 
   @@index([projectId])
   @@map("showcase_team_members")
+}
+
+model Publication {
+  id               String            @id @default(cuid())
+  projectId        String
+  title            String
+  authors          String // comma-separated list
+  publicationType  PublicationType
+  subType          String? // e.g., "Indexed", "Non-Indexed", "Filed", "Published", "Granted"
+  publicationDate  DateTime
+  status           PublicationStatus @default(PENDING)
+  uniqueIdentifier String?           @unique // DOI, ISBN, Registration No., App Number
+  indexingType     IndexingType      @default(NONE)
+  isFunded         Boolean           @default(false)
+  grantTitle       String?
+  fundingAgency    String?
+  grantAmount      Float?
+  grantNumber      String?
+  detailsJson      Json? // type-specific metadata
+  enteredById      String
+  approvedById     String?
+  approvedAt       DateTime?
+  score            Float?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  enteredBy  User    @relation("PublicationEnteredBy", fields: [enteredById], references: [id])
+  approvedBy User?   @relation("PublicationApprovedBy", fields: [approvedById], references: [id])
+
+  @@index([projectId])
+  @@index([status])
+  @@map("publications")
+}
+
+model PublicationScoreConfig {
+  id              String          @id @default(cuid())
+  publicationType PublicationType
+  subType         String
+  score           Int
+
+  @@unique([publicationType, subType])
+  @@map("publication_score_configs")
 }
