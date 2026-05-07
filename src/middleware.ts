@@ -17,68 +17,9 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const isDevAuthBypassEnabled =
-    process.env.NODE_ENV === "development" ||
-    process.env.DEV_AUTH_BYPASS === "true";
-
-  if (isDevAuthBypassEnabled) {
-    const headers = new Headers(req.headers);
-    const allowedRoles = ["ADMIN", "TEACHER", "STUDENT"] as const;
-    type Role = (typeof allowedRoles)[number];
-    const coeRoleMap: Record<Role, "ADMIN" | "FACULTY" | "STUDENT"> = {
-      ADMIN: "ADMIN",
-      TEACHER: "FACULTY",
-      STUDENT: "STUDENT",
-    };
-
-    // Prefer explicit query param, otherwise fall back to persisted dev cookie
-    const roleParam = req.nextUrl.searchParams.get("role");
-    const cookieRole = req.cookies.get("dev_auth_role")?.value;
-    let role: Role = "ADMIN";
-    if (roleParam && allowedRoles.includes(roleParam as Role)) {
-      role = roleParam as Role;
-    } else if (cookieRole && allowedRoles.includes(cookieRole as Role)) {
-      role = cookieRole as Role;
-    }
-
-    const emailMap: Record<Role, string | undefined> = {
-      ADMIN: process.env.DEV_AUTH_ADMIN_EMAIL,
-      TEACHER: process.env.DEV_AUTH_TEACHER_EMAIL,
-      STUDENT: process.env.DEV_AUTH_STUDENT_EMAIL,
-    };
-
-    const email = emailMap[role];
-    if (!email) {
-      throw new Error(`DEV_AUTH: Missing email for role ${role}`);
-    }
-
-    headers.set("x-coe-email", email);
-    headers.set("x-coe-name", "Dev User");
-    headers.set("x-coe-role", coeRoleMap[role]);
-    headers.set("x-coe-status", "ACTIVE");
-
-    if (process.env.NODE_ENV === "development") {
-      console.log("[DEV AUTH] Injected headers:", {
-        email,
-        role,
-        coeRole: coeRoleMap[role],
-        pathname: req.nextUrl.pathname,
-      });
-    }
-
-    // Persist the chosen role into a cookie for all dev requests
-    // This ensures server actions and subsequent requests maintain the role
-    const response = NextResponse.next({ request: { headers } });
-    response.cookies.set("dev_auth_role", role, { 
-      path: "/", 
-      maxAge: 60 * 60 * 24 * 7, // 7-day TTL for convenience during local dev
-    });
-    return response;
-  }
-
   const token = req.cookies.get("coe_shared_token")?.value;
   if (!token) {
-    const loginUrl = new URL("http://localhost:3000/login");
+    const loginUrl = new URL("https://tcetcercd.in/login");
     loginUrl.searchParams.set("callbackUrl", req.nextUrl.href);
     return NextResponse.redirect(loginUrl);
   }
