@@ -59,15 +59,33 @@ const approveRejectSchema = z.object({
 // Actions
 export async function createPublication(data: z.infer<typeof createPublicationSchema>) {
   const parsedData = createPublicationSchema.parse(data);
-  const user = await requireRole(["TEACHER"]); 
+  const user = await requireRole(["TEACHER", "STUDENT", "ADMIN"]);
 
   const project = await prisma.project.findUnique({
     where: { id: parsedData.projectId },
     select: { teacherId: true, title: true }
   });
 
-  if (!project || project.teacherId !== user.id) {
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
+  if (user.role === "TEACHER" && project.teacherId !== user.id) {
     throw new Error("You are not the teacher for this project");
+  }
+
+  if (user.role === "STUDENT") {
+    const membership = await prisma.projectMember.findFirst({
+      where: {
+        projectId: parsedData.projectId,
+        studentId: user.id,
+      },
+      select: { id: true },
+    });
+
+    if (!membership) {
+      throw new Error("You are not a member of this project");
+    }
   }
 
   const publication = await prisma.publication.create({
