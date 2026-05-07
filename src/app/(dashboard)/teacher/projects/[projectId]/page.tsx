@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useProject } from "@/hooks/useProjects";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,7 +34,23 @@ const statusColors: Record<string, string> = {
 
 export default function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
   const { data: project, isLoading } = useProject(projectId);
+  const [activeTab, setActiveTab] = React.useState("overview");
+
+  React.useEffect(() => {
+    const allowedTabs = new Set([
+      "overview",
+      "tasks",
+      "milestones",
+      "reviews",
+      "publications",
+      "files",
+      "members",
+    ]);
+    setActiveTab(allowedTabs.has(tabParam || "") ? (tabParam as string) : "overview");
+  }, [tabParam]);
 
   if (isLoading) {
     return (
@@ -97,7 +113,7 @@ export default function ProjectDetailPage() {
       </motion.div>
 
       {/* Tabs */}
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full justify-start gap-1 bg-transparent border-b rounded-none px-0 pb-0">
           <TabsTrigger
             value="overview"

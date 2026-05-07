@@ -7,6 +7,7 @@ import {
   rejectPublication,
   getProjectPublications,
   getAllPublications,
+  getPendingPublicationsCount,
   getUserPublications,
   getProjectPublicationSummary,
 } from "@/server/actions/publications";
@@ -20,10 +21,21 @@ export function useProjectPublications(projectId: string) {
   });
 }
 
-export function useAllPublications(status?: "APPROVED" | "ALL") {
+export function useAllPublications(
+  status?: "APPROVED" | "ALL",
+  options?: { enabled?: boolean }
+) {
   return useQuery({
     queryKey: ["publications", "all", status],
     queryFn: () => getAllPublications(status),
+    enabled: options?.enabled ?? true,
+  });
+}
+
+export function usePendingPublicationsCount() {
+  return useQuery({
+    queryKey: ["publications", "pending-count"],
+    queryFn: () => getPendingPublicationsCount(),
   });
 }
 

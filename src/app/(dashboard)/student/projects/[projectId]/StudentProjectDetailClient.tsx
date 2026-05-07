@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { LeaderDetailsForm } from "@/components/dashboard/LeaderDetailsForm";
 import { useProject } from "@/hooks/useProjects";
@@ -45,7 +45,19 @@ export default function StudentProjectDetailClient({
   userId,
 }: StudentProjectDetailClientProps) {
   const { projectId } = useParams<{ projectId: string }>();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
   const { data: project, isLoading } = useProject(projectId);
+    const [activeTab, setActiveTab] = React.useState("tasks");
+    React.useEffect(() => {
+      const allowedTabs = new Set([
+        "tasks",
+        "milestones",
+        "publications",
+        "files",
+      ]);
+      setActiveTab(allowedTabs.has(tabParam || "") ? (tabParam as string) : "tasks");
+    }, [tabParam]);
   const { data: tasks } = useProjectTasks(projectId);
   const updateTask = useUpdateTask();
   const queryClient = useQueryClient();
@@ -135,7 +147,7 @@ export default function StudentProjectDetailClient({
         </div>
       </motion.div>
 
-      <Tabs defaultValue="tasks" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full justify-start gap-1 bg-transparent border-b rounded-none px-0 pb-0">
           <TabsTrigger
             value="tasks"

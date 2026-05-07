@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { createBulkNotifications, createNotification } from "@/lib/notifications";
 import { requireRole } from "@/lib/coe-guard";
 import { revalidatePath } from "next/cache";
 import { PublicationType, PublicationStatus, IndexingType } from "@prisma/client";
@@ -63,7 +64,7 @@ export async function createPublication(data: z.infer<typeof createPublicationSc
   // 2. Check if the teacher owns the project instead of checking student membership
   const project = await prisma.project.findUnique({
     where: { id: data.projectId },
-    select: { teacherId: true }
+    select: { teacherId: true, title: true }
   });
 
   if (!project || project.teacherId !== user.id) {
@@ -95,6 +96,23 @@ export async function createPublication(data: z.infer<typeof createPublicationSc
       status: PublicationStatus.PENDING,
     },
   });
+
+  const adminIds = await prisma.user.findMany({
+    where: { role: "ADMIN", isActive: true },
+    select: { id: true },
+  });
+
+  if (adminIds.length > 0) {
+    await createBulkNotifications(
+      adminIds.map((admin) => admin.id),
+      {
+        type: "PROJECT_UPDATED",
+        title: "Publication draft added",
+        message: `A new publication draft was added to ${project.title}`,
+        link: "/admin/projects?publications=all",
+      }
+    );
+  }
 
   revalidatePath(`/teacher/projects/${data.projectId}`);
   return publication;
@@ -187,6 +205,38 @@ export async function approvePublication(data: z.infer<typeof approveRejectSchem
       score, 
     },
   });
+
+  const project = await prisma.project.findUnique({
+    where: { id: publication.projectId },
+    select: {
+      id: true,
+      title: true,
+      teacherId: true,
+      members: { select: { studentId: true } },
+    },
+  });
+
+  if (project) {
+    await createNotification({
+      userId: project.teacherId,
+      type: "PROJECT_UPDATED",
+      title: "Publication approved",
+      message: `A publication draft for ${project.title} was approved`,
+      link: `/teacher/projects/${project.id}?tab=publications`,
+    });
+
+    const studentIds = project.members.map((member) => member.studentId);
+    if (studentIds.length > 0) {
+      await createBulkNotifications(studentIds, {
+        type: "PROJECT_UPDATED",
+        title: "Publication approved",
+        message: `A publication draft for ${project.title} was approved`,
+        link: `/student/projects/${project.id}?tab=publications`,
+      });
+    }
+
+    revalidatePath(`/student/projects/${project.id}`);
+  }
 
   revalidatePath(`/teacher/projects/${publication.projectId}`);
   revalidatePath(`/publications`);
@@ -283,6 +333,14 @@ export async function getAllPublications(status?: "APPROVED" | "ALL") {
       enteredBy: { select: { id: true, name: true } }, // Fixed: submittedBy -> enteredBy
     },
     orderBy: { publicationDate: "desc" },
+  });
+}
+
+export async function getPendingPublicationsCount() {
+  await requireRole(["ADMIN"]);
+
+  return prisma.publication.count({
+    where: { status: PublicationStatus.PENDING },
   });
 }
 

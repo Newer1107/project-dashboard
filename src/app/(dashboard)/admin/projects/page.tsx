@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getAdminProjectsManagementData,
@@ -11,7 +12,7 @@ import {
   adminRemoveProjectMember,
   adminDeleteProject,
 } from "@/server/actions/projects";
-import { Trash } from "lucide-react";
+import { Trash, Loader2, Pencil, UserPlus, UserX } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +22,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Loader2, Pencil, UserPlus, UserX } from "lucide-react";
+import { useAllPublications, usePendingPublicationsCount } from "@/hooks/usePublications";
+import { AdminPublicationsList } from "@/components/dashboard/AdminPublicationsList";
 
 type StatusValue = "DRAFT" | "ACTIVE" | "UNDER_REVIEW" | "COMPLETED" | "ARCHIVED";
 type RoleValue = "LEAD" | "MEMBER";
@@ -36,18 +38,26 @@ export default function AdminProjectsPage() {
   const [search, setSearch] = React.useState("");
   const [savingProjectId, setSavingProjectId] = React.useState<string | null>(null);
   const [editingProject, setEditingProject] = React.useState<any | null>(null);
+  const [publicationsOpen, setPublicationsOpen] = React.useState(false);
   const [mentorDraft, setMentorDraft] = React.useState<Record<string, string>>({});
   const [memberDraft, setMemberDraft] = React.useState<Record<string, string>>({});
   const [memberRoleDraft, setMemberRoleDraft] = React.useState<Record<string, RoleValue>>({});
+  const searchParams = useSearchParams();
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "projects", "manage"],
     queryFn: () => getAdminProjectsManagementData(),
   });
 
+  const { data: allPublications = [], isLoading: isPublicationsLoading } = useAllPublications("ALL", {
+    enabled: publicationsOpen,
+  });
+  const { data: pendingCount = 0 } = usePendingPublicationsCount();
+
   const projects = data?.projects ?? [];
   const teachers = data?.teachers ?? [];
   const students = data?.students ?? [];
+  const pendingLabel = pendingCount > 99 ? "99+" : String(pendingCount);
 
   const filteredProjects = React.useMemo(() => {
     if (!search.trim()) return projects;
@@ -60,6 +70,13 @@ export default function AdminProjectsPage() {
         project.teacher?.name?.toLowerCase().includes(q)
     );
   }, [projects, search]);
+
+  React.useEffect(() => {
+    const target = searchParams.get("publications");
+    if (target) {
+      setPublicationsOpen(true);
+    }
+  }, [searchParams]);
 
   async function refreshData() {
     await queryClient.invalidateQueries({ queryKey: ["admin", "projects", "manage"] });
@@ -186,12 +203,35 @@ export default function AdminProjectsPage() {
           <h1 className="text-2xl font-bold">Projects Management</h1>
           <p className="text-muted-foreground text-sm">Manage all projects, assign mentors, and edit members</p>
         </div>
-        <Input
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search by title, domain, dept..."
-          className="w-full max-w-sm"
-        />
+        <div className="flex w-full max-w-xl flex-wrap items-center gap-2">
+          <Input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search by title, domain, dept..."
+            className="flex-1 min-w-[220px]"
+          />
+          <Dialog open={publicationsOpen} onOpenChange={setPublicationsOpen}>
+            <DialogTrigger asChild>
+              <Button variant="secondary" size="sm" className="relative">
+                Manage Publications
+                {pendingCount > 0 ? (
+                  <span className="absolute -top-1 -right-1 inline-flex min-w-[18px] items-center justify-center rounded-full bg-yellow-400 px-1 text-[10px] font-semibold text-black">
+                    {pendingLabel}
+                  </span>
+                ) : null}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Publications</DialogTitle>
+              </DialogHeader>
+              <AdminPublicationsList
+                publications={allPublications}
+                isLoading={isPublicationsLoading}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {isLoading ? (
@@ -284,7 +324,7 @@ export default function AdminProjectsPage() {
                               </div>
                             </div>
                             <div className="grid gap-3 sm:grid-cols-2">
-                               <div className="space-y-1.5">
+                              <div className="space-y-1.5">
                                 <Label>Max Group Size</Label>
                                 <Input
                                   name="maxGroupSize"
