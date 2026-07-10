@@ -137,7 +137,7 @@ export default function AnimatedShowcase({ projects }: { projects: any[] }) {
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           <div ref={heroImageRef} className="absolute inset-0 w-full h-full z-0">
             <Image
-              src="/tcetimage.png"
+              src="/tcetimage.jpeg"
               alt="TCET"
               fill
               priority

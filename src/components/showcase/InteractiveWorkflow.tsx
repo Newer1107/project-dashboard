@@ -16,7 +16,7 @@ const STEPS = [
     id: "02",
     title: "PROCESSING",
     description: "Continuous integration phase. Transforming unrefined data models into structural schematics.",
-    image: "/tcetimage.png"
+    image: "/tcetimage.jpeg"
   },
   {
     id: "03",
