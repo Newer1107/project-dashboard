@@ -731,12 +731,11 @@ enum MeetingStatus {
 model WeeklyMilestone {
   id          String                   @id @default(cuid())
   weekNumber  Int
-  title       String
-  description String?
+  title       String                   @db.VarChar(500)
+  description String?                  @db.Text
   startDate   DateTime
   dueDate     DateTime
   isBackdated Boolean                  @default(false) // Supports July onwards historical backfill
-  // Array of required deliverable checklist items
   createdAt   DateTime                 @default(now())
   updatedAt   DateTime                 @updatedAt
   checklists  MilestoneChecklistItem[]
@@ -747,7 +746,7 @@ model WeeklyMilestone {
 
 model MilestoneChecklistItem {
   id                String          @id @default(cuid())
-  text              String // The deliverable checklist description
+  text              String          @db.Text // The deliverable checklist description
   weeklyMilestoneId String
   weeklyMilestone   WeeklyMilestone @relation(fields: [weeklyMilestoneId], references: [id], onDelete: Cascade)
   createdAt         DateTime        @default(now())
@@ -759,8 +758,8 @@ model WeeklyTaskSubmission {
   projectId   String
   milestoneId String
   status      WeeklyTaskStatus @default(PENDING)
-  workLog     String? // Narrative summary from students
-  feedback    String? // Guide review feedback
+  workLog     String?          @db.Text // Narrative summary from students
+  feedback    String?          @db.Text // Guide review feedback
   submittedAt DateTime?
   reviewedAt  DateTime?
 
@@ -779,8 +778,8 @@ model WeeklyTaskSubmission {
 model WeeklyEvidenceLink {
   id           String               @id @default(cuid())
   submissionId String
-  title        String
-  url          String
+  title        String               @db.VarChar(255)
+  url          String               @db.VarChar(500)
   type         String // "GITHUB", "DRIVE", "DESIGN", "DOCUMENT"
   submission   WeeklyTaskSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
   createdAt    DateTime             @default(now())
@@ -792,8 +791,8 @@ model WeeklySyncMeeting {
   submissionId String
   scheduledAt  DateTime
   meetingType  MeetingType
-  locationUrl  String // Room number or Online meeting link
-  notes        String?
+  locationUrl  String               @db.VarChar(500) // Room number or Online meeting link
+  notes        String?              @db.Text
   status       MeetingStatus        @default(SCHEDULED)
   submission   WeeklyTaskSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
   createdAt    DateTime             @default(now())

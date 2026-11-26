@@ -3,7 +3,7 @@ CREATE TABLE `WeeklyMilestone` (
     `id` VARCHAR(191) NOT NULL,
     `weekNumber` INTEGER NOT NULL,
     `title` VARCHAR(191) NOT NULL,
-    `description` VARCHAR(191) NULL,
+    `description` TEXT NULL,
     `startDate` DATETIME(3) NOT NULL,
     `dueDate` DATETIME(3) NOT NULL,
     `isBackdated` BOOLEAN NOT NULL DEFAULT false,
