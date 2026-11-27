@@ -4,6 +4,22 @@ import { NextResponse, type NextRequest } from "next/server";
 /** Strip chars >U+00FF so HTTP headers don't throw ByteString errors (smart quotes, emoji, etc). */
 const stripNonLatin1 = (s: string): string => s.replace(/[^\x00-\xFF]/g, "");
 
+/**
+ * Portal login URL for an unauthenticated request.
+ * The callback must point at the public origin: behind the Cloudflare tunnel the
+ * request URL is http://localhost:4003, which the portal cannot send users back to.
+ */
+function buildLoginUrl(req: NextRequest, pathAndQuery: string): URL {
+  const publicOrigin =
+    process.env.NEXTAUTH_URL?.replace(/\/+$/, "") || req.nextUrl.origin;
+  const loginUrl = new URL("https://tcetcercd.in/login");
+  loginUrl.searchParams.set(
+    "callbackUrl",
+    new URL(pathAndQuery || "/", publicOrigin).toString(),
+  );
+  return loginUrl;
+}
+
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isShowcaseAuthorRoute = pathname.startsWith("/showcase/my-projects");
@@ -85,14 +101,12 @@ export default async function middleware(req: NextRequest) {
 
   const token = req.cookies.get("coe_shared_token")?.value;
   if (!token) {
-    const loginUrl = new URL("http://tcetcercd.in/login");
-    loginUrl.searchParams.set("callbackUrl", req.nextUrl.href);
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(buildLoginUrl(req, req.nextUrl.pathname + req.nextUrl.search));
   }
 
   const payload = await verifyCoEToken(token);
   if (!payload || payload.status !== "ACTIVE") {
-    const loginUrl = new URL("https://tcetcercd.in/login");
+    const loginUrl = buildLoginUrl(req, req.nextUrl.pathname + req.nextUrl.search);
     loginUrl.searchParams.set("reason", "session_expired");
     return NextResponse.redirect(loginUrl);
   }
