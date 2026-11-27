@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { requireCoeUser, requireRole } from "@/lib/coe-guard";
+import { requireRole } from "@/lib/coe-guard";
 import { CreateMilestoneSchema } from "@/lib/validations/weekly-task";
 import { WeeklyTaskStatus } from "@prisma/client";
 import { z } from "zod";
@@ -9,141 +9,6 @@ import { z } from "zod";
 const UpdateMilestoneSchema = CreateMilestoneSchema.extend({
   id: z.string().cuid(),
 });
-
-/**
- * Calculates project completion metrics across all assigned weekly milestones.
- */
-export async function getProjectWeeklyMetrics(projectId: string) {
-  const user = await requireCoeUser();
-  if (!(await verifyGuideAccess(user.id, projectId))) {
-    throw new Error("Unauthorized");
-  }
-
-  const submissions = await prisma.weeklyTaskSubmission.findMany({
-    where: { projectId },
-    select: { status: true },
-  });
-
-  const total = submissions.length;
-  const approved = submissions.filter(
-    (s) => s.status === WeeklyTaskStatus.APPROVED
-  ).length;
-  const underReview = submissions.filter(
-    (s) => s.status === WeeklyTaskStatus.UNDER_REVIEW
-  ).length;
-  const pending = submissions.filter(
-    (s) => s.status === WeeklyTaskStatus.PENDING
-  ).length;
-
-  return {
-    totalWeeks: total,
-    approvedWeeks: approved,
-    underReviewWeeks: underReview,
-    pendingWeeks: pending,
-    completionPercentage: total > 0 ? Math.round((approved / total) * 100) : 0,
-  };
-}
-
-/**
- * Utility to verify if a user has access to a project (as guide or member).
- */
-export async function verifyGuideAccess(
-  userId: string,
-  projectId: string
-): Promise<boolean> {
-  const project = await prisma.project.findFirst({
-    where: {
-      id: projectId,
-      OR: [
-        { teacherId: userId },
-        {
-          members: {
-            some: {
-              studentId: userId,
-            },
-          },
-        },
-      ],
-    },
-    select: { id: true },
-  });
-  return Boolean(project);
-}
-
-/**
- * Fetches weekly task submissions for a project with milestone, evidence links, and sync meetings.
- */
-export async function getProjectWeeklySubmissions(projectId: string) {
-  const user = await requireCoeUser();
-  if (!(await verifyGuideAccess(user.id, projectId))) {
-    throw new Error("Unauthorized");
-  }
-
-  return await prisma.weeklyTaskSubmission.findMany({
-    where: { projectId },
-    include: {
-      milestone: {
-        select: {
-          weekNumber: true,
-          title: true,
-          description: true,
-          startDate: true,
-          dueDate: true,
-          checklists: {
-            select: {
-              text: true,
-            },
-          },
-        },
-      },
-      evidenceLinks: true,
-      syncMeetings: true,
-    },
-    orderBy: {
-      milestone: {
-        weekNumber: "asc",
-      },
-    },
-  });
-}
-
-/**
- * Updates the status of a weekly task submission.
- * Only teachers (guides) of the project can change the status.
- */
-export async function updateWeeklyTaskStatus(
-  submissionId: string,
-  status: WeeklyTaskStatus
-) {
-  const user = await requireRole("TEACHER");
-
-  const submission = await prisma.weeklyTaskSubmission.findUnique({
-    where: { id: submissionId },
-    include: {
-      project: {
-        select: {
-          id: true,
-          teacherId: true,
-        },
-      },
-    },
-  });
-
-  if (!submission) {
-    throw new Error("Submission not found");
-  }
-
-  if (submission.project.teacherId !== user.id) {
-    throw new Error("Unauthorized: not the teacher of this project");
-  }
-
-  await prisma.weeklyTaskSubmission.update({
-    where: { id: submissionId },
-    data: { status },
-  });
-
-  return { success: true };
-}
 
 /**
  * Assigns a single weekly milestone to all projects (Admin only).
@@ -441,86 +306,105 @@ export async function batchCreateMilestonesFromPDF() {
     },
   ];
 
-  const createdMilestones: Array<{
-    id: string;
-    weekNumber: number;
-    title: string;
-    totalProjects: number;
-  }> = [];
-
-  const projects = await prisma.project.findMany({
-    select: { id: true },
-  });
-  const totalProjects = projects.length;
-
-  for (const m of milestones) {
-    const milestone = await prisma.weeklyMilestone.upsert({
-      where: { weekNumber: m.weekNumber },
-      update: {
-        title: m.title,
-        description: m.description,
-        startDate: m.startDate,
-        dueDate: m.dueDate,
-        isBackdated: m.isBackdated,
-      },
-      create: {
-        weekNumber: m.weekNumber,
-        title: m.title,
-        description: m.description,
-        startDate: m.startDate,
-        dueDate: m.dueDate,
-        isBackdated: m.isBackdated,
-      },
-    });
-
-    await prisma.milestoneChecklistItem.deleteMany({
-      where: { weeklyMilestoneId: milestone.id },
-    });
-
-    if (m.checklists.length > 0) {
-      await prisma.milestoneChecklistItem.createMany({
-        data: m.checklists.map((text) => ({
-          text,
-          weeklyMilestoneId: milestone.id,
-        })),
+  const result = await prisma.$transaction(
+    async (tx) => {
+      const projects = await tx.project.findMany({
+        select: { id: true },
       });
-    }
 
-    const existingSubmissions = await prisma.weeklyTaskSubmission.findMany({
-      where: { milestoneId: milestone.id },
-      select: { projectId: true },
-    });
-    const existingProjectIds = new Set(
-      existingSubmissions.map((sub) => sub.projectId)
-    );
-
-    const submissions = projects
-      .filter((p) => !existingProjectIds.has(p.id))
-      .map((p) => ({
-        projectId: p.id,
-        milestoneId: milestone.id,
-        status: WeeklyTaskStatus.PENDING,
-        workLog: null,
-        feedback: null,
-        submittedAt: null,
-        reviewedAt: null,
-      }));
-
-    if (submissions.length > 0) {
-      await prisma.weeklyTaskSubmission.createMany({
-        data: submissions,
+      const existingMilestones = await tx.weeklyMilestone.findMany({
+        where: {
+          weekNumber: {
+            in: milestones.map((milestone) => milestone.weekNumber),
+          },
+        },
+        select: { id: true, weekNumber: true, title: true },
       });
-    }
+      const existingByWeek = new Map(
+        existingMilestones.map((milestone) => [milestone.weekNumber, milestone]),
+      );
 
-    createdMilestones.push({
-      id: milestone.id,
-      weekNumber: milestone.weekNumber,
-      title: milestone.title,
-      totalProjects,
-    });
-  }
+      const milestoneRecords: Array<{
+        id: string;
+        weekNumber: number;
+        title: string;
+      }> = [];
+      const createdMilestones: Array<{
+        id: string;
+        weekNumber: number;
+        title: string;
+      }> = [];
 
-  return { success: true, createdMilestones, totalProjects };
+      for (const milestoneData of milestones) {
+        const existingMilestone = existingByWeek.get(milestoneData.weekNumber);
+        const milestone =
+          existingMilestone ??
+          (await tx.weeklyMilestone.create({
+            data: {
+              weekNumber: milestoneData.weekNumber,
+              title: milestoneData.title,
+              description: milestoneData.description,
+              startDate: milestoneData.startDate,
+              dueDate: milestoneData.dueDate,
+              isBackdated: milestoneData.isBackdated,
+              checklists: {
+                create: milestoneData.checklists.map((text) => ({ text })),
+              },
+            },
+            select: { id: true, weekNumber: true, title: true },
+          }));
+
+        if (!existingMilestone) {
+          createdMilestones.push(milestone);
+        }
+
+        milestoneRecords.push(milestone);
+      }
+
+      const existingSubmissions = await tx.weeklyTaskSubmission.findMany({
+        where: {
+          milestoneId: {
+            in: milestoneRecords.map((milestone) => milestone.id),
+          },
+        },
+        select: { milestoneId: true, projectId: true },
+      });
+      const existingSubmissionKeys = new Set(
+        existingSubmissions.map(
+          (submission) => `${submission.milestoneId}:${submission.projectId}`,
+        ),
+      );
+
+      const submissionsToCreate = milestoneRecords.flatMap((milestone) =>
+        projects
+          .filter(
+            (project) =>
+              !existingSubmissionKeys.has(`${milestone.id}:${project.id}`),
+          )
+          .map((project) => ({
+            projectId: project.id,
+            milestoneId: milestone.id,
+            status: WeeklyTaskStatus.PENDING,
+          })),
+      );
+
+      if (submissionsToCreate.length > 0) {
+        await tx.weeklyTaskSubmission.createMany({
+          data: submissionsToCreate,
+        });
+      }
+
+      return {
+        createdMilestones,
+        skippedMilestones: existingMilestones.length,
+        totalProjects: projects.length,
+        createdSubmissionsCount: submissionsToCreate.length,
+      };
+    },
+    { maxWait: 5000, timeout: 15000 },
+  );
+
+  return { success: true, ...result };
 }
 
 /**
