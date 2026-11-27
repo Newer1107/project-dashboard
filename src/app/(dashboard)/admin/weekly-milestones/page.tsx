@@ -633,7 +633,7 @@ export default function WeeklyMilestonesAdminPage() {
                               {m.checklists && m.checklists.length > 0 && (
                                 <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
                                   {m.checklists.map((item, idx) => (
-                                    <li key={item.id ?? idx}>
+                                    <li key={idx}>
                                       {typeof item === "string"
                                         ? item
                                         : item.text}
