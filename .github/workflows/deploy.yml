@@ -8,6 +8,11 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
+    env:
+      # Skip the 2 GB default heap: `next build` type-checking peaks above it
+      # on this host and the build dies with a V8 OOM, leaving .next half-written.
+      NODE_OPTIONS: --max-old-space-size=4096
+      NEXT_TELEMETRY_DISABLED: "1"
 
     steps:
       - name: Deploy application
