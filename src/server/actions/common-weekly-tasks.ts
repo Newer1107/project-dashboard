@@ -35,7 +35,7 @@ export async function getProjectWeeklyMetrics(projectId: string) {
 /**
  * Utility to verify if a user has access to a project (as guide or member).
  */
-export async function verifyGuideAccess(userId: string, projectId: string): Promise<boolean> {
+async function verifyGuideAccess(userId: string, projectId: string): Promise<boolean> {
   const project = await prisma.project.findFirst({
     where: {
       id: projectId,
@@ -101,6 +101,7 @@ export async function updateWeeklyTaskStatus(
 ) {
   // Only teachers can update weekly task status
   const user = await requireRole("TEACHER");
+  const validatedStatus = z.nativeEnum(WeeklyTaskStatus).parse(status);
 
   // Verify submission exists and user is the teacher of the project
   const submission = await prisma.weeklyTaskSubmission.findUnique({
@@ -126,7 +127,10 @@ export async function updateWeeklyTaskStatus(
   // Update the status
   await prisma.weeklyTaskSubmission.update({
     where: { id: submissionId },
-    data: { status },
+    data: {
+      status: validatedStatus,
+      reviewedAt: new Date(),
+    },
   });
 
   return { success: true };
