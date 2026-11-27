@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,17 +29,21 @@ type CreateMilestoneInput = z.infer<typeof CreateMilestoneSchema>;
 /* ------------------------------------------------------------------ */
 /* Date Helpers                                                       */
 /* ------------------------------------------------------------------ */
-function formatDateForInput(dateInput) {
+function formatDateForInput(
+  dateInput: Date | string | null | undefined,
+): string {
   if (!dateInput) return "";
   const d = new Date(dateInput);
   if (isNaN(d.getTime())) return "";
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
+  const year = d.getUTCFullYear();
+  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
-function formatDateForDisplay(dateInput) {
+function formatDateForDisplay(
+  dateInput: Date | string | null | undefined,
+): string {
   if (!dateInput) return "";
   const d = new Date(dateInput);
   if (isNaN(d.getTime())) return "";
@@ -54,7 +58,15 @@ function formatDateForDisplay(dateInput) {
 /* ------------------------------------------------------------------ */
 /* Helper: Reusable Checklist Input                                   */
 /* ------------------------------------------------------------------ */
-function ChecklistInput({ items, setItems, disabled = false }) {
+function ChecklistInput({
+  items,
+  setItems,
+  disabled = false,
+}: {
+  items: string[];
+  setItems: (items: string[]) => void;
+  disabled?: boolean;
+}) {
   const [draft, setDraft] = useState("");
 
   const add = () => {
@@ -135,7 +147,7 @@ export default function WeeklyMilestonesAdminPage() {
     try {
       const result = await batchCreateMilestonesFromPDF();
       toast.success(
-        `Batch created ${result.createdMilestones.length} milestones for ${result.totalProjects} projects!`
+        `Created ${result.createdMilestones.length} new milestones, kept ${result.skippedMilestones} existing milestones, and added ${result.createdSubmissionsCount} project submissions across ${result.totalProjects} projects.`,
       );
       await queryClient.invalidateQueries({
         queryKey: ["admin", "weekly-milestones"],
@@ -143,7 +155,7 @@ export default function WeeklyMilestonesAdminPage() {
       resetCreateForm();
     } catch (err) {
       console.error(err);
-      toast.error("Failed to batch create milestones");
+      toast.error(err instanceof Error ? err.message : "Failed to batch create milestones");
     } finally {
       setBatchCreating(false);
     }
@@ -158,6 +170,16 @@ export default function WeeklyMilestonesAdminPage() {
     setChecklistItems([]);
   };
 
+  const resetEditForm = () => {
+    setEditingMilestoneId(null);
+    setEditWeekNumber("");
+    setEditTitle("");
+    setEditDescription("");
+    setEditStartDate("");
+    setEditDueDate("");
+    setEditChecklistItems([]);
+  };
+
   // Create state
   const [weekNumber, setWeekNumber] = useState("");
   const [title, setTitle] = useState("");
@@ -165,20 +187,20 @@ export default function WeeklyMilestonesAdminPage() {
   const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [checklistItems, setChecklistItems] = useState([]);
+  const [checklistItems, setChecklistItems] = useState<string[]>([]);
 
   // Edit state
-  const [editingMilestoneId, setEditingMilestoneId] = useState(null);
+  const [editingMilestoneId, setEditingMilestoneId] = useState<string | null>(null);
   const [editWeekNumber, setEditWeekNumber] = useState("");
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editStartDate, setEditStartDate] = useState("");
   const [editDueDate, setEditDueDate] = useState("");
-  const [editChecklistItems, setEditChecklistItems] = useState([]);
+  const [editChecklistItems, setEditChecklistItems] = useState<string[]>([]);
   const [isEditSubmitting, setIsEditSubmitting] = useState(false);
 
   // Delete state
-  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const {
     data: milestones,
@@ -206,7 +228,7 @@ export default function WeeklyMilestonesAdminPage() {
     }
   }, [editingMilestoneId, milestones]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isSubmitting) return;
     if (checklistItems.length === 0) {
@@ -224,7 +246,7 @@ export default function WeeklyMilestonesAdminPage() {
     setIsSubmitting(true);
 
     try {
-      const payload = {
+      const payload: CreateMilestoneInput = {
         weekNumber: Number(weekNumber),
         title,
         description: description || undefined,
@@ -244,13 +266,13 @@ export default function WeeklyMilestonesAdminPage() {
       });
     } catch (err) {
       console.error(err);
-      toast.error("Failed to create weekly milestone");
+      toast.error(err instanceof Error ? err.message : "Failed to create weekly milestone");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleEditSubmit = async (e) => {
+  const handleEditSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isEditSubmitting) return;
     if (!editingMilestoneId) return;
@@ -269,7 +291,7 @@ export default function WeeklyMilestonesAdminPage() {
     setIsEditSubmitting(true);
 
     try {
-      const payload = {
+      const payload: Parameters<typeof updateWeeklyMilestone>[0] = {
         id: editingMilestoneId,
         weekNumber: Number(editWeekNumber),
         title: editTitle,
@@ -288,13 +310,13 @@ export default function WeeklyMilestonesAdminPage() {
       });
     } catch (err) {
       console.error(err);
-      toast.error("Failed to update weekly milestone");
+      toast.error(err instanceof Error ? err.message : "Failed to update weekly milestone");
     } finally {
       setIsEditSubmitting(false);
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     try {
       await deleteMilestone(id);
       toast.success("Weekly milestone deleted.");
@@ -303,7 +325,7 @@ export default function WeeklyMilestonesAdminPage() {
       });
     } catch (err) {
       console.error(err);
-      toast.error("Failed to delete weekly milestone");
+      toast.error(err instanceof Error ? err.message : "Failed to delete weekly milestone");
     }
   };
 
@@ -315,8 +337,9 @@ export default function WeeklyMilestonesAdminPage() {
           Define a global weekly milestone; the system will create a submission
           card for <strong>every</strong> project automatically.
         </p>
+      </div>
 
-        {/* Batch Create from PDF Button */}
+      {/* Batch Create from PDF Button */}
         <Card>
           <CardHeader>
             <CardTitle>Batch Create from PDF</CardTitle>
@@ -340,11 +363,11 @@ export default function WeeklyMilestonesAdminPage() {
         <Card>
           <CardHeader>
             <CardTitle>Weekly Milestone Details</CardTitle>
+            <CardDescription>
+              Fill in the fields below to create a milestone assigned to all
+              projects.
+            </CardDescription>
           </CardHeader>
-          <CardDescription>
-            Fill in the fields below to create a milestone assigned to all
-            projects.
-          </CardDescription>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -659,7 +682,6 @@ export default function WeeklyMilestonesAdminPage() {
             </div>
           )}
         </section>
-      </div>
     </div>
   );
 }
